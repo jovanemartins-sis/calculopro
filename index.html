@@ -1,0 +1,1070 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CalculaJá Pro</title>
+<style>
+:root{
+  --primaria:#2563eb;
+  --primaria-hover:#1d4ed8;
+  --sucesso:#059669;
+  --sucesso-hover:#047857;
+  --aviso:#d97706;
+  --perigo:#dc2626;
+  --roxo:#7c3aed;
+  --fundo:#f8fafc;
+  --card:#ffffff;
+  --texto:#0f172a;
+  --texto-secundario:#475569;
+  --borda:#cbd5e1;
+  --borda-clara:#e2e8f0;
+  --sombra:0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+  --raio:12px;
+}
+
+*{box-sizing:border-box;font-family:'Segoe UI',system-ui,-apple-system,sans-serif;}
+
+body{
+  margin:0;
+  padding:24px;
+  background:var(--fundo);
+  color:var(--texto);
+  line-height:1.5;
+}
+
+.app{
+  max-width:1150px;
+  margin:auto;
+  background:var(--card);
+  border-radius:16px;
+  box-shadow:var(--sombra);
+  overflow:hidden;
+  border:1px solid var(--borda-clara);
+}
+
+header{
+  background:linear-gradient(135deg,#1e40af,#3b82f6);
+  color:#fff;
+  padding:20px 28px;
+  text-align:center;
+}
+
+header h2{margin:0;font-size:24px;font-weight:700;letter-spacing:-0.5px;}
+
+.content{padding:28px;}
+
+.card{
+  background:#ffffff;
+  border:1px solid var(--borda-clara);
+  border-radius:var(--raio);
+  padding:24px;
+  margin-bottom:24px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+}
+
+.card h3{
+  margin:0;
+  color:var(--primaria);
+  font-size:17px;
+  font-weight:600;
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+
+.card-header-toggle {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  user-select: none;
+}
+
+.seta-toggle {
+  transition: transform 0.3s ease;
+  font-size: 13px;
+  color: var(--primaria);
+  font-weight: 600;
+}
+
+.card-collapse {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.4s ease-out, opacity 0.3s ease-out;
+  opacity: 0;
+}
+
+.card-collapse.ativo {
+  max-height: 1000px;
+  opacity: 1;
+  margin-top: 18px;
+  transition: max-height 0.5s ease-in, opacity 0.4s ease-in;
+}
+
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:18px;}
+.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:18px;}
+
+label{
+  display:block;
+  margin-bottom:6px;
+  font-weight:600;
+  font-size:12px;
+  color:var(--texto-secundario);
+  text-transform:uppercase;
+  letter-spacing:0.5px;
+}
+
+.input-group { position: relative; }
+
+input,select{
+  width:100%;
+  padding:10px 14px;
+  border:1px solid var(--borda);
+  border-radius:8px;
+  font-size:14px;
+  outline:none;
+  background:#fff;
+  color:var(--texto);
+  transition:all 0.2s;
+}
+
+input:focus,select:focus{
+  border-color:var(--primaria);
+  box-shadow:0 0 0 3px rgba(37, 99, 235, 0.15);
+}
+
+.table-wrap{
+  width:100%;
+  overflow-x:auto;
+  margin-bottom:14px;
+  border: 1px solid var(--borda-clara);
+  border-radius: 8px;
+}
+
+table{
+  width:100%;
+  border-collapse:collapse;
+  min-width:760px;
+  background:#ffffff;
+}
+
+th,td{
+  padding:11px 14px;
+  border-bottom:1px solid var(--borda-clara);
+  vertical-align:middle;
+  font-size:13px;
+}
+
+th{
+  background:#1e40af;
+  color:#ffffff;
+  text-align:left;
+  font-weight:600;
+  letter-spacing:0.3px;
+  border-bottom: 2px solid #1d4ed8;
+}
+
+tbody tr:nth-child(even) { background-color: #f0f7ff; }
+tbody tr:nth-child(odd) { background-color: #ffffff; }
+tbody tr:hover { background-color: #e0f2fe; }
+
+button{
+  border:0;
+  border-radius:6px;
+  padding:8px 14px;
+  font-weight:600;
+  cursor:pointer;
+  transition:all 0.2s;
+  font-size:12px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:6px;
+}
+
+button:hover{filter:brightness(0.95);transform:translateY(-1px);}
+button:active{transform:translateY(0);}
+
+.btn-add{background:var(--sucesso);color:#fff;width:100%;margin-top:10px;font-size:13px;padding:10px;}
+.btn-add:hover{background:var(--sucesso-hover);}
+
+.botoes-acao-container { display: flex; gap: 10px; margin-top: 20px; }
+.btn-acao-grupo {
+  flex: 1;
+  font-size: 13px;
+  padding: 12px;
+  text-align: center;
+  justify-content: center;
+  border-radius: 8px;
+}
+.btn-calc {background:var(--primaria);color:#fff;}
+.btn-calc:hover {background:var(--primaria-hover);}
+.btn-save {background:var(--aviso);color:#fff;}
+.btn-pdf {background:#334155;color:#fff;}
+
+.btn-reagrupar{background:var(--roxo);color:#fff;font-size:12px;padding:6px 12px;}
+.btn-export-img{background:#0284c7;color:#fff;font-size:12px;padding:6px 12px;}
+.btn-backup{background:#0284c7;color:#fff;font-size:13px;padding:10px;width:100%;}
+.btn-restore{background:#475569;color:#fff;font-size:13px;padding:10px;width:100%;}
+.btn-del{background:var(--perigo);color:#fff;padding:5px 10px;border-radius:4px;}
+.btn-edit{background:var(--aviso);color:#fff;padding:5px 10px;border-radius:4px;margin-right:4px;}
+.btn-salvar-linha{background:var(--sucesso);color:#fff;padding:5px 10px;border-radius:4px;margin-right:4px;}
+.btn-view{background:var(--primaria);color:#fff;padding:5px 10px;border-radius:4px;margin-right:4px;}
+
+.result{
+  background:linear-gradient(135deg,#f0fdf4,#eff6ff);
+  border:1px solid #bbf7d0;
+  padding:24px;
+  border-radius:var(--raio);
+  margin-top:24px;
+  line-height:1.7;
+  font-size:15px;
+}
+
+.total{
+  font-size:26px;
+  font-weight:800;
+  color:var(--sucesso-hover);
+  margin-top:14px;
+  padding-top:14px;
+  border-top:2px dashed #cbd5e1;
+}
+
+.bobina-container {
+  margin-top: 18px;
+  background: #ffffff;
+  border: 1px solid var(--borda);
+  border-radius: 10px;
+  padding: 14px;
+}
+
+.plotter-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.zoom-controls { display: flex; gap: 6px; align-items: center; }
+.btn-zoom { background: #e2e8f0; color: #1e293b; padding: 6px 10px; font-size: 11px; }
+
+.plotter-viewport {
+  position: relative;
+  width: 100%;
+  height: 480px;
+  background: #f8fafc;
+  border: 1px solid var(--borda);
+  border-radius: 8px;
+  overflow: auto;
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.04);
+}
+
+.plotter-workspace {
+  position: relative;
+  transform-origin: top left;
+  transition: transform 0.1s ease;
+  background: #f1f5f9;
+}
+
+.regua-horizontal {
+  position: sticky;
+  top: 0;
+  left: 0;
+  height: 30px;
+  background: linear-gradient(to bottom, #f8fafc, #e2e8f0);
+  border-bottom: 2px solid #94a3b8;
+  display: flex;
+  align-items: flex-end;
+  z-index: 20;
+  white-space: nowrap;
+}
+
+.regua-vertical {
+  position: sticky;
+  left: 0;
+  width: 45px;
+  background: linear-gradient(to right, #f8fafc, #e2e8f0);
+  border-right: 2px solid #94a3b8;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  z-index: 15;
+}
+
+.canvas-bobina {
+  position: absolute;
+  top: 30px;
+  left: 45px;
+  background: #ffffff;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  border: 1px solid #94a3b8;
+}
+
+.peca-plotter {
+  position: absolute;
+  background: rgba(37, 99, 235, 0.15);
+  border: 1.5px solid #2563eb;
+  color: #1e3a8a;
+  font-size: 10px;
+  font-weight: 700;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 2px;
+  box-sizing: border-box;
+  overflow: hidden;
+  cursor: pointer;
+  border-radius: 3px;
+}
+.peca-plotter:hover { filter: brightness(0.95); background: rgba(37, 99, 235, 0.25); }
+
+.lista-salvos{display:flex;flex-direction:column;gap:12px;margin-top:14px;}
+.item-salvo{
+  background:#fff;
+  border:1px solid var(--borda-clara);
+  padding:16px;
+  border-radius:10px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  flex-wrap:wrap;
+  gap:12px;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.02);
+}
+
+@media print {
+  .botoes-acao-container, .plotter-toolbar, .btn-reagrupar, .btn-export-img, .zoom-controls, .bobina-container {
+    display: none !important;
+  }
+}
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+</head>
+<body>
+<div class="app">
+  <header>
+    <h2>CalculaJá Pro</h2>
+  </header>
+  
+  <div class="content">
+    
+    <!-- CADASTRO DA BOBINA UTILIZADA -->
+    <div class="card" style="border-left: 4px solid var(--primaria);">
+      <h3>🌀 Cadastro da Bobina Utilizada</h3>
+      <div class="grid-3" style="margin-top:16px;">
+        <div class="input-group">
+          <label for="nomeBobina">Descrição / Tipo da Bobina</label>
+          <input id="nomeBobina" type="text" placeholder="Ex: Bobina PVC Cristal 0,30" value="Bobina PVC Cristal">
+        </div>
+        <div class="input-group">
+          <label for="larguraBobina">Largura (cm)</label>
+          <input id="larguraBobina" type="number" placeholder="Ex: 140" value="140" min="1" step="0.1" oninput="atualizarBobinaEstatica()">
+        </div>
+        <div class="input-group">
+          <label for="comprimentoBobina">Comprimento do Rolo (m)</label>
+          <input id="comprimentoBobina" type="number" placeholder="Ex: 50" value="50" min="1" step="0.1" oninput="atualizarBobinaEstatica()">
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>🏷️ Informações do Pedido</h3>
+      <div class="grid-2" style="margin-top:16px;">
+        <div class="input-group">
+          <label for="cliente">Nome do Cliente</label>
+          <input id="cliente" type="text" placeholder="Digite o nome do cliente...">
+        </div>
+        <div class="input-group">
+          <label for="produto">Nome do Produto / Projeto</label>
+          <input id="produto" type="text" placeholder="Digite o nome do produto...">
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>📐 1. Partes Principais (Medidas: Lado x Lado)</h3>
+      <div class="table-wrap" style="margin-top:16px;">
+        <table>
+          <thead>
+            <tr>
+              <th>Nome da Parte</th>
+              <th>Material / Tabela</th>
+              <th>Lado 1 (cm)</th>
+              <th>Lado 2 (cm)</th>
+              <th>Qtd</th>
+              <th>Perda (%)</th>
+              <th>Ação</th>
+            </tr>
+          </thead>
+          <tbody id="partes"></tbody>
+        </table>
+      </div>
+      <button class="btn-add" type="button" onclick="addParte()">+ Adicionar parte ao projeto</button>
+    </div>
+
+    <div class="card">
+      <h3>🧵 2. Suplementos & Acessórios</h3>
+      <div class="table-wrap" style="margin-top:16px;">
+        <table>
+          <thead>
+            <tr>
+              <th>Nome do Suplemento</th>
+              <th>Material / Tabela</th>
+              <th>Medida / Qtd</th>
+              <th>Unidade</th>
+              <th>Qtd de Peças</th>
+              <th>Perda (%)</th>
+              <th>Ação</th>
+            </tr>
+          </thead>
+          <tbody id="suplementos"></tbody>
+        </table>
+      </div>
+      <button class="btn-add" type="button" onclick="addSuplemento()">+ Adicionar suplemento</button>
+    </div>
+
+    <div class="card">
+      <div class="card-header-toggle" onclick="toggleCortinaPrecos()">
+        <h3>📦 3. Catálogo e Tabela de Preços de Materiais</h3>
+        <span id="setaCortina" class="seta-toggle">▲ Expandir / Abrir</span>
+      </div>
+      
+      <div id="cortinaPrecos" class="card-collapse">
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>Nome do Item</th><th>Unidade Base</th><th>Valor (R$)</th><th>Ação</th></tr>
+            </thead>
+            <tbody id="tabelaPrecos"></tbody>
+          </table>
+        </div>
+        <form id="formPreco" class="grid-3" style="margin-top:16px; grid-template-columns: 2fr 1fr 1fr auto;">
+          <input type="hidden" id="editIndex" value="">
+          <div><label for="nomePreco">Nome do Material</label><input type="text" id="nomePreco" placeholder="Ex: Zíper de Metro" required></div>
+          <div><label for="unidadePreco">Unidade</label>
+            <select id="unidadePreco">
+              <option value="m2">m² (Lado x Lado)</option>
+              <option value="metro">Metro</option>
+              <option value="unidade">Unidade</option>
+              <option value="peca">Peça</option>
+            </select>
+          </div>
+          <div><label for="valorPreco">Valor (R$)</label><input type="number" id="valorPreco" step="0.01" min="0" placeholder="0,00" required></div>
+          <div><button type="submit" id="btnSalvarPreco" class="btn-add" style="margin-top:0;height:43px;">Adicionar</button></div>
+        </form>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>💰 Custos Operacionais & Margem de Lucro</h3>
+      <div class="grid-2" style="margin-top:16px; margin-bottom:14px;">
+        <div><label for="mao">Mão de Obra / Horas (R$)</label><input id="mao" type="number" value="0" min="0" step="0.01"></div>
+        <div><label for="outros">Custos Operacionais / Embalagem (R$)</label><input id="outros" type="number" value="0" min="0" step="0.01"></div>
+      </div>
+      <div class="grid-2">
+        <div><label for="lucro">Lucro Desejado (%)</label><input id="lucro" type="number" value="0" min="0" step="0.01"></div>
+        <div><label for="imposto">Impostos / Taxas (%)</label><input id="imposto" type="number" value="0" min="0" step="0.01"></div>
+      </div>
+    </div>
+
+    <div class="botoes-acao-container">
+      <button class="btn-acao-grupo btn-calc" type="button" onclick="calcular()">⚡ Calcular</button>
+      <button class="btn-acao-grupo btn-save" type="button" onclick="salvarOrcamentoLocal()">💾 Salvar</button>
+      <button class="btn-acao-grupo btn-pdf" type="button" onclick="window.print()">🖨️ PDF</button>
+    </div>
+
+    <div class="card" style="margin-top:24px;">
+      <h3>☁️ Gerenciamento de Backup e Nuvem</h3>
+      <p style="font-size:13px; color:var(--texto-secundario); margin-top:6px;">Salve todos os seus orçamentos em uma pasta no seu computador para guardar no Google Drive / Pendrive ou restaure um backup a qualquer momento.</p>
+      <div class="grid-2" style="margin-top:14px;">
+        <div><button class="btn-backup" type="button" onclick="baixarBackupPasta()">📥 Baixar Backup para Pasta (JSON)</button></div>
+        <div>
+          <button class="btn-restore" type="button" onclick="document.getElementById('inputImportarBackup').click()">📤 Restaurar Backup de Pasta</button>
+          <input type="file" id="inputImportarBackup" accept=".json" style="display:none" onchange="importarBackupPasta(event)">
+        </div>
+      </div>
+    </div>
+    
+    <div class="result" id="resultado">
+      <!-- Será preenchido com estatísticas ou bobina inicial -->
+    </div>
+
+    <div class="card" style="margin-top:24px;">
+      <h3>🗂️ Histórico de Orçamentos Salvos</h3>
+      <div id="listaSalvos" class="lista-salvos">Nenhum orçamento salvo no navegador.</div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+let catalogoPadrao = [
+  { id: 1, nome: "PVC Cristal 0,30", unidade: "m2", valor: 18.00 },
+  { id: 2, nome: "Zíper de Metro N5", unidade: "metro", valor: 5.00 },
+  { id: 3, nome: "Cursor N5", unidade: "unidade", valor: 0.60 },
+  { id: 4, nome: "Viés de Borda", unidade: "metro", valor: 2.50 }
+];
+
+let catalogo = JSON.parse(localStorage.getItem("catalogo_materiais")) || catalogoPadrao;
+let ultimoResultadoCalculado = null;
+let modoEstrategiaEncaixe = 0;
+let nivelZoom = 1;
+
+window.onload = function() {
+  renderTabelaPrecos();
+  addParteVazia();
+  addSuplementoVazia();
+  atualizaSelectsCatalogo();
+  carregarOrcamentosSalvos();
+  renderizarBobinaInicial(); // Exibe a régua e bobina imediatamente ao carregar
+};
+
+function salvarCatalogoLocalStorage(){
+  localStorage.setItem("catalogo_materiais", JSON.stringify(catalogo));
+}
+
+function toggleCortinaPrecos() {
+  const cortina = document.getElementById("cortinaPrecos");
+  const seta = document.getElementById("setaCortina");
+  cortina.classList.toggle("ativo");
+  seta.innerText = cortina.classList.contains("ativo") ? "▼ Recolher / Fechar" : "▲ Expandir / Abrir";
+}
+
+function remover(btn){ btn.closest("tr").remove(); }
+
+function addParteVazia(){
+  const tr = document.createElement("tr");
+  tr.innerHTML = `
+    <td><input class="nomeParte" placeholder="Ex: Painel Frontal"></td>
+    <td><select class="materialParte"><option value="">Selecione...</option></select></td>
+    <td><input class="lado1" type="number" placeholder="Lado 1" min="0" step="0.01"></td>
+    <td><input class="lado2" type="number" placeholder="Lado 2" min="0" step="0.01"></td>
+    <td><input class="qtdParte" type="number" placeholder="Qtd" min="0" step="1"></td>
+    <td><input class="perdaParte" type="number" min="0" step="0.01" placeholder="0"></td>
+    <td><button class="btn-del" type="button" onclick="remover(this)">X</button></td>
+  `;
+  document.getElementById("partes").appendChild(tr);
+  atualizaSelectsCatalogo();
+}
+
+function addParte(){ addParteVazia(); }
+
+function addSuplementoVazia(){
+  const tr = document.createElement("tr");
+  tr.innerHTML = `
+    <td><input class="nomeSup" placeholder="Ex: Zíper principal"></td>
+    <td><select class="materialSup"><option value="">Selecione...</option></select></td>
+    <td><input class="medidaSup" type="number" placeholder="Ex: 30" min="0" step="0.01"></td>
+    <td><select class="unidadeMedidaSup"><option value="cm">cm</option><option value="metro">m</option><option value="unidade">Un</option></select></td>
+    <td><input class="qtdSup" type="number" placeholder="Qtd" min="0" step="1"></td>
+    <td><input class="perdaSup" type="number" min="0" step="0.01" placeholder="0"></td>
+    <td><button class="btn-del" type="button" onclick="remover(this)">X</button></td>
+  `;
+  document.getElementById("suplementos").appendChild(tr);
+  atualizaSelectsCatalogo();
+}
+
+function addSuplemento(){ addSuplementoVazia(); }
+
+function renderTabelaPrecos(){
+  const tbody = document.getElementById("tabelaPrecos");
+  tbody.innerHTML = "";
+  catalogo.forEach((s,idx)=>{
+    const tr = document.createElement("tr");
+    tr.id = `linhaPreco_${idx}`;
+    tr.innerHTML = `
+      <td class="col-nome">${s.nome}</td>
+      <td class="col-unidade">${s.unidade}</td>
+      <td class="col-valor">R$ ${s.valor.toFixed(2).replace('.',',')}</td>
+      <td>
+        <button class="btn-edit" type="button" onclick="ativarEdicaoPreco(${idx})">Editar</button>
+        <button class="btn-del" type="button" onclick="removerPreco(${idx})">X</button>
+      </td>
+    `;
+    tbody.appendChild(tr);
+  });
+  salvarCatalogoLocalStorage();
+  atualizaSelectsCatalogo();
+}
+
+function ativarEdicaoPreco(idx){
+  const tr = document.getElementById(`linhaPreco_${idx}`);
+  const s = catalogo[idx];
+
+  tr.innerHTML = `
+    <td><input type="text" id="editNome_${idx}" value="${s.nome}"></td>
+    <td>
+      <select id="editUnidade_${idx}">
+        <option value="m2" ${s.unidade === 'm2' ? 'selected' : ''}>m²</option>
+        <option value="metro" ${s.unidade === 'metro' ? 'selected' : ''}>Metro</option>
+        <option value="unidade" ${s.unidade === 'unidade' ? 'selected' : ''}>Unidade</option>
+        <option value="peca" ${s.unidade === 'peca' ? 'selected' : ''}>Peça</option>
+      </select>
+    </td>
+    <td><input type="number" id="editValor_${idx}" step="0.01" min="0" value="${s.valor}"></td>
+    <td>
+      <button class="btn-salvar-linha" type="button" onclick="salvarEdicaoPreco(${idx})">Salvar</button>
+      <button class="btn-del" type="button" onclick="renderTabelaPrecos()">Cancelar</button>
+    </td>
+  `;
+}
+
+function salvarEdicaoPreco(idx){
+  const novoNome = document.getElementById(`editNome_${idx}`).value.trim();
+  const novaUnidade = document.getElementById(`editUnidade_${idx}`).value;
+  const novoValor = parseFloat(document.getElementById(`editValor_${idx}`).value);
+
+  if(!novoNome || isNaN(novoValor)){
+    alert("Preencha todos os campos corretamente.");
+    return;
+  }
+
+  catalogo[idx].nome = novoNome;
+  catalogo[idx].unidade = novaUnidade;
+  catalogo[idx].valor = novoValor;
+
+  renderTabelaPrecos();
+}
+
+function atualizaSelectsCatalogo(){
+  const selectsPartes = document.querySelectorAll(".materialParte");
+  const selectsSups = document.querySelectorAll(".materialSup");
+  const opts = catalogo.map(s => `<option value="${s.id}">${s.nome} (${s.unidade}) - R$ ${s.valor.toFixed(2).replace('.',',')}</option>`).join("");
+
+  selectsPartes.forEach(sel => { const val = sel.value; sel.innerHTML = '<option value="">Selecione...</option>' + opts; sel.value = val; });
+  selectsSups.forEach(sel => { const val = sel.value; sel.innerHTML = '<option value="">Selecione...</option>' + opts; sel.value = val; });
+}
+
+function removerPreco(idx){ catalogo.splice(idx,1); renderTabelaPrecos(); }
+
+document.getElementById("formPreco").addEventListener("submit", function(e){
+  e.preventDefault();
+  const nome = document.getElementById("nomePreco").value.trim();
+  const unidade = document.getElementById("unidadePreco").value;
+  const valor = parseFloat(document.getElementById("valorPreco").value);
+  if(!nome || isNaN(valor)) return;
+
+  catalogo.push({id:Date.now(), nome, unidade, valor});
+  renderTabelaPrecos();
+  this.reset();
+});
+
+function dinheiro(v){ return "R$ " + v.toFixed(2).replace(".",","); }
+
+function reagruparDesenhos(){ 
+  modoEstrategiaEncaixe = (modoEstrategiaEncaixe + 1) % 4; 
+  calcular(); 
+}
+
+function exportarDesenhoSeparado() {
+  const containerDesenho = document.querySelector(".canvas-bobina");
+  if(!containerDesenho) {
+    alert("Nenhum desenho gerado para exportar.");
+    return;
+  }
+  
+  const workspace = document.getElementById("plotterWorkspace");
+  const transformAntigo = workspace.style.transform;
+  workspace.style.transform = "scale(1)";
+
+  html2canvas(containerDesenho, { scale: 2, useCORS: true }).then(canvas => {
+    workspace.style.transform = transformAntigo;
+    const link = document.createElement("a");
+    link.download = `desenho_aproveitamento_${Date.now()}.png`;
+    link.href = canvas.toDataURL("image/png");
+    link.click();
+  }).catch(err => {
+    workspace.style.transform = transformAntigo;
+    alert("Erro ao exportar imagem do desenho.");
+  });
+}
+
+function alterarZoom(fator) {
+  nivelZoom += fator;
+  if(nivelZoom < 0.4) nivelZoom = 0.4;
+  if(nivelZoom > 3.0) nivelZoom = 3.0;
+  const workspace = document.getElementById("plotterWorkspace");
+  if(workspace) workspace.style.transform = `scale(${nivelZoom})`;
+}
+
+// RENDERIZA A BOBINA INICIAL COM RÉGUA MESMO ANTES DE INFORMAR AS PEÇAS
+function renderizarBobinaInicial() {
+  const nomeBobina = document.getElementById("nomeBobina").value.trim() || "Bobina Padrão";
+  const larguraBobinaCm = parseFloat(document.getElementById("larguraBobina").value) || 140;
+  const comprimentoBobinaM = parseFloat(document.getElementById("comprimentoBobina").value) || 50;
+
+  let htmlDesenho = gerarHTMLPlotter(nomeBobina, larguraBobinaCm, comprimentoBobinaM, 300, []);
+  
+  document.getElementById("resultado").innerHTML = `
+    <strong>Aguardando Cálculo:</strong> Adicione os dados das partes/peças acima e clique em "Calcular" para ver a otimização de corte.<br><br>
+    <div style="background:#e0e7ff; padding:12px; border-radius:8px; margin-bottom:12px; border:1px solid #c7d2fe;">
+      <strong>🌀 Bobina Pronta para Uso:</strong> ${nomeBobina} (${larguraBobinaCm} cm x ${comprimentoBobinaM} m)
+    </div>
+    ${htmlDesenho}
+  `;
+}
+
+function atualizarBobinaEstatica() {
+  if (!ultimoResultadoCalculado) {
+    renderizarBobinaInicial();
+  }
+}
+
+function gerarHTMLPlotter(nomeBobina, larguraBobinaCm, comprimentoBobinaM, maxYTotal, pecasPosicionadas) {
+  const pxPorCm = 3.5;
+  const larguraCanvasPx = larguraBobinaCm * pxPorCm;
+  const alturaCanvasPx = maxYTotal * pxPorCm;
+
+  let htmlReguaH = '';
+  for(let c = 0; c <= larguraBobinaCm; c++) {
+    let leftPos = c * pxPorCm;
+    let isDez = c % 10 === 0;
+    htmlReguaH += `
+      <div style="position:absolute; left:${leftPos}px; bottom:0; display:flex; flex-direction:column; align-items:center; transform: translateX(-50%);">
+        ${isDez ? `<span style="font-size:9px; font-weight:700; color:#1e293b; margin-bottom:2px;">${c}</span>` : ''}
+        <div style="width:1px; height:${isDez ? '14px' : '6px'}; background:${isDez ? '#334155' : '#cbd5e1'};"></div>
+      </div>`;
+  }
+
+  let htmlReguaV = '';
+  for(let c = 0; c <= maxYTotal; c++) {
+    let topPos = c * pxPorCm;
+    let isDez = c % 10 === 0;
+    if (!isDez && maxYTotal > 1500) continue;
+    htmlReguaV += `
+      <div style="position:absolute; top:${topPos}px; right:0; display:flex; align-items:center; transform: translateY(-50%);">
+        ${isDez ? `<span style="font-size:9px; font-weight:600; color:#475569; margin-right:4px;">${c}</span>` : ''}
+        <div style="height:1px; width:${isDez ? '10px' : '6px'}; background:${isDez ? '#334155' : '#cbd5e1'};"></div>
+      </div>`;
+  }
+
+  let html = `
+    <div class="bobina-container">
+      <div class="plotter-toolbar">
+        <span style="font-size:13px;font-weight:bold;color:#475569;">🧵 Arranjo na Bobina: ${nomeBobina} (${larguraBobinaCm}cm x ${comprimentoBobinaM}m)</span>
+        <div style="display:flex; gap:8px; align-items:center;">
+          <button class="btn-reagrupar" type="button" onclick="reagruparDesenhos()">🔄 Reagrupar / Próximo arranjo</button>
+          <button class="btn-export-img" type="button" onclick="exportarDesenhoSeparado()">📷 Baixar Imagem do Desenho</button>
+          <div class="zoom-controls">
+            <button class="btn-zoom" type="button" onclick="alterarZoom(0.2)">🔍+</button>
+            <button class="btn-zoom" type="button" onclick="alterarZoom(-0.2)">🔍-</button>
+          </div>
+        </div>
+      </div>
+      <div class="plotter-viewport">
+        <div id="plotterWorkspace" class="plotter-workspace" style="width:${larguraCanvasPx + 45}px; height:${alturaCanvasPx + 30}px; transform: scale(${nivelZoom});">
+          <div class="regua-horizontal" style="width:${larguraCanvasPx}px; left:45px;">${htmlReguaH}</div>
+          <div class="regua-vertical" style="height:${alturaCanvasPx}px; top:30px;">${htmlReguaV}</div>
+          <div class="canvas-bobina" style="width:${larguraCanvasPx}px; height:${alturaCanvasPx}px;">
+  `;
+
+  pecasPosicionadas.forEach(item => {
+    let leftPx = item.x * pxPorCm;
+    let topPx = item.y * pxPorCm;
+    let widthPx = item.w * pxPorCm;
+    let heightPx = item.h * pxPorCm;
+    let tagRot = item.rotacionada ? " 🔄" : "";
+    html += `
+      <div class="peca-plotter" style="left:${leftPx}px; top:${topPx}px; width:${widthPx}px; height:${heightPx}px;" title="${item.nome}: ${item.w}x${item.h}cm${tagRot}">
+        <span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:100%;">${item.nome}${tagRot}</span>
+        <span style="font-size:9px; font-weight:normal;">${item.w}×${item.h}cm</span>
+      </div>
+    `;
+  });
+
+  html += `</div></div></div></div>`;
+  return html;
+}
+
+function executarMaxRects(listaPecasBrutas, larguraBobinaCm) {
+  let freeRectangles = [{ x: 0, y: 0, w: larguraBobinaCm, h: 100000 }];
+  let pecasPosicionadas = [];
+  let maxYTotal = 0;
+
+  listaPecasBrutas.forEach(p => {
+    let w1 = p.w, h1 = p.h;
+    let w2 = p.h, h2 = p.w;
+
+    let bestRectIdx = -1;
+    let bestScoreY = Infinity;
+    let bestScoreX = Infinity;
+    let finalW = 0, finalH = 0;
+
+    for (let i = 0; i < freeRectangles.length; i++) {
+      let r = freeRectangles[i];
+
+      if (w1 <= r.w + 0.05 && h1 <= r.h + 0.05) {
+        let topAfter = r.y + h1;
+        if (topAfter < bestScoreY || (Math.abs(topAfter - bestScoreY) < 0.1 && r.x < bestScoreX)) {
+          bestScoreY = topAfter;
+          bestScoreX = r.x;
+          bestRectIdx = i;
+          finalW = w1;
+          finalH = h1;
+        }
+      }
+
+      if (p.podeRotacionar && (w2 !== w1 || h2 !== h1)) {
+        if (w2 <= r.w + 0.05 && h2 <= r.h + 0.05) {
+          let topAfter = r.y + h2;
+          if (topAfter < bestScoreY || (Math.abs(topAfter - bestScoreY) < 0.1 && r.x < bestScoreX)) {
+            bestScoreY = topAfter;
+            bestScoreX = r.x;
+            bestRectIdx = i;
+            finalW = w2;
+            finalH = h2;
+          }
+        }
+      }
+    }
+
+    if (bestRectIdx !== -1) {
+      let r = freeRectangles[bestRectIdx];
+      let placedX = r.x;
+      let placedY = r.y;
+
+      pecasPosicionadas.push({
+        nome: p.nome,
+        x: placedX,
+        y: placedY,
+        w: finalW,
+        h: finalH,
+        rotacionada: (finalW !== p.w)
+      });
+
+      if (placedY + finalH > maxYTotal) {
+        maxYTotal = placedY + finalH;
+      }
+
+      let newFreeRects = [];
+      for (let f = 0; f < freeRectangles.length; f++) {
+        let fr = freeRectangles[f];
+        if (placedX < fr.x + fr.w && placedX + finalW > fr.x && placedY < fr.y + fr.h && placedY + finalH > fr.y) {
+          if (placedX > fr.x) newFreeRects.push({ x: fr.x, y: fr.y, w: placedX - fr.x, h: fr.h });
+          if (placedX + finalW < fr.x + fr.w) newFreeRects.push({ x: placedX + finalW, y: fr.y, w: (fr.x + fr.w) - (placedX + finalW), h: fr.h });
+          if (placedY > fr.y) newFreeRects.push({ x: fr.x, y: fr.y, w: fr.w, h: placedY - fr.y });
+          if (placedY + finalH < fr.y + fr.h) newFreeRects.push({ x: fr.x, y: placedY + finalH, w: fr.w, h: (fr.y + fr.h) - (placedY + finalH) });
+        } else {
+          newFreeRects.push(fr);
+        }
+      }
+
+      freeRectangles = [];
+      for (let i = 0; i < newFreeRects.length; i++) {
+        let contained = false;
+        for (let j = 0; j < newFreeRects.length; j++) {
+          if (i !== j && 
+              newFreeRects[i].x >= newFreeRects[j].x && 
+              newFreeRects[i].y >= newFreeRects[j].y && 
+              newFreeRects[i].x + newFreeRects[i].w <= newFreeRects[j].x + newFreeRects[j].w && 
+              newFreeRects[i].y + newFreeRects[i].h <= newFreeRects[j].y + newFreeRects[j].h) {
+            contained = true;
+            break;
+          }
+        }
+        if (!contained) freeRectangles.push(newFreeRects[i]);
+      }
+    }
+  });
+
+  return { pecasPosicionadas, maxYTotal };
+}
+
+function calcular(){
+  const nomeBobina = document.getElementById("nomeBobina").value.trim() || "Bobina Padrão";
+  const larguraBobinaCm = parseFloat(document.getElementById("larguraBobina").value) || 140;
+  const comprimentoBobinaM = parseFloat(document.getElementById("comprimentoBobina").value) || 50;
+
+  const cliente = document.getElementById("cliente").value.trim() || "Cliente Geral";
+  const produto = document.getElementById("produto").value.trim() || "Produto";
+  const mao = parseFloat(document.getElementById("mao").value) || 0;
+  const outros = parseFloat(document.getElementById("outros").value) || 0;
+  const lucroPct = parseFloat(document.getElementById("lucro").value) || 0;
+  const impostoPct = parseFloat(document.getElementById("imposto").value) || 0;
+  const resultadoEl = document.getElementById("resultado");
+
+  let custoTotalItens = 0;
+  let detalhes = "";
+  let listaPecasBrutas = [];
+
+  let dadosPartesSalvar = [];
+  let dadosSuplementosSalvar = [];
+
+  document.querySelectorAll("#partes tr").forEach(tr => {
+    const nome = tr.querySelector(".nomeParte").value.trim() || "Parte";
+    const supId = tr.querySelector(".materialParte").value;
+    const lado1 = parseFloat(tr.querySelector(".lado1").value) || 0;
+    const lado2 = parseFloat(tr.querySelector(".lado2").value) || 0;
+    const qtd = parseFloat(tr.querySelector(".qtdParte").value) || 0;
+    const perdaInput = tr.querySelector(".perdaParte").value.trim();
+    const perdaPct = perdaInput === "" ? 0 : (parseFloat(perdaInput) || 0);
+
+    if(!supId || lado1 <= 0 || lado2 <= 0 || qtd <= 0) return;
+
+    dadosPartesSalvar.push({ nome, supId, lado1, lado2, qtd, perdaPct });
+
+    const sup = catalogo.find(x => x.id == supId);
+    if(sup){
+      let custoItem = 0;
+      if(sup.unidade === 'm2'){
+        const areaBase = ((lado1 * lado2) / 10000) * qtd;
+        custoItem = areaBase * (1 + (perdaPct / 100)) * sup.valor;
+      } else if(sup.unidade === 'metro'){
+        const metrosBase = (lado1 / 100) * qtd;
+        custoItem = metrosBase * (1 + (perdaPct / 100)) * sup.valor;
+      } else {
+        custoItem = sup.valor * (qtd * (1 + (perdaPct / 100)));
+      }
+
+      custoTotalItens += custoItem;
+      detalhes += `• <strong>${nome}</strong> (${sup.nome}): ${qtd}x (${lado1}×${lado2}cm) - ${dinheiro(custoItem)}<br>`;
+
+      for(let q=0; q<qtd; q++){
+        listaPecasBrutas.push({ nome, w: lado1, h: lado2, podeRotacionar: true });
+      }
+    }
+  });
+
+  document.querySelectorAll("#suplementos tr").forEach(tr => {
+    const nome = tr.querySelector(".nomeSup").value.trim() || "Suplemento";
+    const supId = tr.querySelector(".materialSup").value;
+    const medida = parseFloat(tr.querySelector(".medidaSup").value) || 0;
+    const unidadeMedida = tr.querySelector(".unidadeMedidaSup").value;
+    const qtdPecas = parseFloat(tr.querySelector(".qtdSup").value) || 0;
+    const perdaInput = tr.querySelector(".perdaSup").value.trim();
+    const perdaPct = perdaInput === "" ? 0 : (parseFloat(perdaInput) || 0);
+
+    if(!supId || medida <= 0 || qtdPecas <= 0) return;
+
+    dadosSuplementosSalvar.push({ nome, supId, medida, unidadeMedida, qtdPecas, perdaPct });
+
+    const sup = catalogo.find(x => x.id == supId);
+    if(sup){
+      let custoItem = 0;
+      let qtdUsada = medida * qtdPecas;
+
+      if(unidadeMedida === 'cm' && sup.unidade === 'metro') qtdUsada = (medida / 100) * qtdPecas;
+
+      custoItem = qtdUsada * (1 + (perdaPct / 100)) * sup.valor;
+      custoTotalItens += custoItem;
+      detalhes += `• <strong>${nome}</strong> (${sup.nome}): ${qtdPecas}x ${medida}${unidadeMedida} - ${dinheiro(custoItem)}<br>`;
+    }
+  });
+
+  // Ordenação para otimização de corte
+  if(modoEstrategiaEncaixe === 0) listaPecasBrutas.sort((a,b) => (b.w * b.h) - (a.w * a.h));
+  else if(modoEstrategiaEncaixe === 1) listaPecasBrutas.sort((a,b) => Math.max(b.w, b.h) - Math.max(a.w, a.h));
+  else if(modoEstrategiaEncaixe === 2) listaPecasBrutas.sort((a,b) => (a.w * a.h) - (b.w * b.h));
+
+  const arranjo = executarMaxRects(listaPecasBrutas, larguraBobinaCm);
+  const metrosUsados = arranjo.maxYTotal / 100;
+
+  const subtotal = custoTotalItens + mao + outros;
+  const valorLucro = subtotal * (lucroPct / 100);
+  const valorImposto = (subtotal + valorLucro) * (impostoPct / 100);
+  const precoFinal = subtotal + valorLucro + valorImposto;
+
+  let htmlPlotter = gerarHTMLPlotter(nomeBobina, larguraBobinaCm, comprimentoBobinaM, Math.max(300, arranjo.maxYTotal), arranjo.pecasPosicionadas);
+
+  resultadoEl.innerHTML = `
+    <h3>📊 Resumo do Orçamento: ${produto}</h3>
+    <p><strong>Cliente:</strong> ${cliente}</p>
+    <p>${detalhes}</p>
+    <p>• <strong>Mão de Obra:</strong> ${dinheiro(mao)} | <strong>Outros Custos:</strong> ${dinheiro(outros)}</p>
+    <p>• <strong>Aproveitamento do Rolo:</strong> ${metrosUsados.toFixed(2)} metros lineares (${arranjo.pecasPosicionadas.length}/${listaPecasBrutas.length} peças posicionadas)</p>
+    <div class="total">Preço Final Sugerido: ${dinheiro(precoFinal)}</div>
+    ${htmlPlotter}
+  `;
+
+  ultimoResultadoCalculado = {
+    cliente, produto, nomeBobina, larguraBobinaCm, comprimentoBobinaM, mao, outros, lucroPct, impostoPct, precoFinal,
+    partes: dadosPartesSalvar, suplementos: dadosSuplementosSalvar, data: new Date().toLocaleString()
+  };
+}
+
+function salvarOrcamentoLocal() {
+  if(!ultimoResultadoCalculado) {
+    alert("Realize o cálculo antes de salvar.");
+    return;
+  }
+  let salvos = JSON.parse(localStorage.getItem("orcamentos_salvos")) || [];
+  salvos.unshift(ultimoResultadoCalculado);
+  localStorage.setItem("orcamentos_salvos", JSON.stringify(salvos));
+  carregarOrcamentosSalvos();
+  alert("Orçamento salvo com sucesso!");
+}
+
+function carregarOrcamentosSalvos() {
+  let salvos = JSON.parse(localStorage.getItem("orcamentos_salvos")) || [];
+  const container = document.getElementById("listaSalvos");
+  
+  if(salvos.length === 0) {
+    container.innerHTML = "Nenhum orçamento salvo no navegador.";
+    return;
+  }
+
+  container.innerHTML = "";
+  salvos.forEach((item, index) => {
+    const div = document.createElement("div");
+    div.className = "item-salvo";
+    div.innerHTML = `
+      <div>
+        <strong>${item.produto}</strong> - ${item.cliente} <br>
+        <small style="color:var(--texto-secundario)">${item.data} | Total: ${dinheiro(item.precoFinal)}</small>
+      </div>
+      <div>
+        <button class="btn-del" type="button" onclick="excluirOrcamento(${index})">Excluir</button>
+      </div>
+    `;
+    container.appendChild(div);
+  });
+}
+
+function excluirOrcamento(index) {
+  let salvos = JSON.parse(localStorage.getItem("orcamentos_salvos")) || [];
+  salvos.splice(index, 1);
+  localStorage.setItem("orcamentos_salvos", JSON.stringify(salvos));
+  carregarOrcamentosSalvos();
+}
+
+function baixarBackupPasta() {
+  const dadosBackup = {
+    catalogo: JSON.parse(localStorage.getItem("catalogo_materiais")) || [],
+    orcamentos: JSON.parse(localStorage.getItem("orcamentos_salvos")) || []
+  };
+
+  const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(dadosBackup, null, 2));
+  const downloadAnchor = document.createElement('a');
+  downloadAnchor.setAttribute("href", dataStr);
+  downloadAnchor.setAttribute("download", `calculaja_backup_${Date.now()}.json`);
+  document.body.appendChild(downloadAnchor);
+  downloadAnchor.click();
+  downloadAnchor.remove();
+}
+
+function importarBackupPasta(event) {
+  const fileReader = new FileReader();
+  fileReader.onload = function(e) {
+    try {
+      const conteudo = JSON.parse(e.target.result);
+      if(conteudo.catalogo) localStorage.setItem("catalogo_materiais", JSON.stringify(conteudo.catalogo));
+      if(conteudo.orcamentos) localStorage.setItem("orcamentos_salvos", JSON.stringify(conteudo.orcamentos));
+      
+      catalogo = JSON.parse(localStorage.getItem("catalogo_materiais"));
+      renderTabelaPrecos();
+      carregarOrcamentosSalvos();
+      alert("Backup restaurado com sucesso!");
+    } catch(err) {
+      alert("Erro ao importar o arquivo de backup.");
+    }
+  };
+  fileReader.readAsText(event.target.files[0]);
+}
+</script>
+</body>
+</html>
