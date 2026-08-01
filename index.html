@@ -1,745 +1,750 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-BR" class="h-full">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>CalculaJá Pro - Nesting RIP de Materiais com Réguas CorelDRAW (cm)</title>
+  <title>Yuri Corretor - Sistema de Nesting & Orçamento Pro</title>
+  <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
+  <!-- FontAwesome Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- html2canvas para exportação de layout -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-  <meta http-equiv="Pragma" content="no-cache">
-  <meta http-equiv="Expires" content="0">
 </head>
-<body class="bg-slate-100 min-h-screen text-slate-800 flex flex-col">
+<body class="h-full bg-slate-100 font-sans text-slate-800 antialiased flex flex-col">
 
-  <!-- TOPO / HEADER -->
-  <header id="header-principal" class="hidden bg-slate-900 text-white shadow-md p-4 flex flex-col md:flex-row justify-between items-center gap-4">
-    <div class="flex items-center space-x-3 w-full md:w-auto justify-between md:justify-start">
-      <div class="flex items-center space-x-2">
-        <i class="fa-solid fa-scissors text-2xl text-emerald-400"></i>
-        <h1 class="text-xl font-bold tracking-wide">CalculaJá <span class="text-emerald-400">Pro</span></h1>
+  <!-- Header / Barra Superior -->
+  <header class="bg-slate-900 border-b border-slate-800 text-white shadow-lg sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 py-3 flex flex-col sm:flex-row justify-between items-center gap-3">
+      <div class="flex items-center space-x-3">
+        <div class="bg-emerald-500 text-slate-900 p-2.5 rounded-xl font-black shadow">
+          <i class="fa-solid fa-layer-group text-lg"></i>
+        </div>
+        <div>
+          <h1 class="text-base font-bold tracking-tight flex items-center space-x-2">
+            <span>Sistema de Nesting & Orçamento</span>
+            <span class="bg-emerald-500/20 text-emerald-400 text-[10px] px-2 py-0.5 rounded-full uppercase font-mono">Pro v2.5</span>
+          </h1>
+          <p class="text-xs text-slate-400">Gestão de Bobinas, Corte Otimizado e Precificação Avançada</p>
+        </div>
       </div>
-      <div id="auth-container-topo-mobile" class="md:hidden"></div>
+      <!-- Navegação de Abas -->
+      <div class="flex items-center bg-slate-800 p-1 rounded-xl border border-slate-700 text-xs font-semibold">
+        <button onclick="mudarAba('calculadora')" id="tab-calculadora" class="px-4 py-2 rounded-lg bg-emerald-600 text-white transition cursor-pointer flex items-center space-x-2">
+          <i class="fa-solid fa-calculator"></i>
+          <span>Calculadora & Nesting</span>
+        </button>
+        <button onclick="mudarAba('materiais')" id="tab-materiais" class="px-4 py-2 rounded-lg text-slate-300 hover:text-white transition cursor-pointer flex items-center space-x-2">
+          <i class="fa-solid fa-boxes-stacked"></i>
+          <span>Bobinas & Catálogo</span>
+        </button>
+        <button onclick="mudarAba('salvos')" id="tab-salvos" class="px-4 py-2 rounded-lg text-slate-300 hover:text-white transition cursor-pointer flex items-center space-x-2">
+          <i class="fa-solid fa-bookmark"></i>
+          <span>Orçamentos Salvos</span>
+        </button>
+      </div>
     </div>
-
-    <!-- ABAS -->
-    <nav class="flex flex-wrap justify-center gap-2 bg-slate-800 p-1.5 rounded-xl border border-slate-700">
-      <button onclick="mudarAba('calculo')" id="btn-aba-calculo" class="px-3.5 py-2 rounded-lg text-xs font-bold transition bg-emerald-600 text-white shadow cursor-pointer">
-        <i class="fa-solid fa-shapes mr-1"></i> Orçamento & RIP Corte
-      </button>
-      <button onclick="mudarAba('bobinas')" id="btn-aba-bobinas" class="px-3.5 py-2 rounded-lg text-xs font-bold transition text-slate-300 hover:bg-slate-700 hover:text-white cursor-pointer">
-        <i class="fa-solid fa-scroll mr-1"></i> Bobinas & Chapas
-      </button>
-      <button onclick="mudarAba('catalogo')" id="btn-aba-catalogo" class="px-3.5 py-2 rounded-lg text-xs font-bold transition text-slate-300 hover:bg-slate-700 hover:text-white cursor-pointer">
-        <i class="fa-solid fa-boxes-stacked mr-1"></i> Insumos Avulsos
-      </button>
-      <button onclick="mudarAba('salvos')" id="btn-aba-salvos" class="px-3.5 py-2 rounded-lg text-xs font-bold transition text-slate-300 hover:bg-slate-700 hover:text-white cursor-pointer">
-        <i class="fa-solid fa-folder-open mr-1"></i> Salvos
-      </button>
-    </nav>
-
-    <div id="auth-container-topo" class="hidden md:block"></div>
   </header>
 
-  <!-- LOGIN -->
-  <div id="tela-login" class="flex-grow flex flex-col items-center justify-center p-6">
-    <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-200 max-w-md w-full space-y-6">
-      <div class="text-center space-y-2">
-        <i class="fa-solid fa-scissors text-3xl text-emerald-600"></i>
-        <h2 class="text-xl font-bold text-slate-800">CalculaJá Pro</h2>
-        <p class="text-xs text-slate-500">Mecanismo de Nesting & Corte (Versão v1.4.3)</p>
-      </div>
-      <button onclick="loginComGoogle()" class="w-full bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 font-bold py-2.5 rounded-xl text-sm flex items-center justify-center space-x-2 transition shadow-sm cursor-pointer">
-        <i class="fa-brands fa-google text-red-500"></i>
-        <span>Continuar com Google</span>
-      </button>
-      <div class="flex items-center my-2">
-        <div class="flex-grow border-t border-slate-200"></div>
-        <span class="px-3 text-xs text-slate-400 uppercase font-bold">ou e-mail</span>
-        <div class="flex-grow border-t border-slate-200"></div>
-      </div>
-      <form id="formEmailSenha" class="space-y-4" onsubmit="tratarLoginEmail(event)">
-        <div>
-          <label class="block text-xs font-bold uppercase text-slate-500 mb-1">E-mail</label>
-          <input type="email" id="emailInput" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm outline-none focus:border-emerald-500" required>
-        </div>
-        <div>
-          <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Senha</label>
-          <input type="password" id="senhaInput" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm outline-none focus:border-emerald-500" required>
-        </div>
-        <div id="erro-auth" class="text-xs text-red-500 text-center font-medium hidden"></div>
-        <div class="grid grid-cols-2 gap-2 pt-2">
-          <button type="submit" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-2.5 rounded-xl text-xs transition cursor-pointer">Entrar</button>
-          <button type="button" onclick="cadastrarComEmail()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-xl text-xs transition cursor-pointer">Cadastrar</button>
-        </div>
-      </form>
-    </div>
-  </div>
+  <!-- Container Principal -->
+  <main class="flex-1 max-w-7xl w-full mx-auto p-4 md:p-6 overflow-y-auto">
 
-  <!-- APLICAÇÃO -->
-  <main id="app-principal" class="hidden flex-grow container mx-auto p-4 max-w-7xl">
-    
-    <!-- ABA 1: ORÇAMENTO & CORTE -->
-    <section id="aba-calculo" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <!-- ABA 1: CALCULADORA & NESTING -->
+    <div id="secao-calculadora" class="space-y-6">
       
-      <!-- Lateral de Bobinas/Chapas -->
-      <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 lg:col-span-1 space-y-4">
-        <h2 class="text-base font-bold text-slate-700 flex items-center space-x-2">
-          <i class="fa-solid fa-scroll text-emerald-600"></i>
-          <span>Materiais & Bobinas Ativas</span>
-        </h2>
-        <div class="overflow-x-auto max-h-[500px] border rounded-lg">
-          <table class="w-full text-left border-collapse text-sm">
-            <tbody id="tabelaResumoPrecosBobinas" class="divide-y divide-slate-100"></tbody>
-          </table>
-        </div>
-        <button onclick="mudarAba('bobinas')" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2 rounded-lg text-xs transition cursor-pointer">Gerenciar Bobinas & Chapas</button>
-      </div>
-
-      <!-- Centro de Montagem -->
-      <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 lg:col-span-2 flex flex-col space-y-6">
+      <!-- Dados Iniciais do Projeto -->
+      <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm grid grid-cols-1 md:grid-cols-3 gap-4">
         <div>
-          <h2 class="text-lg font-bold mb-4 text-slate-700 flex items-center space-x-2">
-            <i class="fa-solid fa-calculator text-blue-600"></i>
-            <span>Orçamento & Peças (Nesting de Corte em Escala)</span>
-          </h2>
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-            <div>
-              <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Cliente</label>
-              <input type="text" id="cliente" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-500" placeholder="Nome do Cliente">
-            </div>
-            <div>
-              <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Projeto / Descrição</label>
-              <input type="text" id="produto" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-500" placeholder="Ex: Peças em Plástico / Tecido">
-            </div>
-          </div>
+          <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Nome do Cliente / Projeto</label>
+          <input type="text" id="cliente" value="Cliente Exemplo" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-emerald-500 font-medium">
+        </div>
+        <div>
+          <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Descrição do Produto / Serviço</label>
+          <input type="text" id="produto" value="Painel Decorativo / Revestimento" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-emerald-500 font-medium">
+        </div>
+        <div class="flex items-end">
+          <button onclick="calcularTudo()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 px-4 rounded-lg shadow transition flex items-center justify-center space-x-2 cursor-pointer">
+            <i class="fa-solid fa-wand-magic-sparkles"></i>
+            <span>Processar Nesting & Orçamento</span>
+          </button>
+        </div>
+      </div>
 
-          <div class="mb-4">
-            <div class="flex justify-between items-center mb-2">
-              <h3 class="text-sm font-bold text-slate-600">Lista de Peças / Desenhos (Medidas em cm)</h3>
-              <button onclick="addParteVazia()" class="bg-slate-800 hover:bg-slate-900 text-white px-3 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer">
-                <i class="fa-solid fa-plus mr-1"></i> Add Peça
-              </button>
-            </div>
-            <div class="overflow-x-auto border rounded-lg max-h-56">
-              <table class="w-full text-left border-collapse text-sm">
-                <thead class="bg-slate-50 border-b text-xs text-slate-500 uppercase">
-                  <tr>
-                    <th class="p-2">Nome Peça</th>
-                    <th class="p-2">Material / Bobina</th>
-                    <th class="p-2">Largura (cm)</th>
-                    <th class="p-2">Comprimento (cm)</th>
-                    <th class="p-2">Qtd</th>
-                    <th class="p-2">Perda%</th>
-                    <th class="p-2 text-center">Ação</th>
-                  </tr>
-                </thead>
-                <tbody id="partes" class="divide-y divide-slate-100"></tbody>
-              </table>
-            </div>
+      <!-- Tabela de Peças / Cortes -->
+      <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+        <div class="p-4 bg-slate-50 border-b border-slate-200 flex flex-col sm:flex-row justify-between items-center gap-3">
+          <div>
+            <h3 class="font-bold text-slate-800 text-sm flex items-center space-x-2">
+              <i class="fa-solid fa-puzzle-piece text-emerald-600"></i>
+              <span>Peças a Cortar / Produzir (Grid de Nesting)</span>
+            </h3>
+            <p class="text-xs text-slate-500">Adicione as medidas das peças e selecione em qual bobina ou insumo elas serão alocadas.</p>
           </div>
-
-          <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
-            <div>
-              <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Mão de Obra (R$)</label>
-              <input type="number" id="mao" step="0.01" value="0" class="w-full border border-slate-300 rounded-lg px-2 py-1.5 text-sm">
-            </div>
-            <div>
-              <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Outros (R$)</label>
-              <input type="number" id="outros" step="0.01" value="0" class="w-full border border-slate-300 rounded-lg px-2 py-1.5 text-sm">
-            </div>
-            <div>
-              <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Lucro (%)</label>
-              <input type="number" id="lucro" step="1" value="35" class="w-full border border-slate-300 rounded-lg px-2 py-1.5 text-sm">
-            </div>
-            <div>
-              <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Imposto (%)</label>
-              <input type="number" id="imposto" step="1" value="0" class="w-full border border-slate-300 rounded-lg px-2 py-1.5 text-sm">
-            </div>
-          </div>
-
-          <div class="flex gap-2">
-            <button onclick="calcular()" class="flex-grow bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl text-sm shadow-md transition cursor-pointer">Processar Cálculo & RIP Nesting</button>
-            <button onclick="salvarProjeto()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-5 py-3 rounded-xl text-sm shadow-md transition cursor-pointer"><i class="fa-solid fa-floppy-disk mr-1"></i> Salvar</button>
+          <div class="flex items-center space-x-2">
+            <button onclick="addParteVazia()" class="bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold px-3 py-2 rounded-lg transition cursor-pointer flex items-center space-x-1.5">
+              <i class="fa-solid fa-plus"></i>
+              <span>Adicionar Peça</span>
+            </button>
           </div>
         </div>
 
-        <!-- Bloco de Resultado & Visualizador Tipo RIP -->
-        <div id="resultado" class="border-t pt-4 space-y-4">
-          <div class="text-center py-6 text-slate-400 text-sm">Preencha as peças e clique em <b>Processar Cálculo & RIP Nesting</b> para simular o encaixe exato lado a lado com réguas milimetradas.</div>
-        </div>
-
-      </div>
-    </section>
-
-    <!-- ABA 2: BOBINAS E CHAPAS -->
-    <section id="aba-bobinas" class="hidden grid grid-cols-1 md:grid-cols-3 gap-6">
-      <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 md:col-span-1">
-        <h2 class="text-base font-bold mb-4 text-slate-700 flex items-center space-x-2">
-          <i class="fa-solid fa-plus-circle text-emerald-600"></i>
-          <span>Cadastrar Nova Bobina / Chapa</span>
-        </h2>
-        <form id="formBobina" class="space-y-4">
-          <div>
-            <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Nome do Material</label>
-            <input type="text" id="nomeBobina" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm outline-none focus:border-emerald-500" placeholder="Ex: Plástico Acrílico / Tecido Lonita" required>
-          </div>
-          <div class="grid grid-cols-2 gap-4">
-            <div>
-              <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Largura (cm)</label>
-              <input type="number" id="larguraBobina" step="0.1" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm outline-none focus:border-emerald-500" placeholder="140" required>
-            </div>
-            <div>
-              <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Preço / Metro (R$)</label>
-              <input type="number" id="precoBobina" step="0.01" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm outline-none focus:border-emerald-500" placeholder="0.00" required>
-            </div>
-          </div>
-          <div>
-            <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Regra de Corte / Observação</label>
-            <input type="text" id="regraBobina" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm outline-none focus:border-emerald-500" placeholder="Ex: Margem de sangria para corte">
-          </div>
-          <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-lg text-sm transition cursor-pointer">Salvar Material</button>
-        </form>
-      </div>
-
-      <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 md:col-span-2">
-        <h2 class="text-base font-bold mb-4 text-slate-700 flex items-center space-x-2">
-          <i class="fa-solid fa-scroll text-emerald-600"></i>
-          <span>Bobinas & Chapas Cadastradas</span>
-        </h2>
-        <div class="overflow-x-auto border rounded-lg max-h-96">
-          <table class="w-full text-left border-collapse text-sm">
-            <thead class="bg-slate-50 border-b text-xs text-slate-500 uppercase">
-              <tr>
-                <th class="p-3">Nome</th>
-                <th class="p-3">Largura</th>
-                <th class="p-3">Preço/Metro</th>
-                <th class="p-3">Regra</th>
-                <th class="p-3 text-center">Ação</th>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse">
+            <thead>
+              <tr class="bg-slate-100 text-[11px] font-bold text-slate-600 uppercase border-b border-slate-200">
+                <th class="p-3">Nome da Peça</th>
+                <th class="p-3">Material / Bobina Alocada</th>
+                <th class="p-3 w-28">Largura (cm)</th>
+                <th class="p-3 w-28">Comprimento (cm)</th>
+                <th class="p-3 w-24">Qtd</th>
+                <th class="p-3 w-28">Margem Extra (%)</th>
+                <th class="p-3 w-16 text-center">Ações</th>
               </tr>
             </thead>
-            <tbody id="tabelaBobinas" class="divide-y divide-slate-100"></tbody>
+            <tbody id="partes" class="divide-y divide-slate-100 text-sm">
+              <!-- Inserido dinamicamente via JS -->
+            </tbody>
           </table>
         </div>
       </div>
-    </section>
 
-    <!-- ABA 3: CATÁLOGO DE INSUMOS -->
-    <section id="aba-catalogo" class="hidden grid grid-cols-1 md:grid-cols-3 gap-6">
-      <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 md:col-span-1">
-        <h2 class="text-base font-bold mb-4 text-slate-700 flex items-center space-x-2">
-          <i class="fa-solid fa-square-plus text-emerald-600"></i>
-          <span>Cadastrar Insumo Avulso</span>
-        </h2>
-        <form id="formPreco" class="space-y-4">
-          <div>
-            <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Nome do Material</label>
-            <input type="text" id="nomePreco" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm outline-none focus:border-emerald-500" placeholder="Ex: Cola / Parafuso" required>
-          </div>
-          <div class="grid grid-cols-2 gap-4">
-            <div>
-              <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Unidade</label>
-              <select id="unidadePreco" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm outline-none focus:border-emerald-500">
-                <option value="un">un</option>
-                <option value="m²">m²</option>
-                <option value="kg">kg</option>
-              </select>
-            </div>
-            <div>
-              <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Valor Unitário (R$)</label>
-              <input type="number" id="valorPreco" step="0.01" min="0" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm outline-none focus:border-emerald-500" required>
-            </div>
-          </div>
-          <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-lg text-sm transition cursor-pointer">Cadastrar Insumo</button>
-        </form>
+      <!-- Custos Adicionais & Margens -->
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
+          <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Mão de Obra (R$)</label>
+          <input type="number" id="mao" value="50.00" step="0.01" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-emerald-500 font-bold text-slate-700">
+        </div>
+        <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
+          <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Outros Custos / Acabamento (R$)</label>
+          <input type="number" id="outros" value="0.00" step="0.01" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-emerald-500 font-bold text-slate-700">
+        </div>
+        <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
+          <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Margem de Lucro Desejada (%)</label>
+          <input type="number" id="lucro" value="40" step="1" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-emerald-500 font-bold text-emerald-600">
+        </div>
+        <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
+          <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Impostos / Taxas Plataforma (%)</label>
+          <input type="number" id="imposto" value="6" step="0.5" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-emerald-500 font-bold text-blue-600">
+        </div>
       </div>
 
-      <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 md:col-span-2">
-        <h2 class="text-base font-bold mb-4 text-slate-700 flex items-center space-x-2">
-          <i class="fa-solid fa-boxes-stacked text-emerald-600"></i>
-          <span>Gerenciar Insumos</span>
-        </h2>
-        <div class="overflow-x-auto border rounded-lg max-h-96">
+      <!-- Botões de Ação do Resultado -->
+      <div class="flex flex-wrap items-center justify-between gap-3 pt-2">
+        <button onclick="calcularTudo()" class="bg-slate-900 hover:bg-slate-800 text-white font-bold py-3 px-6 rounded-xl shadow transition cursor-pointer flex items-center space-x-2">
+          <i class="fa-solid fa-calculator"></i>
+          <span>Recalcular Custos & Layout</span>
+        </button>
+        <div class="flex items-center space-x-3">
+          <button onclick="salvarProjeto()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-xl shadow transition cursor-pointer flex items-center space-x-2">
+            <i class="fa-solid fa-bookmark"></i>
+            <span>Salvar Orçamento</span>
+          </button>
+          <button onclick="exportarPDFOrcamento()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-6 rounded-xl shadow transition cursor-pointer flex items-center space-x-2">
+            <i class="fa-solid fa-file-pdf"></i>
+            <span>Exportar Relatório PDF / Imagem</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Área de Resultados e RIP Visual -->
+      <div id="resultado" class="space-y-6">
+        <!-- Renderizado dinamicamente -->
+      </div>
+
+    </div>
+
+    <!-- ABA 2: BOBINAS & CATÁLOGO -->
+    <div id="secao-materiais" class="space-y-6 hidden">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        
+        <!-- Cadastro de Bobinas -->
+        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+          <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+            <h3 class="font-bold text-slate-800 text-sm flex items-center space-x-2">
+              <i class="fa-solid fa-scroll text-emerald-600"></i>
+              <span>Gerenciar Bobinas (Largura & Preço por Metro)</span>
+            </h3>
+          </div>
+          <div class="space-y-3">
+            <div class="grid grid-cols-3 gap-2">
+              <div class="col-span-1">
+                <label class="block text-[11px] font-bold uppercase text-slate-500 mb-1">Nome da Bobina</label>
+                <input type="text" id="nova-b-nome" placeholder="Ex: Lona 1.20m" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-emerald-500">
+              </div>
+              <div class="col-span-1">
+                <label class="block text-[11px] font-bold uppercase text-slate-500 mb-1">Largura Útil (cm)</label>
+                <input type="number" id="nova-b-largura" placeholder="120" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-emerald-500">
+              </div>
+              <div class="col-span-1">
+                <label class="block text-[11px] font-bold uppercase text-slate-500 mb-1">Preço / Metro (R$)</label>
+                <input type="number" id="nova-b-preco" placeholder="15.00" step="0.01" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-emerald-500">
+              </div>
+            </div>
+            <button onclick="adicionarBobina()" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-2 rounded-lg text-xs transition cursor-pointer">Adicionar Nova Bobina</button>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse text-xs">
+              <thead>
+                <tr class="bg-slate-50 font-bold text-slate-600 border-b border-slate-200">
+                  <th class="p-2">Nome</th>
+                  <th class="p-2">Largura (cm)</th>
+                  <th class="p-2">Preço/Metro</th>
+                  <th class="p-2 text-center">Ações</th>
+                </tr>
+              </thead>
+              <tbody id="tabela-bobinas" class="divide-y divide-slate-100">
+                <!-- Preenchido via JS -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Cadastro de Insumos Avulsos / Acessórios -->
+        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+          <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+            <h3 class="font-bold text-slate-800 text-sm flex items-center space-x-2">
+              <i class="fa-solid fa-box text-emerald-600"></i>
+              <span>Catálogo de Insumos / Peças Avulsas (Unitário)</span>
+            </h3>
+          </div>
+          <div class="space-y-3">
+            <div class="grid grid-cols-2 gap-2">
+              <div>
+                <label class="block text-[11px] font-bold uppercase text-slate-500 mb-1">Nome do Insumo</label>
+                <input type="text" id="novo-c-nome" placeholder="Ex: Ilhós / Conector" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-emerald-500">
+              </div>
+              <div>
+                <label class="block text-[11px] font-bold uppercase text-slate-500 mb-1">Valor Unitário (R$)</label>
+                <input type="number" id="novo-c-valor" placeholder="0.50" step="0.01" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-emerald-500">
+              </div>
+            </div>
+            <button onclick="adicionarInsumoCatalogo()" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-2 rounded-lg text-xs transition cursor-pointer">Adicionar ao Catálogo</button>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse text-xs">
+              <thead>
+                <tr class="bg-slate-50 font-bold text-slate-600 border-b border-slate-200">
+                  <th class="p-2">Nome do Insumo</th>
+                  <th class="p-2">Valor Unitário</th>
+                  <th class="p-2 text-center">Ações</th>
+                </tr>
+              </thead>
+              <tbody id="tabela-catalogo" class="divide-y divide-slate-100">
+                <!-- Preenchido via JS -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ABA 3: ORÇAMENTOS SALVOS -->
+    <div id="secao-salvos" class="space-y-6 hidden">
+      <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden p-5">
+        <h3 class="font-bold text-slate-800 text-sm mb-3 flex items-center space-x-2">
+          <i class="fa-solid fa-bookmark text-emerald-600"></i>
+          <span>Histórico de Orçamentos Salvos</span>
+        </h3>
+        <div class="overflow-x-auto">
           <table class="w-full text-left border-collapse text-sm">
-            <thead class="bg-slate-50 border-b text-xs text-slate-500 uppercase">
-              <tr>
-                <th class="p-3">Material</th>
-                <th class="p-3">Unidade</th>
-                <th class="p-3">Valor</th>
+            <thead>
+              <tr class="bg-slate-50 font-bold text-slate-600 border-b border-slate-200 text-xs uppercase">
+                <th class="p-3">Data</th>
+                <th class="p-3">Cliente</th>
+                <th class="p-3">Produto</th>
+                <th class="p-3">Valor Final</th>
                 <th class="p-3 text-center">Ações</th>
               </tr>
             </thead>
-            <tbody id="tabelaPrecos" class="divide-y divide-slate-100"></tbody>
+            <tbody id="tabelaProjetosSalvos" class="divide-y divide-slate-100">
+              <!-- Preenchido via JS -->
+            </tbody>
           </table>
         </div>
       </div>
-    </section>
-
-    <!-- ABA 4: SALVOS -->
-    <section id="aba-salvos" class="hidden bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4">
-      <h2 class="text-lg font-bold text-slate-700 flex items-center space-x-2">
-        <i class="fa-solid fa-folder-open text-emerald-600"></i>
-        <span>Orçamentos Salvos</span>
-      </h2>
-      <div class="overflow-x-auto border rounded-lg">
-        <table class="w-full text-left border-collapse text-sm">
-          <thead class="bg-slate-50 border-b text-xs text-slate-500 uppercase">
-            <tr>
-              <th class="p-3">Data</th>
-              <th class="p-3">Cliente</th>
-              <th class="p-3">Projeto</th>
-              <th class="p-3">Total (R$)</th>
-              <th class="p-3 text-center">Ações</th>
-            </tr>
-          </thead>
-          <tbody id="tabelaProjetosSalvos" class="divide-y divide-slate-100"></tbody>
-        </table>
-      </div>
-    </section>
+    </div>
 
   </main>
 
-  <!-- FIREBASE AUTH -->
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
-    import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js";
-
-    const firebaseConfig = {
-      apiKey: "AIzaSyBK2M_6YeHCV_mNOrh2v8FO8g6BcOFBlFw",
-      authDomain: "calculo-pro.firebaseapp.com",
-      projectId: "calculo-pro",
-      storageBucket: "calculo-pro.firebasestorage.app",
-      messagingSenderId: "986889549980",
-      appId: "1:986889549980:web:3f2e25a049cfbc6dced559"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const provider = new GoogleAuthProvider();
-
-    window.loginComGoogle = function() { signInWithPopup(auth, provider).catch(e => mostrarErro("Erro: " + e.message)); };
-    window.tratarLoginEmail = function(e) {
-      e.preventDefault();
-      signInWithEmailAndPassword(auth, document.getElementById("emailInput").value, document.getElementById("senhaInput").value).catch(() => mostrarErro("E-mail ou senha inválidos."));
-    };
-    window.cadastrarComEmail = function() {
-      createUserWithEmailAndPassword(auth, document.getElementById("emailInput").value, document.getElementById("senhaInput").value).catch(e => mostrarErro("Erro: " + e.message));
-    };
-    window.sairDaConta = function() { signOut(auth); };
-    function mostrarErro(msg) { const el = document.getElementById("erro-auth"); el.textContent = msg; el.classList.remove("hidden"); }
-
-    onAuthStateChanged(auth, (user) => {
-      if (user) {
-        document.getElementById("tela-login").classList.add("hidden");
-        document.getElementById("header-principal").classList.remove("hidden");
-        document.getElementById("app-principal").classList.remove("hidden");
-        const userHtml = `<div class="flex items-center space-x-3"><span class="text-xs text-slate-300">Olá, ${user.displayName || user.email.split('@')[0]}</span><button onclick="sairDaConta()" class="bg-red-500 hover:bg-red-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold cursor-pointer">Sair</button></div>`;
-        document.getElementById("auth-container-topo").innerHTML = userHtml;
-        document.getElementById("auth-container-topo-mobile").innerHTML = userHtml;
-      } else {
-        document.getElementById("tela-login").classList.remove("hidden");
-        document.getElementById("header-principal").classList.add("hidden");
-        document.getElementById("app-principal").classList.add("hidden");
-      }
-    });
-  </script>
-
-  <!-- LÓGICA DE NESTING CORRIGIDA (Peças Lado a Lado + Réguas Corel) -->
+  <!-- Script Principal de Lógica, Nesting & Corel Style RIP -->
   <script>
-    const VERSAO_ATUAL = "v1.4.3";
-
-    function verificarAtualizacaoApp() {
-      const versaoSalva = localStorage.getItem("app_versao_calculaja");
-      if (!versaoSalva) {
-        localStorage.setItem("app_versao_calculaja", VERSAO_ATUAL);
-      } else if (versaoSalva !== VERSAO_ATUAL) {
-        mostrarAlertaAtualizacao(VERSAO_ATUAL);
-        localStorage.setItem("app_versao_calculaja", VERSAO_ATUAL);
-      }
-    }
-
-    function mostrarAlertaAtualizacao(novaVersao) {
-      const div = document.createElement("div");
-      div.className = "fixed bottom-5 right-5 z-50 bg-slate-900 text-white px-4 py-3 rounded-xl shadow-2xl border border-emerald-500 flex items-center space-x-3";
-      div.innerHTML = `
-        <i class="fa-solid fa-rocket text-emerald-400 text-xl"></i>
-        <div>
-          <p class="text-xs font-bold">App Atualizado!</p>
-          <p class="text-[10px] text-slate-400">Nova versão ${novaVersao} carregada com sucesso.</p>
-        </div>
-        <button onclick="this.parentElement.remove()" class="ml-3 text-slate-400 hover:text-white text-xs font-bold">✕</button>
-      `;
-      document.body.appendChild(div);
-      setTimeout(() => { if(div) div.remove(); }, 6000);
-    }
-
-    window.addEventListener("DOMContentLoaded", () => {
-      verificarAtualizacaoApp();
-      renderTudo();
-      addParteVazia("Painel Lateral 1", "Bobina: Bobina Plástico / Tecido 1.40m", 45, 80, 2, 0);
-      addParteVazia("Painel Lateral 2", "Bobina: Bobina Plástico / Tecido 1.40m", 45, 80, 2, 0);
-    });
-
-    function mudarAba(aba) {
-      ['calculo', 'bobinas', 'catalogo', 'salvos'].forEach(a => {
-        document.getElementById('aba-' + a).classList.add('hidden');
-        document.getElementById('btn-aba-' + a).className = "px-3.5 py-2 rounded-lg text-xs font-bold transition text-slate-300 hover:bg-slate-700 hover:text-white cursor-pointer";
-      });
-      document.getElementById('aba-' + aba).classList.remove('hidden');
-      document.getElementById('btn-aba-' + aba).className = "px-3.5 py-2 rounded-lg text-xs font-bold transition bg-emerald-600 text-white shadow cursor-pointer";
-      if(aba === 'salvos') renderProjetosSalvos();
-    }
-
-    let catalogo = JSON.parse(localStorage.getItem("catalogo_v8")) || [
-      { id: 1, nome: "Ilhós NBR", unidade: "un", valor: 0.15 }
+    // Estado Inicial / LocalStorage
+    let bobinas = JSON.parse(localStorage.getItem("yuri_bobinas")) || [
+      { nome: "Bobina Vinil / Adesivo 1.00m", largura: 100, preco: 22.00 },
+      { nome: "Bobina Plástico / Tecido 1.40m", largura: 140, preco: 28.50 },
+      { nome: "Bobina Banner / Lona 1.50m", largura: 150, preco: 18.00 }
     ];
-    let bobinas = JSON.parse(localStorage.getItem("bobinas_v8")) || [
-      { id: 1, nome: "Bobina Plástico / Tecido 1.40m", largura: 140, preco: 38.00, regra: "Nesting Automático de Corte" }
+
+    let catalogo = JSON.parse(localStorage.getItem("yuri_catalogo")) || [
+      { nome: "Ilhós Metálico (Unidade)", valor: 0.15 },
+      { nome: "Bastão de Madeira c/ Ponteira", valor: 3.50 }
     ];
-    let projetosSalvos = JSON.parse(localStorage.getItem("projetos_v8")) || [];
+
+    let projetosSalvos = JSON.parse(localStorage.getItem("yuri_projetos")) || [];
+    let ultimoCache = null;
+    let zoomAtual = 1;
 
     function salvarLocal() {
-      localStorage.setItem("catalogo_v8", JSON.stringify(catalogo));
-      localStorage.setItem("bobinas_v8", JSON.stringify(bobinas));
-      localStorage.setItem("projetos_v8", JSON.stringify(projetosSalvos));
+      localStorage.setItem("yuri_bobinas", JSON.stringify(bobinas));
+      localStorage.setItem("yuri_catalogo", JSON.stringify(catalogo));
+      localStorage.setItem("yuri_projetos", JSON.stringify(projetosSalvos));
+    }
+
+    function mudarAba(aba) {
+      document.getElementById("secao-calculadora").classList.add("hidden");
+      document.getElementById("secao-materiais").classList.add("hidden");
+      document.getElementById("secao-salvos").classList.add("hidden");
+
+      document.getElementById("tab-calculadora").className = "px-4 py-2 rounded-lg text-slate-300 hover:text-white transition cursor-pointer flex items-center space-x-2";
+      document.getElementById("tab-materiais").className = "px-4 py-2 rounded-lg text-slate-300 hover:text-white transition cursor-pointer flex items-center space-x-2";
+      document.getElementById("tab-salvos").className = "px-4 py-2 rounded-lg text-slate-300 hover:text-white transition cursor-pointer flex items-center space-x-2";
+
+      if(aba === 'calculadora') {
+        document.getElementById("secao-calculadora").classList.remove("hidden");
+        document.getElementById("tab-calculadora").className = "px-4 py-2 rounded-lg bg-emerald-600 text-white transition cursor-pointer flex items-center space-x-2";
+      } else if(aba === 'materiais') {
+        document.getElementById("secao-materiais").classList.remove("hidden");
+        document.getElementById("tab-materiais").className = "px-4 py-2 rounded-lg bg-emerald-600 text-white transition cursor-pointer flex items-center space-x-2";
+        renderTabelasAdmin();
+      } else if(aba === 'salvos') {
+        document.getElementById("secao-salvos").classList.remove("hidden");
+        document.getElementById("tab-salvos").className = "px-4 py-2 rounded-lg bg-emerald-600 text-white transition cursor-pointer flex items-center space-x-2";
+        renderProjetosSalvos();
+      }
     }
 
     function renderTudo() {
-      const tbC = document.getElementById("tabelaPrecos");
-      tbC.innerHTML = "";
-      catalogo.forEach((item, idx) => {
-        tbC.innerHTML += `
-          <tr class="hover:bg-slate-50">
-            <td class="p-3 font-medium"><input type="text" value="${item.nome}" onchange="editarMaterial(${idx}, 'nome', this.value)" class="border rounded px-2 py-1 text-sm w-full"></td>
-            <td class="p-3 text-xs text-slate-500">${item.unidade}</td>
-            <td class="p-3"><input type="number" step="0.01" value="${item.valor}" onchange="editarMaterial(${idx}, 'valor', this.value)" class="border rounded px-2 py-1 text-sm w-28 text-emerald-600 font-bold"></td>
-            <td class="p-3 text-center"><button onclick="removerMaterial(${idx})" class="text-red-500 hover:text-red-700 text-xs cursor-pointer"><i class="fa-solid fa-trash"></i></button></td>
-          </tr>
-        `;
-      });
+      renderSelectsBobinasNasPartes();
+      renderTabelasAdmin();
+      calcularTudo();
+    }
 
-      const tbB = document.getElementById("tabelaBobinas");
+    function renderSelectsBobinasNasPartes() {
+      // Atualiza os selects de bobina/insumo nas linhas existentes
+      const linhas = document.querySelectorAll(".select-material-linha");
+      linhas.forEach(select => {
+        let valAtual = select.value;
+        let optionsHtml = `<optgroup label="Bobinas (Nesting em Metro)">`;
+        bobinas.forEach(b => {
+          optionsHtml += `<option value="Bobina: ${b.nome}">Bobina: ${b.nome} (${b.largura}cm)</option>`;
+        });
+        optionsHtml += `</optgroup><optgroup label="Insumos / Avulsos (Unitário)">`;
+        catalogo.forEach(c => {
+          optionsHtml += `<option value="Insumo: ${c.nome}">Insumo: ${c.nome}</option>`;
+        });
+        optionsHtml += `</optgroup>`;
+        select.innerHTML = optionsHtml;
+        if(valAtual) select.value = valAtual;
+      });
+    }
+
+    function addParteVazia(nome = "Nova Peça", material = "", largura = 30, comprimento = 30, qtd = 1, margem = 0) {
+      const tbody = document.getElementById("partes");
+      if(!material && bobinas.length > 0) material = "Bobina: " + bobinas[0].nome;
+
+      let optionsHtml = `<optgroup label="Bobinas (Nesting em Metro)">`;
+      bobinas.forEach(b => {
+        optionsHtml += `<option value="Bobina: ${b.nome}">Bobina: ${b.nome} (${b.largura}cm)</option>`;
+      });
+      optionsHtml += `</optgroup><optgroup label="Insumos / Avulsos (Unitário)">`;
+      catalogo.forEach(c => {
+        optionsHtml += `<option value="Insumo: ${c.nome}">Insumo: ${c.nome}</option>`;
+      });
+      optionsHtml += `</optgroup>`;
+
+      const tr = document.createElement("tr");
+      tr.className = "hover:bg-slate-50 transition border-b border-slate-100 parte-row";
+      tr.innerHTML = `
+        <td class="p-2.5"><input type="text" value="${nome}" class="w-full bg-slate-50 border border-slate-200 rounded px-2.5 py-1.5 text-xs font-medium input-nome"></td>
+        <td class="p-2.5">
+          <select class="w-full bg-slate-50 border border-slate-200 rounded px-2 py-1.5 text-xs select-material-linha font-medium">
+            ${optionsHtml}
+          </select>
+        </td>
+        <td class="p-2.5"><input type="number" value="${largura}" class="w-full bg-slate-50 border border-slate-200 rounded px-2 py-1.5 text-xs input-largura"></td>
+        <td class="p-2.5"><input type="number" value="${comprimento}" class="w-full bg-slate-50 border border-slate-200 rounded px-2 py-1.5 text-xs input-comprimento"></td>
+        <td class="p-2.5"><input type="number" value="${qtd}" min="1" class="w-full bg-slate-50 border border-slate-200 rounded px-2 py-1.5 text-xs input-qtd"></td>
+        <td class="p-2.5"><input type="number" value="${margem}" min="0" class="w-full bg-slate-50 border border-slate-200 rounded px-2 py-1.5 text-xs input-margem"></td>
+        <td class="p-2.5 text-center">
+          <button onclick="this.closest('tr').remove(); calcularTudo();" class="text-red-400 hover:text-red-600 p-1.5 cursor-pointer"><i class="fa-solid fa-trash"></i></button>
+        </td>
+      `;
+      if(material) {
+        tr.querySelector(".select-material-linha").value = material;
+      }
+      tbody.appendChild(tr);
+      calcularTudo();
+    }
+
+    function adicionarBobina() {
+      const nome = document.getElementById("nova-b-nome").value.trim();
+      const largura = parseFloat(document.getElementById("nova-b-largura").value);
+      const preco = parseFloat(document.getElementById("nova-b-preco").value);
+      if(!nome || isNaN(largura) || isNaN(preco)) { alert("Preencha todos os campos da bobina corretamente."); return; }
+      bobinas.push({ nome, largura, preco });
+      document.getElementById("nova-b-nome").value = "";
+      document.getElementById("nova-b-largura").value = "";
+      document.getElementById("nova-b-preco").value = "";
+      salvarLocal();
+      renderTudo();
+    }
+
+    function removerBobina(idx) {
+      bobinas.splice(idx, 1);
+      salvarLocal();
+      renderTudo();
+    }
+
+    function adicionarInsumoCatalogo() {
+      const nome = document.getElementById("novo-c-nome").value.trim();
+      const valor = parseFloat(document.getElementById("novo-c-valor").value);
+      if(!nome || isNaN(valor)) { alert("Preencha todos os campos do insumo corretamente."); return; }
+      catalogo.push({ nome, valor });
+      document.getElementById("novo-c-nome").value = "";
+      document.getElementById("novo-c-valor").value = "";
+      salvarLocal();
+      renderTudo();
+    }
+
+    function removerInsumoCatalogo(idx) {
+      catalogo.splice(idx, 1);
+      salvarLocal();
+      renderTudo();
+    }
+
+    function renderTabelasAdmin() {
+      const tbB = document.getElementById("tabela-bobinas");
       tbB.innerHTML = "";
       bobinas.forEach((b, idx) => {
         tbB.innerHTML += `
           <tr class="hover:bg-slate-50">
-            <td class="p-3 font-medium"><input type="text" value="${b.nome}" onchange="editarBobina(${idx}, 'nome', this.value)" class="border rounded px-2 py-1 text-sm w-full"></td>
-            <td class="p-3"><input type="number" value="${b.largura}" onchange="editarBobina(${idx}, 'largura', this.value)" class="border rounded px-2 py-1 text-sm w-20"> cm</td>
-            <td class="p-3"><input type="number" step="0.01" value="${b.preco}" onchange="editarBobina(${idx}, 'preco', this.value)" class="border rounded px-2 py-1 text-sm w-24 font-bold text-emerald-600"></td>
-            <td class="p-3"><input type="text" value="${b.regra}" onchange="editarBobina(${idx}, 'regra', this.value)" class="border rounded px-2 py-1 text-sm w-full text-slate-500"></td>
-            <td class="p-3 text-center"><button onclick="removerBobina(${idx})" class="text-red-500 hover:text-red-700 text-xs cursor-pointer"><i class="fa-solid fa-trash"></i></button></td>
+            <td class="p-2 font-bold text-slate-700">${b.nome}</td>
+            <td class="p-2">${b.largura} cm</td>
+            <td class="p-2 text-emerald-600 font-bold">R$ ${b.preco.toFixed(2)} /m</td>
+            <td class="p-2 text-center">
+              <button onclick="removerBobina(${idx})" class="text-red-500 hover:text-red-700 cursor-pointer"><i class="fa-solid fa-trash"></i></button>
+            </td>
           </tr>
         `;
       });
 
-      const tbR = document.getElementById("tabelaResumoPrecosBobinas");
-      if(tbR) {
-        tbR.innerHTML = "";
-        bobinas.forEach(b => {
-          tbR.innerHTML += `<tr class="hover:bg-slate-50"><td class="p-2 font-medium text-slate-700"><i class="fa-solid fa-scroll text-emerald-500 mr-1"></i> ${b.nome}<br><span class="text-xs text-slate-400">Larg: ${b.largura}cm</span></td><td class="p-2 font-bold text-emerald-600 text-right align-middle">R$ ${b.preco.toFixed(2)}/m</td></tr>`;
-        });
-        catalogo.forEach(c => {
-          tbR.innerHTML += `<tr class="hover:bg-slate-50"><td class="p-2 font-medium text-slate-700"><i class="fa-solid fa-box text-blue-500 mr-1"></i> ${c.nome}</td><td class="p-2 font-bold text-blue-600 text-right align-middle">R$ ${c.valor.toFixed(2)}/${c.unidade}</td></tr>`;
-        });
-      }
-      atualizaSelectsPartes();
-    }
-
-    document.getElementById("formPreco").addEventListener("submit", function(e) {
-      e.preventDefault();
-      catalogo.push({ id: Date.now(), nome: document.getElementById("nomePreco").value, unidade: document.getElementById("unidadePreco").value, valor: parseFloat(document.getElementById("valorPreco").value) });
-      salvarLocal(); renderTudo(); this.reset();
-    });
-
-    document.getElementById("formBobina").addEventListener("submit", function(e) {
-      e.preventDefault();
-      bobinas.push({ id: Date.now(), nome: document.getElementById("nomeBobina").value, largura: parseFloat(document.getElementById("larguraBobina").value), preco: parseFloat(document.getElementById("precoBobina").value), regra: document.getElementById("regraBobina").value || "Corte Padrão" });
-      salvarLocal(); renderTudo(); this.reset();
-    });
-
-    function editarMaterial(idx, campo, val) { catalogo[idx][campo] = campo === 'valor' ? parseFloat(val) : val; salvarLocal(); renderTudo(); }
-    function removerMaterial(idx) { catalogo.splice(idx, 1); salvarLocal(); renderTudo(); }
-    function editarBobina(idx, campo, val) { bobinas[idx][campo] = (campo === 'largura' || campo === 'preco') ? parseFloat(val) : val; salvarLocal(); renderTudo(); }
-    function removerBobina(idx) { bobinas.splice(idx, 1); salvarLocal(); renderTudo(); }
-
-    function atualizaSelectsPartes() {
-      document.querySelectorAll(".materialParte").forEach(select => {
-        const atual = select.value;
-        select.innerHTML = '<option value="">Selecione Material/Bobina...</option>';
-        bobinas.forEach(b => {
-          const opt = document.createElement("option");
-          opt.value = "Bobina: " + b.nome;
-          opt.textContent = `[Material] ${b.nome} (${b.largura}cm)`;
-          if(opt.value === atual) opt.selected = true;
-          select.appendChild(opt);
-        });
-        catalogo.forEach(c => {
-          const opt = document.createElement("option");
-          opt.value = "Insumo: " + c.nome;
-          opt.textContent = `[Insumo] ${c.nome}`;
-          if(opt.value === atual) opt.selected = true;
-          select.appendChild(opt);
-        });
+      const tbC = document.getElementById("tabela-catalogo");
+      tbC.innerHTML = "";
+      catalogo.forEach((c, idx) => {
+        tbC.innerHTML += `
+          <tr class="hover:bg-slate-50">
+            <td class="p-2 font-bold text-slate-700">${c.nome}</td>
+            <td class="p-2 text-emerald-600 font-bold">R$ ${c.valor.toFixed(2)}</td>
+            <td class="p-2 text-center">
+              <button onclick="removerInsumoCatalogo(${idx})" class="text-red-500 hover:text-red-700 cursor-pointer"><i class="fa-solid fa-trash"></i></button>
+            </td>
+          </tr>
+        `;
       });
     }
-
-    function addParteVazia(nome="", mat="", l1="", l2="", q=1, p=0) {
-      const tbody = document.getElementById("partes");
-      const tr = document.createElement("tr");
-      tr.innerHTML = `
-        <td class="p-2"><input class="nomeParte w-full border rounded px-2 py-1 text-sm" type="text" placeholder="Ex: Peça Plástico / Tecido" value="${nome}"></td>
-        <td class="p-2"><select class="materialParte w-full border rounded px-2 py-1 text-sm"><option value="">Selecione...</option></select></td>
-        <td class="p-2"><input class="lado1 w-full border rounded px-2 py-1 text-sm" type="number" placeholder="cm" value="${l1}"></td>
-        <td class="p-2"><input class="lado2 w-full border rounded px-2 py-1 text-sm" type="number" placeholder="cm" value="${l2}"></td>
-        <td class="p-2"><input class="qtdParte w-full border rounded px-2 py-1 text-sm" type="number" placeholder="1" value="${q}"></td>
-        <td class="p-2"><input class="perdaParte w-full border rounded px-2 py-1 text-sm" type="number" placeholder="0" value="${p}"></td>
-        <td class="p-2 text-center"><button class="bg-red-500 text-white p-1.5 rounded text-xs cursor-pointer" type="button" onclick="this.closest('tr').remove()"><i class="fa-solid fa-xmark"></i></button></td>
-      `;
-      tbody.appendChild(tr);
-      atualizaSelectsPartes();
-      if(mat) tr.querySelector(".materialParte").value = mat;
-    }
-
-    let nivelZoom = 1;
 
     function ajustarZoom(delta) {
-      nivelZoom = Math.max(0.6, Math.min(2.5, nivelZoom + delta));
-      const visualizador = document.getElementById("container-rip-visual");
-      if(visualizador) {
-        visualizador.style.transform = `scale(${nivelZoom})`;
-        visualizador.style.transformOrigin = 'top left';
-      }
-    }
-
-    function exportarLayoutRIP() {
-      const elemento = document.getElementById("bloco-exportavel-rip");
-      if(!elemento) { alert("Nenhum layout processado para exportar."); return; }
-      html2canvas(elemento, { scale: 2, backgroundColor: '#0f172a' }).then(canvas => {
-        const link = document.createElement('a');
-        link.download = `Corte-Corel-Layout-${document.getElementById('cliente').value || 'Cliente'}.png`;
-        link.href = canvas.toDataURL('image/png');
-        link.click();
+      zoomAtual = Math.max(0.6, Math.min(2.0, zoomAtual + delta));
+      const containers = document.querySelectorAll('[id^="container-rip-visual"]');
+      containers.forEach(el => {
+        el.style.transform = `scale(${zoomAtual})`;
+        el.style.transformOrigin = 'top left';
       });
     }
 
-    function calcular() {
+    function exportarPDFOrcamento() {
+      const elemento = document.getElementById("bloco-exportavel-rip");
+      if(!elemento) { alert("Processe o orçamento antes de exportar."); return; }
+      
+      // Feedback visual
+      const btnOriginal = event.currentTarget.innerHTML;
+      event.currentTarget.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-1"></i> Gerando Imagem...`;
+      
+      html2canvas(elemento, { scale: 2, backgroundColor: "#ffffff" }).then(canvas => {
+        const link = document.createElement('a');
+        link.download = `Orcamento_${document.getElementById('cliente').value.replace(/\s+/g, '_')}.png`;
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+        event.currentTarget.innerHTML = btnOriginal;
+      }).catch(err => {
+        console.error(err);
+        alert("Erro ao exportar imagem.");
+        event.currentTarget.innerHTML = btnOriginal;
+      });
+    }
+
+    // Algoritmo Principal de Cálculo e Nesting (Strip Packing / Guillotine Shelf)
+    function calcularTudo() {
+      const cliente = document.getElementById("cliente").value || "Cliente";
+      const produto = document.getElementById("produto").value || "Produto";
       const mao = parseFloat(document.getElementById("mao").value) || 0;
       const outros = parseFloat(document.getElementById("outros").value) || 0;
       const lucro = parseFloat(document.getElementById("lucro").value) || 0;
       const imposto = parseFloat(document.getElementById("imposto").value) || 0;
-      const cliente = document.getElementById("cliente").value || "Cliente Geral";
-      const produto = document.getElementById("produto").value || "Orçamento Corte";
 
-      let custoMat = 0;
+      const rows = document.querySelectorAll(".parte-row");
       let agrupadoPorBobina = {};
+      let custoMat = 0;
+      let totalPecas = 0;
 
-      document.querySelectorAll("#partes tr").forEach(tr => {
-        const nomeP = tr.querySelector(".nomeParte").value || "Peça";
-        const matVal = tr.querySelector(".materialParte").value;
-        const l1 = parseFloat(tr.querySelector(".lado1").value) || 0;
-        const l2 = parseFloat(tr.querySelector(".lado2").value) || 0;
-        const q = parseInt(tr.querySelector(".qtdParte").value) || 0;
-        const perda = parseFloat(tr.querySelector(".perdaParte").value) || 0;
+      // Inicializar estruturas para cada bobina existente
+      bobinas.forEach(b => {
+        agrupadoPorBobina[b.nome] = { obj: b, pecas: [] };
+      });
 
-        if(l1 > 0 && l2 > 0 && q > 0 && matVal) {
-          if(matVal.startsWith("Bobina: ")) {
-            const bNome = matVal.replace("Bobina: ", "");
-            const bObj = bobinas.find(x => x.nome === bNome);
-            if(bObj) {
-              if(!agrupadoPorBobina[bNome]) {
-                agrupadoPorBobina[bNome] = { obj: bObj, pecas: [] };
-              }
-              for(let i=0; i<q; i++) {
-                agrupadoPorBobina[bNome].pecas.push({ nome: nomeP, l1: l1, l2: l2, perda: perda });
-              }
+      rows.forEach(r => {
+        const nomeP = r.querySelector(".input-nome").value || "Peça";
+        const matVal = r.querySelector(".select-material-linha").value;
+        let w = parseFloat(r.querySelector(".input-largura").value) || 0;
+        let h = parseFloat(r.querySelector(".input-comprimento").value) || 0;
+        let q = parseInt(r.querySelector(".input-qtd").value) || 1;
+        let margem = parseFloat(r.querySelector(".input-margem").value) || 0;
+
+        // Aplicar margem extra de segurança (%)
+        if(margem > 0) {
+          w += w * (margem / 100);
+          h += h * (margem / 100);
+        }
+
+        if(matVal.startsWith("Bobina: ")) {
+          const bNome = matVal.replace("Bobina: ", "");
+          if(agrupadoPorBobina[bNome]) {
+            for(let i=0; i<q; i++) {
+              agrupadoPorBobina[bNome].pecas.push({ nome: nomeP, largura: w, comprimento: h });
             }
-          } else if(matVal.startsWith("Insumo: ")) {
-            const iNome = matVal.replace("Insumo: ", "");
-            const cObj = catalogo.find(x => x.nome === iNome);
-            if(cObj) {
-              custoMat += cObj.valor * q;
-            }
+            totalPecas += q;
+          }
+        } else if(matVal.startsWith("Insumo: ")) {
+          const cNome = matVal.replace("Insumo: ", "");
+          const cObj = catalogo.find(x => x.nome === cNome);
+          if(cObj) {
+            custoMat += (cObj.valor * q);
+            totalPecas += q;
           }
         }
       });
 
-      let detalhesNestingHTML = "";
+      let blocosRipHtml = "";
 
+      // Algoritmo de Nesting & Empacotamento em Linhas / Blocos (Strip Packing) com Réguas Corel (cm)
       for(let bNome in agrupadoPorBobina) {
-        let bData = agrupadoPorBobina[bNome];
-        let larguraBobina = bData.obj.largura;
-        let precoMetro = bData.obj.preco;
+        const grupo = agrupadoPorBobina[bNome];
+        if(!grupo || grupo.pecas.length === 0) continue;
 
-        let cursorX = 0;
-        let cursorY = 0;
-        let alturaFaixaAtual = 0;
-        let itensPosicionados = [];
+        const larguraBobinaCm = grupo.obj.largura;
+        const precoMetro = grupo.obj.preco;
+        const listaPecas = grupo.pecas;
 
-        bData.pecas.forEach(p => {
-          let pW = p.l1 * (1 + p.perda / 100);
-          let pH = p.l2 * (1 + p.perda / 100);
+        // Ordenar peças por altura decrescente para otimizar Nesting (Guillotine Shelf / Strip Packing)
+        listaPecas.sort((a, b) => b.comprimento - a.comprimento);
 
-          // Se a peça estourar a largura útil da bobina, desce para a próxima linha (empilhamento automático)
-          if(cursorX + pW > larguraBobina) {
-            cursorX = 0;
-            cursorY += alturaFaixaAtual;
-            alturaFaixaAtual = 0;
+        let linhas = [];
+        let linhaAtual = { y: 0, alturaMax: 0, xCursor: 0, itens: [] };
+        linhas.push(linhaAtual);
+
+        listaPecas.forEach(peca => {
+          let pLarg = Math.min(peca.largura, larguraBobinaCm);
+          let pComp = peca.comprimento;
+
+          if(linhaAtual.xCursor + pLarg > larguraBobinaCm) {
+            linhaAtual = { y: linhaAtual.y + linhaAtual.alturaMax, alturaMax: 0, xCursor: 0, itens: [] };
+            linhas.push(linhaAtual);
           }
 
-          itensPosicionados.push({
-            nome: p.nome,
-            x: cursorX,
-            y: cursorY,
-            w: pW,
-            h: pH,
-            wOriginal: p.l1,
-            hOriginal: p.l2
+          linhaAtual.itens.push({
+            nome: peca.nome,
+            x: linhaAtual.xCursor,
+            y: linhaAtual.y,
+            w: pLarg,
+            h: pComp
           });
 
-          cursorX += pW;
-          if(pH > alturaFaixaAtual) {
-            alturaFaixaAtual = pH;
+          linhaAtual.xCursor += pLarg;
+          if(pComp > linhaAtual.alturaMax) {
+            linhaAtual.alturaMax = pComp;
           }
         });
 
-        let comprimentoTotalCm = cursorY + alturaFaixaAtual;
-        let metrosLineares = comprimentoTotalCm / 100;
-        let custoBobinaAtual = metrosLineares * precoMetro;
-        custoMat += custoBobinaAtual;
+        let alturaTotalCm = linhas.reduce((acc, l) => acc + l.alturaMax, 0);
+        let metrosLineares = alturaTotalCm / 100;
+        let custoBobinaParcial = metrosLineares * precoMetro;
+        custoMat += custoBobinaParcial;
 
-        let escalaPx = 2; // Fator de escala visual em pixels por cm
-        let canvasW = larguraBobina * escalaPx;
-        let canvasH = Math.max(300, comprimentoTotalCm * escalaPx);
+        // Visual estilo CorelDRAW (Réguas em cm nos eixos X e Y)
+        const pxPorCm = 3.2;
+        let containerW = larguraBobinaCm * pxPorCm;
+        let containerH = Math.max(150, alturaTotalCm * pxPorCm);
 
-        detalhesNestingHTML += `
-          <div class="bg-slate-900 text-white p-4 rounded-xl space-y-3">
-            <div class="flex justify-between items-center text-xs">
-              <span class="font-bold text-emerald-400"><i class="fa-solid fa-scroll mr-1"></i> ${bName} (Largura: ${larguraBobina}cm)</span>
-              <span>Uso Linear: <b>${metrosLineares.toFixed(2)}m</b> | Custo: <b>R$ ${custoBobinaAtual.toFixed(2)}</b></span>
+        let reguasXHtml = '';
+        for(let c = 0; c <= larguraBobinaCm; c += 5) {
+          let leftPx = c * pxPorCm;
+          let isPrincipal = c % 10 === 0;
+          reguasXHtml += `
+            <div class="absolute top-0 text-[9px] text-slate-400 font-mono select-none" style="left: ${leftPx}px; transform: translateX(-50%);">
+              ${isPrincipal ? c : ''}
+              <div class="w-[1px] ${isPrincipal ? 'h-3 bg-slate-500' : 'h-1.5 bg-slate-600'} mx-auto"></div>
             </div>
-            
-            <!-- Visualizador RIP com Réguas Corretas -->
-            <div class="overflow-auto border border-slate-700 bg-slate-950 p-6 rounded-lg relative max-h-[500px]">
-              <div id="container-rip-visual" class="relative inline-block" style="padding-left: 45px; padding-top: 35px;">
-                
-                <!-- Régua Superior (Horizontal) -->
-                <div class="absolute top-[5px] left-[45px] h-[30px]" style="width: ${canvasW}px;">
-                  ${gerarReguaHorizontal(larguraBobina, escalaPx)}
-                </div>
+          `;
+        }
 
-                <!-- Régua Esquerda (Vertical) -->
-                <div class="absolute top-[35px] left-[0px] w-[40px]" style="height: ${canvasH}px;">
-                  ${gerarReguaVertical(comprimentoTotalCm, escalaPx)}
-                </div>
+        let reguasYHtml = '';
+        for(let c = 0; c <= alturaTotalCm; c += 5) {
+          let topPx = c * pxPorCm;
+          let isPrincipal = c % 10 === 0;
+          reguasYHtml += `
+            <div class="absolute left-0 text-[9px] text-slate-400 font-mono select-none flex items-center" style="top: ${topPx}px; transform: translateY(-50%);">
+              ${isPrincipal ? '<span class="mr-1">' + c + '</span>' : ''}
+              <div class="${isPrincipal ? 'w-3 bg-slate-500' : 'w-1.5 bg-slate-600'} h-[1px]"></div>
+            </div>
+          `;
+        }
 
-                <!-- Área da Bobina / Chapa (Desenho exato das Peças Lado a Lado) -->
-                <div id="bloco-exportavel-rip" class="relative bg-slate-900 border-2 border-emerald-500/50 shadow-inner" style="width: ${canvasW}px; height: ${canvasH}px;">
-                  ${itensPosicionados.map(item => `
-                    <div class="absolute border border-emerald-400 bg-emerald-900/60 text-emerald-100 flex flex-col items-center justify-center text-[10px] font-bold overflow-hidden shadow-sm transition hover:bg-emerald-800/80"
-                         style="left: ${item.x * escalaPx}px; top: ${item.y * escalaPx}px; width: ${item.w * escalaPx}px; height: ${item.h * escalaPx}px;"
-                         title="${item.nome}: ${item.wOriginal}x${item.hOriginal}cm">
-                      <span class="truncate px-1 text-[11px] text-white">${item.nome}</span>
-                      <span class="text-[9px] text-emerald-300">${item.wOriginal}x${item.hOriginal}cm</span>
-                    </div>
-                  `).join('')}
-                </div>
+        let pecasVisualHtml = '';
+        linhas.forEach(linha => {
+          linha.itens.forEach(item => {
+            let lPx = item.x * pxPorCm;
+            let tPx = item.y * pxPorCm;
+            let wPx = item.w * pxPorCm;
+            let hPx = item.h * pxPorCm;
+            pecasVisualHtml += `
+              <div class="absolute bg-white border-2 border-slate-900 rounded-sm flex flex-col items-center justify-center p-1 shadow-sm overflow-hidden text-slate-900 font-mono transition hover:bg-slate-50"
+                   style="left: ${lPx}px; top: ${tPx}px; width: ${wPx}px; height: ${hPx}px;">
+                <span class="text-[10px] font-bold leading-tight truncate w-full text-center">${item.nome}</span>
+                <span class="text-[9px] text-slate-600 leading-tight">${item.w.toFixed(0)}x${item.h.toFixed(0)}cm</span>
+              </div>
+            `;
+          });
+        });
 
+        blocosRipHtml += `
+          <div class="bg-slate-900 border border-slate-700 rounded-xl p-4 space-y-3">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-2 border-b border-slate-800 pb-3">
+              <div>
+                <h4 class="text-sm font-bold text-white flex items-center space-x-2">
+                  <i class="fa-solid fa-scroll text-emerald-400"></i>
+                  <span>RIP Bobina: ${bNome}</span>
+                </h4>
+                <p class="text-xs text-slate-400">Largura útil: <b>${larguraBobinaCm} cm</b> | Consumo linear: <b>${metrosLineares.toFixed(2)} m</b> (${alturaTotalCm.toFixed(1)} cm)</p>
+              </div>
+              <div class="text-right">
+                <span class="text-xs text-emerald-400 font-bold">Custo Material: R$ ${custoBobinaParcial.toFixed(2)}</span>
+              </div>
+            </div>
+
+            <!-- Controles de Visualização Corel Style -->
+            <div class="flex items-center justify-between bg-slate-800 px-3 py-1.5 rounded-lg text-xs text-slate-300">
+              <span>Réguas em cm (Divisões de 5 em 5 cm)</span>
+              <div class="flex items-center space-x-2">
+                <button onclick="ajustarZoom(-0.2)" class="px-2 py-1 bg-slate-700 hover:bg-slate-600 rounded text-white font-bold cursor-pointer">- Zoom</button>
+                <button onclick="ajustarZoom(0.2)" class="px-2 py-1 bg-slate-700 hover:bg-slate-600 rounded text-white font-bold cursor-pointer">+ Zoom</button>
+              </div>
+            </div>
+
+            <!-- Palco / Canvas RIP estilo CorelDRAW -->
+            <div class="overflow-auto max-h-[500px] border border-slate-700 rounded-lg bg-slate-950 p-6 relative">
+              <div id="container-rip-visual-${bNome.replace(/\s+/g, '_')}" class="relative transition-transform duration-200" style="width: ${containerW + 40}px; height: ${containerH + 40}px;">
+                <div class="absolute top-0 left-8 right-0 h-6 border-b border-slate-700 bg-slate-900/90">${reguasXHtml}</div>
+                <div class="absolute top-6 left-0 w-8 bottom-0 border-r border-slate-700 bg-slate-900/90">${reguasYHtml}</div>
+                <div class="absolute top-6 left-8 bg-slate-900 border border-slate-600 shadow-inner" style="width: ${containerW}px; height: ${containerH}px;">
+                  ${pecasVisualHtml}
+                </div>
               </div>
             </div>
           </div>
         `;
       }
 
+      // Cálculo Financeiro Completo
       let subtotal = custoMat + mao + outros;
-      let divisorLucroImposto = 1 - ((lucro + imposto) / 100);
-      let totalVenda = divisorLucroImposto > 0 ? subtotal / divisorLucroImposto : subtotal;
+      let divisorLucro = 1 - (lucro / 100) - (imposto / 100);
+      if(divisorLucro <= 0) divisorLucro = 0.1;
+      let precoFinal = subtotal / divisorLucro;
+      let valorLucroReais = precoFinal * (lucro / 100);
 
-      const resultadoDiv = document.getElementById("resultado");
-      resultadoDiv.innerHTML = `
-        <div class="bg-slate-50 p-6 rounded-2xl border border-slate-200 space-y-6">
-          <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+      ultimoCache = {
+        data: new Date().toLocaleDateString('pt-BR'),
+        cliente,
+        produto,
+        totalPecas,
+        custoMat,
+        mao,
+        outros,
+        lucro,
+        imposto,
+        precoFinal
+      };
+
+      const resDiv = document.getElementById("resultado");
+      resDiv.innerHTML = `
+        <div id="bloco-exportavel-rip" class="space-y-6 bg-slate-100 p-2">
+          <!-- Cabeçalho do Orçamento -->
+          <div class="bg-slate-900 text-white p-6 rounded-2xl shadow-md flex flex-col md:flex-row justify-between items-center gap-4">
             <div>
-              <h3 class="text-base font-bold text-slate-800">Resultado do Orçamento & Nesting</h3>
-              <p class="text-xs text-slate-500">Cliente: <b>${cliente}</b> | Projeto: <b>${produto}</b></p>
+              <span class="text-xs text-emerald-400 font-bold uppercase tracking-wider">Relatório de Nesting & Orçamento</span>
+              <h3 class="text-xl font-bold">${cliente} - ${produto}</h3>
+              <p class="text-xs text-slate-400 mt-1">Total de Peças Encaixadas: <b>${totalPecas} unidades</b></p>
             </div>
-            <div class="flex gap-2">
-              <button onclick="ajustarZoom(0.2)" class="bg-slate-200 hover:bg-slate-300 px-3 py-1.5 rounded-lg text-xs font-bold cursor-pointer"><i class="fa-solid fa-magnifying-glass-plus"></i></button>
-              <button onclick="ajustarZoom(-0.2)" class="bg-slate-200 hover:bg-slate-300 px-3 py-1.5 rounded-lg text-xs font-bold cursor-pointer"><i class="fa-solid fa-magnifying-glass-minus"></i></button>
-              <button onclick="exportarLayoutRIP()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-3.5 py-1.5 rounded-lg text-xs font-bold cursor-pointer"><i class="fa-solid fa-download mr-1"></i> Exportar RIP PNG</button>
-            </div>
-          </div>
-
-          <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
-            <div class="bg-white p-4 rounded-xl border shadow-sm">
-              <span class="text-[10px] font-bold uppercase text-slate-400">Custo Materiais</span>
-              <p class="text-base font-bold text-slate-700">R$ ${custoMat.toFixed(2)}</p>
-            </div>
-            <div class="bg-white p-4 rounded-xl border shadow-sm">
-              <span class="text-[10px] font-bold uppercase text-slate-400">Mão de Obra / Outros</span>
-              <p class="text-base font-bold text-slate-700">R$ ${(mao + outros).toFixed(2)}</p>
-            </div>
-            <div class="bg-white p-4 rounded-xl border shadow-sm">
-              <span class="text-[10px] font-bold uppercase text-slate-400">Subtotal</span>
-              <p class="text-base font-bold text-slate-700">R$ ${subtotal.toFixed(2)}</p>
-            </div>
-            <div class="bg-emerald-50 p-4 rounded-xl border border-emerald-200 shadow-sm">
-              <span class="text-[10px] font-bold uppercase text-emerald-600">Total Venda (Sugestão)</span>
-              <p class="text-lg font-extrabold text-emerald-700">R$ ${totalVenda.toFixed(2)}</p>
+            <div class="text-right bg-slate-800 p-4 rounded-xl border border-slate-700">
+              <span class="text-xs text-slate-400 uppercase font-bold block">Valor Final Sugerido</span>
+              <span class="text-2xl font-black text-emerald-400">R$ ${precoFinal.toFixed(2)}</span>
             </div>
           </div>
 
+          <!-- Detalhamento de Custos & Margens -->
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm text-center">
+              <span class="text-xs text-slate-400 uppercase font-bold">Custo Materiais</span>
+              <p class="text-lg font-bold text-slate-800 mt-1">R$ ${custoMat.toFixed(2)}</p>
+            </div>
+            <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm text-center">
+              <span class="text-xs text-slate-400 uppercase font-bold">Mão de Obra / Outros</span>
+              <p class="text-lg font-bold text-slate-800 mt-1">R$ ${(mao + outros).toFixed(2)}</p>
+            </div>
+            <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm text-center">
+              <span class="text-xs text-slate-400 uppercase font-bold">Lucro (${lucro}%)</span>
+              <p class="text-lg font-bold text-emerald-600 mt-1">R$ ${valorLucroReais.toFixed(2)}</p>
+            </div>
+            <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm text-center">
+              <span class="text-xs text-slate-400 uppercase font-bold">Impostos (${imposto}%)</span>
+              <p class="text-lg font-bold text-blue-600 mt-1">R$ ${(precoFinal * (imposto/100)).toFixed(2)}</p>
+            </div>
+          </div>
+
+          <!-- Layouts de RIP gerados -->
           <div class="space-y-4">
-            <h4 class="text-sm font-bold text-slate-700">Layouts de Corte Gerados (Estilo CorelDRAW - Réguas a cada 5cm)</h4>
-            ${detalhesNestingHTML}
+            <h4 class="text-base font-bold text-slate-700">Simulação de Corte & Nesting (Réguas CorelDRAW em cm)</h4>
+            ${blocosRipHtml || '<div class="text-slate-500 text-xs p-4 bg-white rounded-xl border">Nenhuma bobina selecionada nas peças.</div>'}
           </div>
         </div>
       `;
-
-      window.ultimoCache = { cliente, produto, totalVenda, data: new Date().toLocaleDateString() };
-    }
-
-    function gerarReguaHorizontal(larguraTotalCm, escalaPx) {
-      let html = '';
-      for (let cm = 0; cm <= larguraTotalCm; cm += 5) {
-        let leftPx = cm * escalaPx;
-        html += `<div class="absolute top-0" style="left: ${leftPx}px;"><span class="absolute -translate-x-1/2 text-[9px] text-slate-400">${cm}</span><div class="h-3 w-[1px] bg-emerald-500/60 mt-3"></div></div>`;
-      }
-      return html;
-    }
-
-    function gerarReguaVertical(alturaTotalCm, escalaPx) {
-      let html = '';
-      for (let cm = 0; cm <= alturaTotalCm; cm += 5) {
-        let topPx = cm * escalaPx;
-        html += `<div class="absolute left-0 flex items-center" style="top: ${topPx}px;"><span class="text-[9px] text-slate-400 mr-1 w-6 text-right">${cm}</span><div class="h-[1px] w-3 bg-emerald-500/60"></div></div>`;
-      }
-      return html;
     }
 
     function salvarProjeto() {
-      if(!window.ultimoCache) { alert("Processe um cálculo primeiro para poder salvar."); return; }
-      projetosSalvos.push(window.ultimoCache);
+      if(!ultimoCache) { alert("Processe um cálculo antes de salvar."); return; }
+      projetosSalvos.unshift(ultimoCache);
       salvarLocal();
       alert("Orçamento salvo com sucesso!");
       mudarAba('salvos');
     }
 
     function renderProjetosSalvos() {
-      const tbody = document.getElementById("tabelaProjetosSalvos");
-      tbody.innerHTML = "";
+      const tbS = document.getElementById("tabelaProjetosSalvos");
+      tbS.innerHTML = "";
       if(projetosSalvos.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-slate-400 text-xs">Nenhum orçamento salvo.</td></tr>`;
+        tbS.innerHTML = `<tr><td colspan="5" class="p-6 text-center text-slate-400 text-sm">Nenhum orçamento salvo no momento.</td></tr>`;
         return;
       }
       projetosSalvos.forEach((p, idx) => {
-        tbody.innerHTML += `
+        tbS.innerHTML += `
           <tr class="hover:bg-slate-50">
             <td class="p-3 text-xs text-slate-500">${p.data}</td>
-            <td class="p-3 font-medium">${p.cliente}</td>
+            <td class="p-3 font-bold text-slate-700">${p.cliente}</td>
             <td class="p-3 text-slate-600">${p.produto}</td>
-            <td class="p-3 font-bold text-emerald-600">R$ ${p.totalVenda.toFixed(2)}</td>
-            <td class="p-3 text-center"><button onclick="removerProjeto(${idx})" class="text-red-500 hover:text-red-700 text-xs cursor-pointer"><i class="fa-solid fa-trash"></i></button></td>
+            <td class="p-3 font-bold text-emerald-600">R$ ${p.precoFinal.toFixed(2)}</td>
+            <td class="p-3 text-center">
+              <button onclick="removerProjeto(${idx})" class="text-red-500 hover:text-red-700 text-xs cursor-pointer"><i class="fa-solid fa-trash"></i></button>
+            </td>
           </tr>
         `;
       });
@@ -750,6 +755,15 @@
       salvarLocal();
       renderProjetosSalvos();
     }
+
+    // Inicialização ao carregar a página
+    window.addEventListener("DOMContentLoaded", () => {
+      renderTudo();
+      const tbody = document.getElementById("partes");
+      if(tbody && tbody.children.length === 0) {
+        addParteVazia("Painel Plástico", "Bobina: Bobina Plástico / Tecido 1.40m", 40, 60, 4, 0);
+      }
+    });
   </script>
 </body>
 </html>
