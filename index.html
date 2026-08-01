@@ -1,4 +1,629 @@
-function fazerLoginEmail() {
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CalculaJá Pro - Sistema Integrado Completo</title>
+  <!-- Tailwind CSS via CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- Firebase SDKs (Compat) -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+</head>
+<body class="bg-slate-100 text-slate-800 font-sans antialiased min-h-screen text-[64%]">
+
+  <!-- TELA DE LOGIN / AUTENTICAÇÃO FIREBASE -->
+  <div id="authModal" class="fixed inset-0 bg-slate-900/90 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-8 space-y-6 border border-slate-200">
+      <div class="text-center space-y-2">
+        <div class="inline-flex items-center justify-center w-14 h-14 bg-cyan-600 text-white rounded-xl shadow-lg mb-2">
+          <i class="fa-solid fa-cubes text-2xl"></i>
+        </div>
+        <h2 class="text-xl font-bold text-slate-900">CalculaJá Pro <span class="text-xs text-cyan-600 font-normal">v3.0 Master</span></h2>
+        <p class="text-xs text-slate-500">Entre com suas credenciais ou cadastre um novo e-mail</p>
+      </div>
+
+      <div class="space-y-4">
+        <div>
+          <label class="block text-xs font-bold text-slate-600 mb-1">E-mail de Acesso</label>
+          <input type="email" id="loginEmail" placeholder="seu.email@exemplo.com" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-xs text-slate-900 outline-none focus:border-cyan-500">
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-600 mb-1">Senha</label>
+          <input type="password" id="loginSenha" placeholder="••••••••" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-xs text-slate-900 outline-none focus:border-cyan-500">
+        </div>
+        <button type="button" onclick="fazerLoginEmail()" class="w-full bg-cyan-600 hover:bg-cyan-700 text-white py-2.5 rounded-lg text-xs font-bold transition shadow cursor-pointer">
+          Entrar / Cadastrar com E-mail
+        </button>
+        <div class="relative flex py-2 items-center">
+          <div class="flex-grow border-t border-slate-200"></div>
+          <span class="flex-shrink mx-4 text-[10px] text-slate-400 uppercase">ou</span>
+          <div class="flex-grow border-t border-slate-200"></div>
+        </div>
+        <button type="button" onclick="fazerLoginGoogle()" class="w-full bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 py-2.5 rounded-lg text-xs font-bold transition flex items-center justify-center space-x-2 cursor-pointer shadow-sm">
+          <i class="fa-brands fa-google text-red-500"></i>
+          <span>Continuar com Google</span>
+        </button>
+      </div>
+      <p id="authError" class="text-center text-xs text-red-500 font-medium"></p>
+    </div>
+  </div>
+
+  <!-- APLICATIVO PRINCIPAL -->
+  <div id="appContainer" class="hidden min-h-screen flex flex-col">
+    
+    <!-- Navegação por Abas -->
+    <header class="flex justify-between items-center bg-slate-900 px-6 py-3 border-b border-slate-800 text-white shadow-md">
+      <div class="flex items-center space-x-3">
+        <h1 class="text-sm font-bold text-cyan-400"><i class="fa-solid fa-cubes mr-2"></i> CalculaJá Pro <span class="text-xs text-slate-400 font-normal">v3.0 Master</span></h1>
+      </div>
+      <nav class="flex items-center space-x-2 overflow-x-auto py-1">
+        <button onclick="mudarAba('dados')" id="btnAbaDados" class="px-3 py-1.5 rounded text-xs font-medium bg-cyan-600 text-white transition cursor-pointer shadow whitespace-nowrap">
+          <i class="fa-solid fa-list-check mr-1"></i> Orçamento
+        </button>
+        <button onclick="mudarAba('suprimentos')" id="btnAbaSuprimentos" class="px-3 py-1.5 rounded text-xs font-medium bg-slate-800 text-slate-300 hover:bg-slate-700 transition cursor-pointer whitespace-nowrap">
+          <i class="fa-solid fa-boxes-stacked mr-1"></i> Cadastro de Suprimentos
+        </button>
+        <button onclick="mudarAba('desenho')" id="btnAbaDesenho" class="px-3 py-1.5 rounded text-xs font-medium bg-slate-800 text-slate-300 hover:bg-slate-700 transition cursor-pointer whitespace-nowrap">
+          <i class="fa-solid fa-network-wired mr-1"></i> Desenho (RIP Nesting)
+        </button>
+        <button onclick="fazerLogout()" class="text-slate-400 hover:text-red-400 text-xs px-2 py-1 transition cursor-pointer" title="Sair">
+          <i class="fa-solid fa-power-off"></i> Sair
+        </button>
+      </nav>
+    </header>
+
+    <main class="p-4 max-w-7xl mx-auto space-y-4 flex-grow w-full">
+      
+      <!-- ABA 1: ORÇAMENTO E PEÇAS -->
+      <section id="abaDados" class="space-y-4">
+        
+        <!-- BARRA SUPERIOR ÚNICA DE SELEÇÃO DE BOBINA PADRÃO DO PROJETO -->
+        <div class="bg-cyan-900/15 border border-cyan-500/30 p-3 rounded-xl flex flex-col md:flex-row items-center justify-between gap-3">
+          <div class="flex items-center space-x-2 w-full md:w-auto">
+            <div class="bg-cyan-600 text-white p-2 rounded-lg text-xs">
+              <i class="fa-solid fa-tape"></i>
+            </div>
+            <div>
+              <label class="block text-[11px] font-bold text-slate-700 uppercase">Bobina / Papel Principal da Impressão</label>
+              <p class="text-[10px] text-slate-500">Define o limite horizontal de toda a folha/nesting do projeto</p>
+            </div>
+          </div>
+          <div class="w-full md:w-80">
+            <select id="selectBobinaGlobal" class="w-full bg-white border border-cyan-500/50 rounded px-3 py-2 text-xs font-bold text-slate-800 outline-none focus:ring-2 focus:ring-cyan-500" onchange="mudarBobinaGlobal(this)">
+              <!-- Preenchido dinamicamente via JS -->
+            </select>
+          </div>
+        </div>
+
+        <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 grid grid-cols-1 md:grid-cols-3 gap-3">
+          <div>
+            <label class="block text-[11px] font-bold text-slate-600 mb-1">Cliente</label>
+            <input type="text" id="cliente" placeholder="Nome do Cliente" class="w-full bg-slate-50 border border-slate-300 rounded px-3 py-1.5 text-xs text-slate-900 outline-none focus:border-cyan-500">
+          </div>
+          <div>
+            <label class="block text-[11px] font-bold text-slate-600 mb-1">Produto / Projeto</label>
+            <input type="text" id="produto" placeholder="Ex: Fachada / Adesivos" class="w-full bg-slate-50 border border-slate-300 rounded px-3 py-1.5 text-xs text-slate-900 outline-none focus:border-cyan-500">
+          </div>
+          <div class="grid grid-cols-3 gap-2">
+            <div>
+              <label class="block text-[10px] font-bold text-slate-600 mb-1">Mão de Obra (R$)</label>
+              <input type="number" id="mao" value="0" class="w-full bg-slate-50 border border-slate-300 rounded px-2 py-1.5 text-xs text-slate-900 outline-none focus:border-cyan-500">
+            </div>
+            <div>
+              <label class="block text-[10px] font-bold text-slate-600 mb-1">Lucro (%)</label>
+              <input type="number" id="lucro" value="30" class="w-full bg-slate-50 border border-slate-300 rounded px-2 py-1.5 text-xs text-slate-900 outline-none focus:border-cyan-500">
+            </div>
+            <div>
+              <label class="block text-[10px] font-bold text-slate-600 mb-1">Imposto (%)</label>
+              <input type="number" id="imposto" value="0" class="w-full bg-slate-50 border border-slate-300 rounded px-2 py-1.5 text-xs text-slate-900 outline-none focus:border-cyan-500">
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 space-y-3">
+          <div class="flex justify-between items-center">
+            <h2 class="text-xs font-bold text-slate-700 uppercase tracking-wider"><i class="fa-solid fa-scissors mr-1 text-cyan-600"></i> Peças e Cortes do Projeto</h2>
+            <button type="button" onclick="addParteVazia()" class="bg-slate-800 hover:bg-slate-700 text-white px-3 py-1 rounded text-xs font-bold transition cursor-pointer">
+              <i class="fa-solid fa-plus mr-1"></i> Adicionar Peça
+            </button>
+          </div>
+
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse text-xs">
+              <thead>
+                <tr class="bg-slate-100 text-slate-600 border-b border-slate-200">
+                  <th class="p-2">Nome da Peça</th>
+                  <th class="p-2">Largura (cm)</th>
+                  <th class="p-2">Comprimento (cm)</th>
+                  <th class="p-2">Qtd</th>
+                  <th class="p-2 text-center">Ações</th>
+                </tr>
+              </thead>
+              <tbody id="partes" class="divide-y divide-slate-100"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="flex justify-end pt-2">
+          <button type="button" onclick="processarECalcular()" class="bg-cyan-600 hover:bg-cyan-700 text-white px-6 py-2.5 rounded-lg text-xs font-bold transition shadow cursor-pointer flex items-center">
+            Calcular e Gerar Desenho RIP <i class="fa-solid fa-arrow-right ml-2"></i>
+          </button>
+        </div>
+      </section>
+
+      <!-- ABA 2: CADASTRO DE SUPRIMENTOS -->
+      <section id="abaSuprimentos" class="hidden space-y-4">
+        <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 space-y-4">
+          <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+            <div>
+              <h2 class="text-xs font-bold text-slate-700 uppercase tracking-wider"><i class="fa-solid fa-boxes-stacked mr-1 text-cyan-600"></i> Gerenciamento de Bobinas e Papéis</h2>
+              <p class="text-[11px] text-slate-400">Cadastre e edite a largura e os custos dos materiais disponíveis para impressão.</p>
+            </div>
+            <button type="button" onclick="abrirModalSuprimento()" class="bg-cyan-600 hover:bg-cyan-700 text-white px-3 py-1.5 rounded text-xs font-bold transition cursor-pointer">
+              <i class="fa-solid fa-plus mr-1"></i> Nova Bobina / Material
+            </button>
+          </div>
+
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse text-xs">
+              <thead>
+                <tr class="bg-slate-100 text-slate-600 border-b border-slate-200">
+                  <th class="p-2">Nome do Material / Bobina</th>
+                  <th class="p-2">Largura (cm) [Máx 150cm]</th>
+                  <th class="p-2">Preço por m² (R$)</th>
+                  <th class="p-2 text-center">Ações</th>
+                </tr>
+              </thead>
+              <tbody id="tabelaSuprimentos" class="divide-y divide-slate-100"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ABA 3: DESENHO (RIP NESTING) -->
+      <section id="abaDesenho" class="hidden space-y-4">
+        <div class="bg-slate-900 text-white p-5 rounded-xl shadow-inner space-y-4">
+          <div class="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-slate-800 pb-3 gap-2">
+            <div>
+              <h3 class="text-xs font-bold text-cyan-400 uppercase tracking-widest"><i class="fa-solid fa-network-wired mr-1"></i> Simulação RIP HP Latex (Nesting Ajustado ao Papel/Bobina)</h3>
+              <p id="infoClienteDesenho" class="text-[11px] text-slate-400">Aguardando processamento de dados...</p>
+            </div>
+            <div class="flex items-center space-x-3">
+              <!-- CONTROLES DE ZOOM -->
+              <div class="flex items-center bg-slate-950 rounded-lg border border-slate-800 px-2 py-1 space-x-1">
+                <span class="text-[10px] text-slate-400 font-mono mr-1">Zoom:</span>
+                <button type="button" onclick="ajustarZoom(-0.2)" class="text-slate-300 hover:text-white px-1.5 py-0.5 text-xs font-bold cursor-pointer" title="Diminuir Zoom"><i class="fa-solid fa-magnifying-glass-minus"></i></button>
+                <span id="labelZoom" class="text-xs font-mono text-cyan-400 w-12 text-center">100%</span>
+                <button type="button" onclick="ajustarZoom(0.2)" class="text-slate-300 hover:text-white px-1.5 py-0.5 text-xs font-bold cursor-pointer" title="Aumentar Zoom"><i class="fa-solid fa-magnifying-glass-plus"></i></button>
+              </div>
+              <div class="text-left md:text-right bg-slate-950 px-4 py-2 rounded-lg border border-slate-800">
+                <span id="valorFinalDesenho" class="text-sm font-bold text-emerald-400">R$ 0.00</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- ÁREA DO VISUALIZADOR COM RÉGUAS DINÂMICAS -->
+          <div class="relative bg-white rounded border border-[#b5b5b5] overflow-hidden shadow-inner text-slate-800 flex flex-col h-[580px]">
+            
+            <div class="flex h-8 border-b border-[#b5b5b5] bg-[#ececec] relative z-20 shrink-0">
+              <div class="w-12 h-full border-r border-[#b5b5b5] flex items-center justify-center text-[11px] font-bold font-sans text-slate-700 z-30 shrink-0 bg-[#e2e2e2]">cm</div>
+              <div class="flex-grow relative overflow-hidden" id="containerReguaX">
+                <div id="tracosReguaSuperior" class="absolute top-0 bottom-0 left-0 h-full"></div>
+              </div>
+            </div>
+
+            <div class="flex flex-grow relative overflow-hidden">
+              <div class="w-12 bg-[#ececec] border-r border-[#b5b5b5] relative z-20 shrink-0 overflow-hidden" id="containerReguaY">
+                <div id="tracosReguaLateral" class="absolute top-0 left-0 right-0 w-full"></div>
+              </div>
+
+              <div class="flex-grow bg-white overflow-auto relative z-10" id="viewportPlotagem">
+                <div id="malhaGridFundo" class="absolute top-0 left-0 pointer-events-none z-0"></div>
+                <div id="bordaLimiteBobina" class="absolute top-0 left-0 border-r-2 border-dashed border-red-500 bg-slate-50/20 pointer-events-none z-0"></div>
+
+                <div id="containerPlotagem" class="absolute top-0 left-0 origin-top-left z-10">
+                  <div class="absolute top-12 left-12 text-slate-400 text-xs font-medium">Aguardando cálculo do projeto...</div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <div class="flex justify-between pt-2">
+            <button type="button" onclick="mudarAba('dados')" class="bg-slate-800 hover:bg-slate-700 text-slate-300 px-4 py-2 rounded text-xs transition cursor-pointer flex items-center">
+              <i class="fa-solid fa-arrow-left mr-2"></i> Voltar para Orçamento
+            </button>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- MODAL DE CADASTRO DE SUPRIMENTO -->
+  <div id="modalSuprimento" class="hidden fixed inset-0 bg-slate-900/80 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-xl shadow-xl max-w-sm w-full p-6 space-y-4 border border-slate-200">
+      <h3 class="text-xs font-bold text-slate-800 uppercase"><i class="fa-solid fa-plus-circle text-cyan-600 mr-1"></i> Adicionar Nova Bobina</h3>
+      <div class="space-y-3 text-xs">
+        <div>
+          <label class="block font-bold text-slate-600 mb-1">Nome do Material</label>
+          <input type="text" id="novoNomeSup" placeholder="Ex: Lona Fosca" class="w-full border rounded px-3 py-1.5 outline-none focus:border-cyan-500">
+        </div>
+        <div>
+          <label class="block font-bold text-slate-600 mb-1">Largura em cm (Máximo 150cm)</label>
+          <input type="number" id="novaLarguraSup" value="135" min="10" max="150" class="w-full border rounded px-3 py-1.5 outline-none focus:border-cyan-500">
+        </div>
+        <div>
+          <label class="block font-bold text-slate-600 mb-1">Preço por m² (R$)</label>
+          <input type="number" id="novoPrecoSup" value="20.00" step="0.5" class="w-full border rounded px-3 py-1.5 outline-none focus:border-cyan-500">
+        </div>
+      </div>
+      <div class="flex justify-end space-x-2 pt-2">
+        <button type="button" onclick="fecharModalSuprimento()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 px-3 py-1.5 rounded text-xs font-bold cursor-pointer">Cancelar</button>
+        <button type="button" onclick="salvarNovoSuprimento()" class="bg-cyan-600 hover:bg-cyan-700 text-white px-3 py-1.5 rounded text-xs font-bold cursor-pointer">Salvar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Script JavaScript Integrado -->
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyBK2M_6YeHCV_mNOrh2v8FO8g6BcOFBlFw",
+      authDomain: "calculo-pro.firebaseapp.com",
+      projectId: "calculo-pro",
+    };
+    if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+
+    let ESCALA_BASE = 24; 
+    let zoomAtual = 1.0;
+    let escalaPxPorCm = ESCALA_BASE;
+    
+    const LARGURA_REGUA_X_MAX = 150; 
+    const ALTURA_REGUA_Y_MAX = 5000; 
+    
+    let larguraBobinaAtual = 150; 
+    let alturaTotalLayout = 300;  
+    let pecasEmCache = [];
+
+    let bobinas = [
+      { id: 1, nome: "Vinil Brilho 1.00m", largura: 100, preco: 15.00 }, 
+      { id: 2, nome: "Lona Frontlight 1.35m", largura: 135, preco: 18.50 },
+      { id: 3, nome: "Lona Heavy 1.50m", largura: 150, preco: 22.00 }
+    ];
+
+    auth.onAuthStateChanged(user => {
+      if (user) {
+        document.getElementById("authModal").classList.add("hidden");
+        document.getElementById("appContainer").classList.remove("hidden");
+        
+        const viewport = document.getElementById('viewportPlotagem');
+        viewport.addEventListener('scroll', function() {
+            document.getElementById('tracosReguaSuperior').style.transform = `translateX(-${viewport.scrollLeft}px)`;
+            document.getElementById('tracosReguaLateral').style.transform = `translateY(-${viewport.scrollTop}px)`;
+        });
+
+        atualizarSelectGlobalBobinas();
+        renderizarTabelaSuprimentos();
+        
+        setTimeout(() => {
+          calcularEscalaFit150();
+        }, 50);
+      } else {
+        document.getElementById("authModal").classList.remove("hidden");
+        document.getElementById("appContainer").classList.add("hidden");
+      }
+    });
+
+    function calcularEscalaFit150() {
+      const viewport = document.getElementById('viewportPlotagem');
+      if(!viewport) return;
+      const larguraDisponivel = viewport.clientWidth - 40;
+      if(larguraDisponivel > 0) {
+        ESCALA_BASE = larguraDisponivel / 150;
+        escalaPxPorCm = ESCALA_BASE * zoomAtual;
+        if(pecasEmCache.length > 0) {
+          renderizarPecasNoCanvas();
+        } else {
+          gerarDimensoesReguas();
+        }
+      }
+    }
+
+    function ajustarZoom(delta) {
+      zoomAtual += delta;
+      if (zoomAtual < 0.2) zoomAtual = 0.2;
+      if (zoomAtual > 2.5) zoomAtual = 2.5;
+      
+      document.getElementById("labelZoom").innerText = Math.round(zoomAtual * 100) + "%";
+      escalaPxPorCm = ESCALA_BASE * zoomAtual;
+      
+      if(pecasEmCache.length > 0) {
+        renderizarPecasNoCanvas();
+      } else {
+        gerarDimensoesReguas();
+      }
+    }
+
+    function gerarDimensoesReguas() {
+      const larguraReguaX = Math.min(LARGURA_REGUA_X_MAX, larguraBobinaAtual);
+      const sup = document.getElementById("tracosReguaSuperior");
+      let htmlSup = "";
+      for(let cm = 0; cm <= larguraReguaX; cm++) {
+        let leftPx = cm * escalaPxPorCm;
+        let numLabel = cm > 0 && cm % 10 === 0 ? `<span class="absolute bottom-[11px] text-[10px] text-black font-bold font-sans" style="transform: translateX(-50%);">${cm}</span>` : '';
+        
+        htmlSup += `
+          <div class="absolute bottom-0 h-full" style="left: ${leftPx}px; width: 1px;">
+            ${numLabel}
+            <div class="absolute bottom-0 w-[1px] bg-black h-[10px]" style="transform: translateX(-50%);"></div>
+          </div>
+        `;
+        if (cm < larguraReguaX) {
+          for(let mm = 1; mm < 10; mm++) {
+            let mmLeft = leftPx + mm * (escalaPxPorCm / 10);
+            let hTick = (mm === 5) ? 'h-[6px]' : 'h-[3px]';
+            let cTick = (mm === 5) ? 'bg-[#555]' : 'bg-[#888]';
+            htmlSup += `<div class="absolute bottom-0 w-[1px] ${cTick} ${hTick}" style="left: ${mmLeft}px; transform: translateX(-50%);"></div>`;
+          }
+        }
+      }
+      sup.style.width = (larguraReguaX * escalaPxPorCm + 100) + "px";
+      sup.innerHTML = htmlSup;
+
+      const alturaReguaY = Math.max(200, Math.min(ALTURA_REGUA_Y_MAX, alturaTotalLayout + 50));
+      const lat = document.getElementById("tracosReguaLateral");
+      let htmlLat = "";
+      for(let cm = 0; cm <= alturaReguaY; cm += 10) { 
+        let topPx = cm * escalaPxPorCm;
+        let numLabelY = cm > 0 ? `<span class="absolute right-[11px] text-[10px] text-black font-bold font-sans" style="transform: translateY(-50%);">${cm}</span>` : '';
+        
+        htmlLat += `
+          <div class="absolute right-0 w-full" style="top: ${topPx}px; height: 1px;">
+            ${numLabelY}
+            <div class="absolute right-0 h-[1px] bg-black w-[10px]" style="transform: translateY(-50%);"></div>
+          </div>
+        `;
+      }
+      lat.style.height = (alturaReguaY * escalaPxPorCm + 100) + "px";
+      lat.innerHTML = htmlLat;
+
+      const malhaGrid = document.getElementById("malhaGridFundo");
+      let htmlMalha = "";
+      for(let x = 0; x <= larguraBobinaAtual; x += 10) {
+        htmlMalha += `<div class="absolute top-0 bottom-0 border-l border-[#dfdfdf] border-dashed" style="left: ${x * escalaPxPorCm}px; height: ${alturaReguaY * escalaPxPorCm}px;"></div>`;
+      }
+      malhaGrid.style.width = (larguraBobinaAtual * escalaPxPorCm) + "px";
+      malhaGrid.style.height = (alturaReguaY * escalaPxPorCm) + "px";
+      malhaGrid.innerHTML = htmlMalha;
+
+      const bordaBobina = document.getElementById("bordaLimiteBobina");
+      bordaBobina.style.left = "0px";
+      bordaBobina.style.width = (larguraBobinaAtual * escalaPxPorCm) + "px";
+      bordaBobina.style.height = (alturaReguaY * escalaPxPorCm) + "px";
+    }
+
+    window.onload = function() {
+      addParteVazia("Painel Fachada", "120", "80", 1);
+      addParteVazia("Adesivo Vitrine", "40", "50", 2);
+    };
+
+    function mudarAba(aba) {
+      document.getElementById("abaDados").classList.add("hidden");
+      document.getElementById("abaSuprimentos").classList.add("hidden");
+      document.getElementById("abaDesenho").classList.add("hidden");
+
+      if (aba === 'dados') document.getElementById("abaDados").classList.remove("hidden");
+      if (aba === 'suprimentos') {
+        document.getElementById("abaSuprimentos").classList.remove("hidden");
+        renderizarTabelaSuprimentos();
+      }
+      if (aba === 'desenho') {
+        document.getElementById("abaDesenho").classList.remove("hidden");
+        calcularEscalaFit150();
+        if(pecasEmCache.length === 0) gerarDimensoesReguas();
+      }
+    }
+
+    function atualizarSelectGlobalBobinas() {
+      const select = document.getElementById("selectBobinaGlobal");
+      if(!select) return;
+      select.innerHTML = bobinas.map(b => `<option value="${b.largura}" ${b.largura === larguraBobinaAtual ? 'selected' : ''}>${b.nome} (${b.largura}cm) - R$ ${b.preco.toFixed(2)}/m²</option>`).join('');
+    }
+
+    function mudarBobinaGlobal(selectEl) {
+      larguraBobinaAtual = parseFloat(selectEl.value) || 150;
+      if(larguraBobinaAtual > 150) larguraBobinaAtual = 150;
+      calcularEscalaFit150();
+    }
+
+    function renderizarTabelaSuprimentos() {
+      const tbody = document.getElementById("tabelaSuprimentos");
+      tbody.innerHTML = bobinas.map(b => `
+        <tr class="hover:bg-slate-50" id="linha-sup-${b.id}">
+          <td class="p-2">
+            <span class="view-mode-${b.id} font-medium">${b.nome}</span>
+            <input type="text" id="edit-nome-${b.id}" value="${b.nome}" class="edit-mode-${b.id} hidden w-full border rounded px-2 py-1 text-xs">
+          </td>
+          <td class="p-2">
+            <span class="view-mode-${b.id}">${b.largura} cm</span>
+            <input type="number" id="edit-largura-${b.id}" value="${b.largura}" min="10" max="150" class="edit-mode-${b.id} hidden w-24 border rounded px-2 py-1 text-xs">
+          </td>
+          <td class="p-2">
+            <span class="view-mode-${b.id}">R$ ${b.preco.toFixed(2)}</span>
+            <input type="number" id="edit-preco-${b.id}" value="${b.preco}" step="0.5" class="edit-mode-${b.id} hidden w-24 border rounded px-2 py-1 text-xs">
+          </td>
+          <td class="p-2 text-center space-x-2">
+            <button onclick="ativarEdicaoSuprimento(${b.id})" id="btn-edit-${b.id}" class="view-mode-${b.id} text-cyan-600 hover:text-cyan-800 cursor-pointer" title="Editar"><i class="fa-solid fa-pen"></i></button>
+            <button onclick="salvarEdicaoSuprimento(${b.id})" id="btn-save-${b.id}" class="edit-mode-${b.id} hidden text-emerald-600 hover:text-emerald-800 cursor-pointer" title="Salvar"><i class="fa-solid fa-check"></i></button>
+            <button onclick="removerSuprimento(${b.id})" class="text-red-500 hover:text-red-700 cursor-pointer" title="Remover"><i class="fa-solid fa-trash"></i></button>
+          </td>
+        </tr>
+      `).join('');
+      atualizarSelectGlobalBobinas();
+    }
+
+    function ativarEdicaoSuprimento(id) {
+      document.querySelectorAll(`.view-mode-${id}`).forEach(el => el.classList.add("hidden"));
+      document.querySelectorAll(`.edit-mode-${id}`).forEach(el => el.classList.remove("hidden"));
+    }
+
+    function salvarEdicaoSuprimento(id) {
+      const novoNome = document.getElementById(`edit-nome-${id}`).value.trim();
+      let novaLargura = parseFloat(document.getElementById(`edit-largura-${id}`).value) || 100;
+      const novoPreco = parseFloat(document.getElementById(`edit-preco-${id}`).value) || 15.00;
+
+      if(!novoNome) {
+        alert("O nome da bobina não pode ficar vazio.");
+        return;
+      }
+      if(novaLargura > 150) {
+        novaLargura = 150;
+        alert("A largura máxima permitida é de 150cm.");
+      }
+
+      const bobinaObj = bobinas.find(b => b.id === id);
+      if(bobinaObj) {
+        bobinaObj.nome = novoNome;
+        bobinaObj.largura = novaLargura;
+        bobinaObj.preco = novoPreco;
+      }
+
+      renderizarTabelaSuprimentos();
+    }
+
+    function abrirModalSuprimento() {
+      document.getElementById("modalSuprimento").classList.remove("hidden");
+    }
+
+    function fecharModalSuprimento() {
+      document.getElementById("modalSuprimento").classList.add("hidden");
+    }
+
+    function salvarNovoSuprimento() {
+      const nome = document.getElementById("novoNomeSup").value.trim();
+      let largura = parseFloat(document.getElementById("novaLarguraSup").value) || 100;
+      const preco = parseFloat(document.getElementById("novoPrecoSup").value) || 20.00;
+
+      if(!nome) {
+        alert("Insira um nome para o suprimento.");
+        return;
+      }
+      if(largura > 150) {
+        largura = 150;
+        alert("A largura máxima permitida pela régua/limite é de 150cm.");
+      }
+
+      bobinas.push({ id: Date.now(), nome, largura, preco });
+      fecharModalSuprimento();
+      renderizarTabelaSuprimentos();
+    }
+
+    function removerSuprimento(id) {
+      if(bobinas.length <= 1) {
+        alert("É necessário manter pelo menos uma bobina cadastrada.");
+        return;
+      }
+      bobinas = bobinas.filter(b => b.id !== id);
+      renderizarTabelaSuprimentos();
+    }
+
+    function addParteVazia(nome="", w="", h="", q=1) {
+      const tbody = document.getElementById("partes");
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td class="p-2"><input type="text" value="${nome}" class="nomeParte w-full border rounded px-2 py-1 text-xs"></td>
+        <td class="p-2"><input type="number" value="${w}" class="larguraParte w-24 border rounded px-2 py-1 text-xs"></td>
+        <td class="p-2"><input type="number" value="${h}" class="comprimentoParte w-24 border rounded px-2 py-1 text-xs"></td>
+        <td class="p-2"><input type="number" value="${q}" class="qtdParte w-16 border rounded px-2 py-1 text-xs"></td>
+        <td class="p-2 text-center"><button onclick="this.closest('tr').remove()" class="text-red-500 cursor-pointer"><i class="fa-solid fa-trash"></i></button></td>
+      `;
+      tbody.appendChild(tr);
+    }
+
+    function processarECalcular() {
+      const linhas = document.querySelectorAll("#partes tr");
+      pecasEmCache = [];
+      let cursorX = 0, cursorY = 0, alturaLinha = 0;
+      let maxAlturaAtingida = 100;
+
+      linhas.forEach((tr, index) => {
+        const nome = tr.querySelector(".nomeParte").value || `P ${index+1}`;
+        const w = parseFloat(tr.querySelector(".larguraParte").value) || 0;
+        const h = parseFloat(tr.querySelector(".comprimentoParte").value) || 0;
+        const q = parseInt(tr.querySelector(".qtdParte").value) || 1;
+
+        if (w > larguraBobinaAtual) {
+          alert(`A peça "${nome}" (${w}cm) excede a largura da bobina principal selecionada (${larguraBobinaAtual}cm)! Ajuste o tamanho.`);
+          return;
+        }
+
+        if (w>0 && h>0) {
+          for(let i=0; i<q; i++) {
+            if (cursorX + w > larguraBobinaAtual) {
+              cursorX = 0;
+              cursorY += alturaLinha;
+              alturaLinha = 0;
+            }
+            
+            pecasEmCache.push({ 
+              nome, 
+              largura: w, 
+              comprimento: h, 
+              larguraBobina: larguraBobinaAtual, 
+              posX: cursorX, 
+              posY: cursorY,
+              cor: `#${Math.floor(Math.abs(Math.sin(index+i+1)*16777215)).toString(16).padStart(6,'0')}` 
+            });
+
+            cursorX += w;
+            if (h > alturaLinha) alturaLinha = h;
+            let fimPecaY = cursorY + h;
+            if (fimPecaY > maxAlturaAtingida) maxAlturaAtingida = fimPecaY;
+          }
+        }
+      });
+
+      alturaTotalLayout = maxAlturaAtingida + 50; 
+      
+      renderizarPecasNoCanvas();
+      mudarAba('desenho');
+    }
+
+    function renderizarPecasNoCanvas() {
+      const container = document.getElementById("containerPlotagem");
+      let html = "";
+      
+      pecasEmCache.forEach(p => {
+        let xPx = p.posX * escalaPxPorCm;
+        let yPx = p.posY * escalaPxPorCm;
+        let wPx = p.largura * escalaPxPorCm;
+        let hPx = p.comprimento * escalaPxPorCm;
+
+        html += `
+          <div style="position: absolute; left: ${xPx}px; top: ${yPx}px; width: ${wPx}px; height: ${hPx}px; background-color: ${p.cor};" 
+               class="border border-white/60 flex flex-col items-center justify-center text-[11px] text-white overflow-hidden shadow-sm">
+            <span class="bg-black/60 px-1 rounded truncate shadow">${p.nome}</span>
+            <span class="bg-black/40 px-1 rounded mt-0.5 font-mono text-[9px]">${p.largura}x${p.comprimento}cm</span>
+          </div>
+        `;
+      });
+
+      gerarDimensoesReguas();
+
+      const alturaReguaY = Math.max(200, Math.min(ALTURA_REGUA_Y_MAX, alturaTotalLayout));
+      container.style.width = (larguraBobinaAtual * escalaPxPorCm) + "px";
+      container.style.height = (alturaReguaY * escalaPxPorCm) + "px";
+      container.innerHTML = html;
+    }
+    
+    // Funções de Autenticação Atualizadas
+    function fazerLoginEmail() {
       const email = document.getElementById("loginEmail").value.trim();
       const senha = document.getElementById("loginSenha").value;
       const erroEl = document.getElementById("authError");
@@ -9,10 +634,9 @@ function fazerLoginEmail() {
         return;
       }
 
-      // Tenta fazer o login; se o usuário não existir, cria a conta automaticamente para facilitar o cadastro
       auth.signInWithEmailAndPassword(email, senha)
         .catch((error) => {
-          if (error.code === 'auth/user-not-found' || error.code === 'auth/invalid-credential') {
+          if (error.code === 'auth/user-not-found' || error.code === 'auth/invalid-credential' || error.code === 'auth/invalid-email') {
             return auth.createUserWithEmailAndPassword(email, senha);
           } else {
             throw error;
@@ -32,7 +656,6 @@ function fazerLoginEmail() {
 
     function fazerLogout() {
       auth.signOut().then(() => {
-        // Limpa os campos de login ao sair
         document.getElementById("loginEmail").value = "";
         document.getElementById("loginSenha").value = "";
         document.getElementById("authError").innerText = "";
@@ -40,3 +663,6 @@ function fazerLoginEmail() {
         console.error("Erro ao sair:", error);
       });
     }
+  </script>
+</body>
+</html>
