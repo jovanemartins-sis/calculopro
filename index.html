@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ProCut — Matriz de Corte & Desenho Técnico</title>
+    <title>ProCut — Sistema Completo de Corte & Estoque</title>
     <style>
         :root {
             --bg-cad: #0a0f0d;
@@ -18,221 +18,316 @@
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Consolas', 'Courier New', monospace; }
-        body { background-color: var(--bg-cad); color: #d1fae5; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+        body { background-color: var(--bg-cad); color: #d1fae5; height: 100vh; overflow: hidden; }
 
-        /* HEADER CAD */
-        header { background: var(--panel-cad); border-bottom: 2px solid var(--green-neon); padding: 15px 25px; display: flex; justify-content: space-between; align-items: center; }
+        /* TELA DE LOGIN */
+        #login-screen { position: fixed; inset: 0; background: var(--bg-cad); z-index: 999; display: flex; justify-content: center; align-items: center; }
+        .login-card { background: var(--panel-cad); border: 2px solid var(--green-neon); padding: 40px; border-radius: 8px; width: 360px; box-shadow: 0 0 20px rgba(0, 255, 102, 0.15); text-align: center; }
+        .login-card h2 { color: var(--green-neon); margin-bottom: 5px; font-size: 1.5rem; letter-spacing: 1px; }
+        .login-card p { color: var(--text-muted); font-size: 0.8rem; margin-bottom: 25px; }
+        .login-card .form-group { text-align: left; margin-bottom: 15px; }
+        .login-card button { width: 100%; margin-top: 10px; padding: 12px; font-size: 1rem; }
+
+        /* LAYOUT PRINCIPAL DO APP */
+        #app-screen { display: none; flex-direction: column; height: 100vh; }
+
+        /* HEADER */
+        header { background: var(--panel-cad); border-bottom: 2px solid var(--green-neon); padding: 12px 25px; display: flex; justify-content: space-between; align-items: center; }
         .logo-box { display: flex; align-items: center; gap: 12px; }
         .logo-symbol { background: var(--green-neon); color: var(--bg-cad); font-weight: 900; padding: 4px 10px; border-radius: 4px; font-size: 1.2rem; }
         .title-text h1 { font-size: 1.2rem; color: var(--green-neon); letter-spacing: 1px; }
         .title-text p { font-size: 0.75rem; color: var(--text-muted); }
 
         /* CONTROLES */
-        .controls { background: var(--panel-cad); border-bottom: 1px solid var(--border-cad); padding: 15px 25px; display: flex; gap: 20px; align-items: flex-end; flex-wrap: wrap; }
+        .controls { background: var(--panel-cad); border-bottom: 1px solid var(--border-cad); padding: 12px 25px; display: flex; gap: 15px; align-items: flex-end; flex-wrap: wrap; }
         .form-group { display: flex; flex-direction: column; gap: 6px; }
         .form-group label { font-size: 0.7rem; color: var(--green-neon); text-transform: uppercase; letter-spacing: 1px; }
         .form-group input, .form-group select { background: #060a08; border: 1px solid var(--green-dark); color: var(--green-neon); padding: 8px 12px; border-radius: 4px; outline: none; font-family: monospace; font-size: 0.9rem; }
         .form-group input:focus, .form-group select:focus { border-color: var(--green-neon); box-shadow: 0 0 8px rgba(0, 255, 102, 0.3); }
 
-        button { background: var(--green-neon); color: var(--bg-cad); border: none; padding: 10px 18px; border-radius: 4px; font-weight: bold; cursor: pointer; font-family: monospace; transition: all 0.2s; }
-        button:hover { background: #33ff85; box-shadow: 0 0 12px rgba(0, 255, 102, 0.5); }
+        button { background: var(--green-neon); color: var(--bg-cad); border: none; padding: 9px 16px; border-radius: 4px; font-weight: bold; cursor: pointer; font-family: monospace; transition: all 0.2s; }
+        button:hover { background: #33ff85; box-shadow: 0 0 12px rgba(0, 255, 102, 0.4); }
         .btn-danger { background: transparent; border: 1px solid var(--danger); color: var(--danger); }
         .btn-danger:hover { background: var(--danger); color: white; box-shadow: none; }
 
-        /* ÁREA DE DESENHO VETORIAL EM VERDE */
-        .main-container { flex: 1; display: grid; grid-template-columns: 1fr 320px; padding: 20px; gap: 20px; overflow: hidden; }
+        /* WORKSPACE */
+        .main-container { flex: 1; display: grid; grid-template-columns: 1fr 340px; padding: 20px; gap: 20px; overflow: hidden; }
+        .viewport-container { display: flex; flex-direction: column; gap: 15px; overflow: hidden; }
+
+        /* CANVAS COM RÉGUAS INTEGRADAS */
+        .canvas-area { background: #050806; border: 1px solid var(--border-cad); border-radius: 6px; padding: 55px 20px 20px 55px; flex: 1; overflow: auto; position: relative; }
         
-        .viewport { background: #050806; border: 1px solid var(--border-cad); border-radius: 6px; padding: 30px; position: relative; overflow: auto; display: flex; flex-direction: column; align-items: flex-start; }
+        .ruler-x { position: absolute; top: 20px; left: 55px; height: 30px; border-bottom: 2px solid var(--green-neon); background: rgba(0, 255, 102, 0.03); }
+        .ruler-x-mark { position: absolute; border-left: 1px solid var(--green-dark); height: 8px; bottom: 0; font-size: 9px; color: var(--text-muted); padding-left: 2px; }
         
-        .canvas-wrapper { position: relative; border: 2px solid var(--green-neon); background: rgba(0, 255, 102, 0.02); margin-top: 30px; margin-left: 45px; box-shadow: 0 0 15px rgba(0, 255, 102, 0.05); }
+        .ruler-y { position: absolute; top: 55px; left: 20px; width: 30px; border-right: 2px solid var(--green-neon); background: rgba(0, 255, 102, 0.03); }
+        .ruler-y-mark { position: absolute; border-top: 1px solid var(--green-dark); width: 8px; right: 0; font-size: 9px; color: var(--text-muted); padding-top: 1px; text-align: right; }
 
-        /* RÉGUAS TÉCNICAS */
-        .ruler-x { position: absolute; top: -25px; left: 0; height: 20px; border-bottom: 1px solid var(--green-dark); width: 100%; }
-        .ruler-x-mark { position: absolute; font-size: 9px; color: var(--text-muted); transform: translateX(-50%); top: 2px; }
-        .ruler-y { position: absolute; top: 0; left: -40px; width: 35px; height: 100%; border-right: 1px solid var(--green-dark); }
-        .ruler-y-mark { position: absolute; font-size: 9px; color: var(--text-muted); transform: translateY(-50%); right: 4px; }
+        .canvas-wrapper { position: relative; border: 2px solid var(--green-neon); background: rgba(0, 255, 102, 0.02); box-shadow: 0 0 15px rgba(0, 255, 102, 0.05); transition: all 0.2s; }
 
-        /* DESENHO DA PEÇA EM VERDE VETORIAL */
-        .piece-green { position: absolute; background: rgba(0, 255, 102, 0.15); border: 1.5px dashed var(--green-neon); color: var(--green-neon); font-size: 11px; font-weight: bold; display: flex; flex-direction: column; justify-content: space-between; padding: 5px; box-sizing: border-box; transition: all 0.2s; }
-        .piece-green:hover { background: rgba(0, 255, 102, 0.3); }
+        /* PEÇA DESENHADA */
+        .piece-green { position: absolute; background: rgba(0, 255, 102, 0.15); border: 1.5px dashed var(--green-neon); color: var(--green-neon); font-size: 11px; font-weight: bold; display: flex; flex-direction: column; justify-content: space-between; padding: 5px; box-sizing: border-box; }
 
-        /* PAINEL LATERAL DE MEDIÇÃO */
-        .side-panel { background: var(--panel-cad); border: 1px solid var(--border-cad); border-radius: 6px; padding: 20px; display: flex; flex-direction: column; gap: 15px; }
-        .panel-title { color: var(--green-neon); font-size: 0.9rem; text-transform: uppercase; border-bottom: 1px solid var(--border-cad); padding-bottom: 8px; letter-spacing: 1px; }
+        /* LISTA DE PEÇAS */
+        .list-section { background: var(--panel-cad); border: 1px solid var(--border-cad); border-radius: 6px; padding: 12px 15px; height: 130px; overflow-y: auto; }
+        .list-table { width: 100%; border-collapse: collapse; font-size: 0.8rem; text-align: left; }
+        .list-table th { color: var(--text-muted); border-bottom: 1px solid var(--border-cad); padding-bottom: 5px; }
+        .list-table td { color: var(--green-neon); padding: 5px 0; border-bottom: 1px dashed #122419; }
 
-        .data-row { display: flex; justify-content: space-between; font-size: 0.85rem; padding: 6px 0; border-bottom: 1px dashed var(--border-cad); }
+        /* PAINEL DE METRICAS */
+        .side-panel { background: var(--panel-cad); border: 1px solid var(--border-cad); border-radius: 6px; padding: 20px; display: flex; flex-direction: column; gap: 12px; overflow-y: auto; }
+        .panel-title { color: var(--green-neon); font-size: 0.85rem; text-transform: uppercase; border-bottom: 1px solid var(--border-cad); padding-bottom: 8px; letter-spacing: 1px; }
+
+        .data-row { display: flex; justify-content: space-between; font-size: 0.85rem; padding: 5px 0; border-bottom: 1px dashed var(--border-cad); }
         .data-row .val { color: var(--green-neon); font-weight: bold; }
 
-        .stat-box { background: #060a08; border: 1px solid var(--green-dark); padding: 12px; border-radius: 4px; text-align: center; margin-top: 10px; }
+        .stat-box { background: #060a08; border: 1px solid var(--green-dark); padding: 12px; border-radius: 4px; text-align: center; margin: 5px 0; }
         .stat-box .title { font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; }
-        .stat-box .number { font-size: 1.8rem; color: var(--green-neon); font-weight: bold; margin: 5px 0; }
+        .stat-box .number { font-size: 1.8rem; color: var(--green-neon); font-weight: bold; margin: 4px 0; }
     </style>
 </head>
 <body>
 
-    <header>
-        <div class="logo-box">
-            <div class="logo-symbol">CAD</div>
-            <div class="title-text">
-                <h1>ProCut Vector Matrix</h1>
-                <p>Módulo de Desenho Técnico & Geometria de Corte</p>
-            </div>
+    <!-- TELA DE LOGIN -->
+    <div id="login-screen">
+        <div class="login-card">
+            <h2>PROCUT CAD</h2>
+            <p>Acesso Restrito ao Operador</p>
+            <form onsubmit="realizarLogin(event)">
+                <div class="form-group">
+                    <label>Operador</label>
+                    <input type="text" id="user" value="admin" required>
+                </div>
+                <div class="form-group">
+                    <label>Senha de Acesso</label>
+                    <input type="password" id="pass" value="1234" required>
+                </div>
+                <button type="submit">ENTRAR NO SISTEMA</button>
+            </form>
         </div>
-        <div>
-            <span style="color: var(--green-neon); font-size: 0.8rem;">● VETOR ATIVO</span>
-        </div>
-    </header>
-
-    <div class="controls">
-        <div class="form-group" style="width: 250px;">
-            <label>Bobina Matriz</label>
-            <select id="bobina-select" onchange="resetCanvas()">
-                <option value="140|25.00">Vinil Brilho - 140 cm</option>
-                <option value="100|20.00">Vinil Fosco - 100 cm</option>
-                <option value="160|35.00">Lona Baeta - 160 cm</option>
-            </select>
-        </div>
-        <div class="form-group" style="width: 110px;">
-            <label>Largura (cm)</label>
-            <input type="number" id="w-peca" value="130">
-        </div>
-        <div class="form-group" style="width: 110px;">
-            <label>Altura (cm)</label>
-            <input type="number" id="h-peca" value="30">
-        </div>
-        <button onclick="desenharPecaVerde()">+ Vetorizar Parte</button>
-        <button class="btn-danger" onclick="limparDesenhos()">Resetar Tela</button>
     </div>
 
-    <div class="main-container">
-        <!-- ÁREA VETORIAL -->
-        <div class="viewport">
-            <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 10px;">
-                ESCALA TÉCNICA: 1cm = 4px | VISUALIZAÇÃO EM VETOR VERDE
+    <!-- TELA PRINCIPAL -->
+    <div id="app-screen">
+        <header>
+            <div class="logo-box">
+                <div class="logo-symbol">CUT</div>
+                <div class="title-text">
+                    <h1>ProCut Matrix</h1>
+                    <p>Simulador de Aproveitamento e Custo de Bobina</p>
+                </div>
             </div>
-            
-            <div class="canvas-wrapper" id="canvas-cad" style="height: 220px;">
-                <div class="ruler-x" id="rulerX"></div>
-                <div class="ruler-y" id="rulerY"></div>
+            <div style="display:flex; align-items:center; gap:15px;">
+                <span style="color: var(--green-neon); font-size: 0.8rem;">OP: <strong id="op-name">ADMIN</strong></span>
+                <button onclick="logout()" class="btn-danger" style="padding: 4px 10px; font-size: 0.75rem;">SAIR</button>
             </div>
+        </header>
+
+        <div class="controls">
+            <div class="form-group" style="width: 220px;">
+                <label>Bobina Matriz</label>
+                <select id="bobina-select" onchange="atualizarBobina()">
+                    <option value="140|25.00">Vinil Brilho - 140 cm</option>
+                    <option value="100|20.00">Vinil Fosco - 100 cm</option>
+                    <option value="160|35.00">Lona Baeta - 160 cm</option>
+                </select>
+            </div>
+            <div class="form-group" style="width: 100px;">
+                <label>Largura (cm)</label>
+                <input type="number" id="w-peca" value="40">
+            </div>
+            <div class="form-group" style="width: 100px;">
+                <label>Altura (cm)</label>
+                <input type="number" id="h-peca" value="30">
+            </div>
+            <div class="form-group" style="width: 80px;">
+                <label>Qtd</label>
+                <input type="number" id="qtd-peca" value="1" min="1">
+            </div>
+            <button onclick="adicionarPeca()">+ Adicionar Peça</button>
+            <button class="btn-danger" onclick="limparTudo()">Resetar</button>
         </div>
 
-        <!-- TELEMETRIA DE MEDIDAS -->
-        <div class="side-panel">
-            <div class="panel-title">Telemetria de Corte</div>
+        <div class="main-container">
+            <!-- CANVAS COM RÉGUAS -->
+            <div class="viewport-container">
+                <div class="canvas-area">
+                    <div class="ruler-x" id="rulerX"></div>
+                    <div class="ruler-y" id="rulerY"></div>
+                    <div class="canvas-wrapper" id="canvas-cad"></div>
+                </div>
 
-            <div class="data-row">
-                <span>Largura Matriz:</span>
-                <span class="val" id="lbl-w">140 cm</span>
-            </div>
-            <div class="data-row">
-                <span>Uso Vetorial:</span>
-                <span class="val" id="lbl-uso">0 cm</span>
-            </div>
-            <div class="data-row">
-                <span>Sobra / Retalho:</span>
-                <span class="val" id="lbl-sobra" style="color:#33ff85;">140 cm</span>
-            </div>
-
-            <div class="stat-box">
-                <div class="title">Aproveitamento do Rolo</div>
-                <div class="number" id="lbl-porcentagem">0.0%</div>
+                <div class="list-section">
+                    <table class="list-table">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Dimensão (cm)</th>
+                                <th>Qtd</th>
+                                <th>Área Total</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tb-pecas"></tbody>
+                    </table>
+                </div>
             </div>
 
-            <div class="panel-title" style="margin-top: 15px;">Cálculo Financeiro</div>
-            
-            <div class="data-row">
-                <span>Custo Peça Útil:</span>
-                <span class="val" id="c-util">R$ 0,00</span>
-            </div>
-            <div class="data-row">
-                <span>Custo Perda:</span>
-                <span class="val" id="c-perda" style="color: var(--danger);">R$ 0,00</span>
-            </div>
-            <div class="data-row" style="border:none; font-weight:bold; margin-top:5px;">
-                <span>Total Passada:</span>
-                <span class="val" id="c-total" style="font-size:1.1rem;">R$ 0,00</span>
+            <!-- PAINEL DE CONTROLE -->
+            <div class="side-panel">
+                <div class="panel-title">Métricas da Passada</div>
+
+                <div class="data-row">
+                    <span>Largura Bobina:</span>
+                    <span class="val" id="lbl-w">140 cm</span>
+                </div>
+                <div class="data-row">
+                    <span>Largura Utilizada:</span>
+                    <span class="val" id="lbl-uso">0 cm</span>
+                </div>
+                <div class="data-row">
+                    <span>Sobra Lateral:</span>
+                    <span class="val" id="lbl-sobra" style="color:#33ff85;">140 cm</span>
+                </div>
+                <div class="data-row">
+                    <span>Altura Mín. Corte:</span>
+                    <span class="val" id="lbl-h-min">0 cm</span>
+                </div>
+
+                <div class="stat-box">
+                    <div class="title">Aproveitamento Mídia</div>
+                    <div class="number" id="lbl-porcentagem">0.0%</div>
+                </div>
+
+                <div class="panel-title" style="margin-top: 10px;">Valores Estimados</div>
+                
+                <div class="data-row">
+                    <span>Custo Área Útil:</span>
+                    <span class="val" id="c-util">R$ 0,00</span>
+                </div>
+                <div class="data-row">
+                    <span>Custo Refugo/Perda:</span>
+                    <span class="val" id="c-perda" style="color: var(--danger);">R$ 0,00</span>
+                </div>
+                <div class="data-row" style="border:none; font-weight:bold; margin-top:5px;">
+                    <span>Custo Total Mídia:</span>
+                    <span class="val" id="c-total" style="font-size:1.1rem;">R$ 0,00</span>
+                </div>
             </div>
         </div>
     </div>
 
     <script>
-        const scale = 4;
+        const scale = 4; // 1cm no mundo real = 4px na tela
         let posCurrentX = 0;
         let maiorH = 0;
-        let qtdPecas = 0;
+        let listaPecas = [];
 
-        function resetCanvas() {
+        function realizarLogin(e) {
+            e.preventDefault();
+            const user = document.getElementById('user').value;
+            document.getElementById('op-name').innerText = user.toUpperCase();
+            document.getElementById('login-screen').style.display = 'none';
+            document.getElementById('app-screen').style.display = 'flex';
+            atualizarBobina();
+        }
+
+        function logout() {
+            document.getElementById('app-screen').style.display = 'none';
+            document.getElementById('login-screen').style.display = 'flex';
+        }
+
+        function atualizarBobina() {
             const select = document.getElementById('bobina-select');
             const dados = select.value.split('|');
             const larguraBobina = parseFloat(dados[0]);
 
-            const canvas = document.getElementById('canvas-cad');
-            canvas.style.width = (larguraBobina * scale) + 'px';
-
-            limparDesenhos();
-            gerarReguas(larguraBobina);
+            limparTudo();
         }
 
-        function gerarReguas(largura) {
+        function gerarReguas(larguraCm, alturaCm) {
             const rx = document.getElementById('rulerX');
             const ry = document.getElementById('rulerY');
             rx.innerHTML = ''; ry.innerHTML = '';
 
-            for(let i=0; i <= largura; i += 10) {
-                const m = document.createElement('div');
-                m.className = 'ruler-x-mark';
-                m.style.left = (i * scale) + 'px';
-                m.innerText = i;
-                rx.appendChild(m);
+            const larguraPx = larguraCm * scale;
+            const alturaPx = Math.max(alturaCm * scale, 180);
+
+            rx.style.width = larguraPx + 'px';
+            ry.style.height = alturaPx + 'px';
+
+            // Marcações Régua X (de 10 em 10 cm)
+            for(let i = 0; i <= larguraCm; i += 10) {
+                const mark = document.createElement('div');
+                mark.className = 'ruler-x-mark';
+                mark.style.left = (i * scale) + 'px';
+                mark.innerText = i;
+                rx.appendChild(mark);
             }
 
-            for(let i=0; i <= 50; i += 10) {
-                const m = document.createElement('div');
-                m.className = 'ruler-y-mark';
-                m.style.top = (i * scale) + 'px';
-                m.innerText = i;
-                ry.appendChild(m);
+            // Marcações Régua Y (de 10 em 10 cm)
+            const alturaTotalCm = Math.ceil(alturaPx / scale);
+            for(let i = 0; i <= alturaTotalCm; i += 10) {
+                const mark = document.createElement('div');
+                mark.className = 'ruler-y-mark';
+                mark.style.top = (i * scale) + 'px';
+                mark.innerText = i;
+                ry.appendChild(mark);
             }
         }
 
-        function desenharPecaVerde() {
+        function adicionarPeca() {
             const select = document.getElementById('bobina-select').value.split('|');
             const larguraBobina = parseFloat(select[0]);
             const custoM2 = parseFloat(select[1]);
 
             const w = parseFloat(document.getElementById('w-peca').value);
             const h = parseFloat(document.getElementById('h-peca').value);
+            const qtd = parseInt(document.getElementById('qtd-peca').value) || 1;
 
-            if(!w || !h) return alert('Insira as dimensões!');
+            if(!w || !h) return alert('Informe largura e altura!');
 
-            if(posCurrentX + w > larguraBobina) {
-                alert(`A parte de ${w}cm excede a largura da bobina! Espaço livre: ${larguraBobina - posCurrentX}cm`);
-                return;
+            for(let i = 0; i < qtd; i++) {
+                if(posCurrentX + w > larguraBobina) {
+                    alert(`Não cabe mais peças nesta linha! Largura livre: ${larguraBobina - posCurrentX} cm.`);
+                    break;
+                }
+
+                listaPecas.push({ w, h });
+
+                const canvas = document.getElementById('canvas-cad');
+                const piece = document.createElement('div');
+                piece.className = 'piece-green';
+                piece.style.left = (posCurrentX * scale) + 'px';
+                piece.style.top = '0px';
+                piece.style.width = (w * scale) + 'px';
+                piece.style.height = (h * scale) + 'px';
+
+                piece.innerHTML = `
+                    <span>#0${listaPecas.length}</span>
+                    <span style="text-align:center;">${w}x${h}</span>
+                `;
+
+                canvas.appendChild(piece);
+
+                posCurrentX += w;
+                if(h > maiorH) maiorH = h;
             }
 
-            qtdPecas++;
+            atualizarCalculos(larguraBobina, custoM2);
+            renderizarTabela();
+        }
+
+        function atualizarCalculos(larguraBobina, custoM2) {
             const canvas = document.getElementById('canvas-cad');
-            const piece = document.createElement('div');
-            piece.className = 'piece-green';
-            piece.style.left = (posCurrentX * scale) + 'px';
-            piece.style.top = '0px';
-            piece.style.width = (w * scale) + 'px';
-            piece.style.height = (h * scale) + 'px';
+            const alturaCanvasPx = Math.max(maiorH * scale, 180);
+            
+            canvas.style.width = (larguraBobina * scale) + 'px';
+            canvas.style.height = alturaCanvasPx + 'px';
 
-            piece.innerHTML = `
-                <div style="display:flex; justify-content:space-between;"><span>#0${qtdPecas}</span><span>${w}x${h}</span></div>
-                <div style="text-align:center;">VETOR</div>
-            `;
+            gerarReguas(larguraBobina, maiorH);
 
-            canvas.appendChild(piece);
-
-            posCurrentX += w;
-            if(h > maiorH) maiorH = h;
-
-            // CÁLCULOS
             const sobra = larguraBobina - posCurrentX;
-            const pct = ((posCurrentX / larguraBobina) * 100).toFixed(1);
+            const pct = posCurrentX > 0 ? ((posCurrentX / larguraBobina) * 100).toFixed(1) : 0;
 
             const areaUtilM2 = (posCurrentX * maiorH) / 10000;
             const areaTotalM2 = (larguraBobina * maiorH) / 10000;
@@ -241,6 +336,7 @@
             document.getElementById('lbl-w').innerText = `${larguraBobina} cm`;
             document.getElementById('lbl-uso').innerText = `${posCurrentX} cm`;
             document.getElementById('lbl-sobra').innerText = `${sobra} cm`;
+            document.getElementById('lbl-h-min').innerText = `${maiorH} cm`;
             document.getElementById('lbl-porcentagem').innerText = `${pct}%`;
 
             document.getElementById('c-util').innerText = `R$ ${(areaUtilM2 * custoM2).toFixed(2).replace('.', ',')}`;
@@ -248,27 +344,49 @@
             document.getElementById('c-total').innerText = `R$ ${(areaTotalM2 * custoM2).toFixed(2).replace('.', ',')}`;
         }
 
-        function limparDesenhos() {
+        function renderizarTabela() {
+            const tbody = document.getElementById('tb-pecas');
+            tbody.innerHTML = '';
+
+            listaPecas.forEach((item, index) => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>#0${index + 1}</td>
+                    <td>${item.w} x ${item.h} cm</td>
+                    <td>1</td>
+                    <td>${((item.w * item.h) / 10000).toFixed(3)} m²</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function limparTudo() {
             document.querySelectorAll('.piece-green').forEach(p => p.remove());
             posCurrentX = 0;
             maiorH = 0;
-            qtdPecas = 0;
+            listaPecas = [];
 
             const select = document.getElementById('bobina-select').value.split('|');
             const larguraBobina = parseFloat(select[0]);
 
+            const canvas = document.getElementById('canvas-cad');
+            canvas.style.width = (larguraBobina * scale) + 'px';
+            canvas.style.height = '180px';
+
+            gerarReguas(larguraBobina, 0);
+
             document.getElementById('lbl-w').innerText = `${larguraBobina} cm`;
             document.getElementById('lbl-uso').innerText = `0 cm`;
             document.getElementById('lbl-sobra').innerText = `${larguraBobina} cm`;
+            document.getElementById('lbl-h-min').innerText = `0 cm`;
             document.getElementById('lbl-porcentagem').innerText = `0.0%`;
 
             document.getElementById('c-util').innerText = `R$ 0,00`;
             document.getElementById('c-perda').innerText = `R$ 0,00`;
             document.getElementById('c-total').innerText = `R$ 0,00`;
-        }
 
-        // INICIALIZAR
-        resetCanvas();
+            renderizarTabela();
+        }
     </script>
 </body>
 </html>
