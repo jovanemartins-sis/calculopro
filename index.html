@@ -59,7 +59,7 @@
     <!-- Navegação por Abas -->
     <header class="flex justify-between items-center bg-slate-900 px-6 py-3 border-b border-slate-800 text-white shadow-md">
       <div class="flex items-center space-x-3">
-        <h1 class="text-sm font-bold text-cyan-400"><i class="fa-solid fa-cubes mr-2"></i> CalculaJá Pro <span class="text-xs text-slate-400 font-normal">v2.7 Completo</span></h1>
+        <h1 class="text-sm font-bold text-cyan-400"><i class="fa-solid fa-cubes mr-2"></i> CalculaJá Pro <span class="text-xs text-slate-400 font-normal">v2.8 Master</span></h1>
       </div>
       <nav class="flex items-center space-x-2 overflow-x-auto py-1">
         <button onclick="mudarAba('dados')" id="btnAbaDados" class="px-3 py-1.5 rounded text-xs font-medium bg-cyan-600 text-white transition cursor-pointer shadow whitespace-nowrap">
@@ -81,6 +81,25 @@
       
       <!-- ABA 1: ORÇAMENTO E PEÇAS -->
       <section id="abaDados" class="space-y-4">
+        
+        <!-- BARRA SUPERIOR ÚNICA DE SELEÇÃO DE BOBINA PADRÃO DO PROJETO -->
+        <div class="bg-cyan-900/10 border border-cyan-500/30 p-3 rounded-xl flex flex-col md:flex-row items-center justify-between gap-3">
+          <div class="flex items-center space-x-2 w-full md:w-auto">
+            <div class="bg-cyan-600 text-white p-2 rounded-lg text-xs">
+              <i class="fa-solid fa-tape"></i>
+            </div>
+            <div>
+              <label class="block text-[11px] font-bold text-slate-700 uppercase">Bobina / Papel Principal da Impressão</label>
+              <p class="text-[10px] text-slate-500">Define o limite horizontal de toda a folha/nesting do projeto</p>
+            </div>
+          </div>
+          <div class="w-full md:w-80">
+            <select id="selectBobinaGlobal" class="w-full bg-white border border-cyan-500/50 rounded px-3 py-2 text-xs font-bold text-slate-800 outline-none focus:ring-2 focus:ring-cyan-500" onchange="mudarBobinaGlobal(this)">
+              <!-- Preenchido dinamicamente via JS -->
+            </select>
+          </div>
+        </div>
+
         <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 grid grid-cols-1 md:grid-cols-3 gap-3">
           <div>
             <label class="block text-[11px] font-bold text-slate-600 mb-1">Cliente</label>
@@ -119,7 +138,6 @@
               <thead>
                 <tr class="bg-slate-100 text-slate-600 border-b border-slate-200">
                   <th class="p-2">Nome da Peça</th>
-                  <th class="p-2">Material / Bobina (Configuração de Papel)</th>
                   <th class="p-2">Largura (cm)</th>
                   <th class="p-2">Comprimento (cm)</th>
                   <th class="p-2">Qtd</th>
@@ -138,7 +156,7 @@
         </div>
       </section>
 
-      <!-- ABA 2: CADASTRO DE SUPRIMENTOS (RESTAURADA E FUNCIONAL) -->
+      <!-- ABA 2: CADASTRO DE SUPRIMENTOS -->
       <section id="abaSuprimentos" class="hidden space-y-4">
         <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 space-y-4">
           <div class="flex justify-between items-center border-b border-slate-100 pb-3">
@@ -273,7 +291,7 @@
     const LARGURA_REGUA_X_MAX = 150; 
     const ALTURA_REGUA_Y_MAX = 5000; 
     
-    let larguraBobinaAtual = 100; 
+    let larguraBobinaAtual = 135; 
     let alturaTotalLayout = 300;  
     let pecasEmCache = [];
 
@@ -294,6 +312,7 @@
             document.getElementById('tracosReguaLateral').style.transform = `translateY(-${viewport.scrollTop}px)`;
         });
 
+        atualizarSelectGlobalBobinas();
         renderizarTabelaSuprimentos();
       } else {
         document.getElementById("authModal").classList.remove("hidden");
@@ -375,8 +394,8 @@
     }
 
     window.onload = function() {
-      addParteVazia("Painel Fachada", "Bobina: Lona Frontlight 1.35m (135cm)", "120", "80", 1);
-      addParteVazia("Adesivo Vitrine", "Bobina: Vinil Brilho 1.00m (100cm)", "40", "50", 2);
+      addParteVazia("Painel Fachada", "120", "80", 1);
+      addParteVazia("Adesivo Vitrine", "40", "50", 2);
     };
 
     function mudarAba(aba) {
@@ -395,6 +414,18 @@
       }
     }
 
+    function atualizarSelectGlobalBobinas() {
+      const select = document.getElementById("selectBobinaGlobal");
+      if(!select) return;
+      select.innerHTML = bobinas.map(b => `<option value="${b.largura}" ${b.largura === larguraBobinaAtual ? 'selected' : ''}>${b.nome} (${b.largura}cm)</option>`).join('');
+    }
+
+    function mudarBobinaGlobal(selectEl) {
+      larguraBobinaAtual = parseFloat(selectEl.value) || 135;
+      if(larguraBobinaAtual > 150) larguraBobinaAtual = 150;
+      gerarDimensoesReguas();
+    }
+
     function renderizarTabelaSuprimentos() {
       const tbody = document.getElementById("tabelaSuprimentos");
       tbody.innerHTML = bobinas.map(b => `
@@ -407,15 +438,7 @@
           </td>
         </tr>
       `).join('');
-      atualizarSelectsPecasNasAbas();
-    }
-
-    function atualizarSelectsPecasNasAbas() {
-      const selects = document.querySelectorAll(".materialParte");
-      selects.forEach(selectEl => {
-        let valorAtual = selectEl.value;
-        selectEl.innerHTML = bobinas.map(b => `<option value="Bobina: ${b.nome}" data-largura="${b.largura}" ${('Bobina: '+b.nome)===valorAtual?'selected':''}>${b.nome}</option>`).join('');
-      });
+      atualizarSelectGlobalBobinas();
     }
 
     function abrirModalSuprimento() {
@@ -440,7 +463,7 @@
         alert("A largura máxima permitida pela régua/limite é de 150cm.");
       }
 
-      bobinas.push({ id: Date.now(), nome: `${nome} (${largura}cm)`, largura, preco });
+      bobinas.push({ id: Date.now(), nome: `${nome}`, largura, preco });
       fecharModalSuprimento();
       renderizarTabelaSuprimentos();
     }
@@ -454,37 +477,22 @@
       renderizarTabelaSuprimentos();
     }
 
-    function addParteVazia(nome="", material="", w="", h="", q=1) {
+    function addParteVazia(nome="", w="", h="", q=1) {
       const tbody = document.getElementById("partes");
       const tr = document.createElement("tr");
       tr.innerHTML = `
         <td class="p-2"><input type="text" value="${nome}" class="nomeParte w-full border rounded px-2 py-1 text-xs"></td>
-        <td class="p-2">
-          <select class="materialParte w-full border rounded px-2 py-1 text-xs" onchange="atualizarLarguraBobinaSelect(this)">
-            ${bobinas.map(b => `<option value="Bobina: ${b.nome}" data-largura="${b.largura}" ${material===('Bobina: '+b.nome)?'selected':''}>${b.nome}</option>`).join('')}
-          </select>
-        </td>
-        <td class="p-2"><input type="number" value="${w}" class="larguraParte w-16 border rounded px-2 py-1 text-xs"></td>
-        <td class="p-2"><input type="number" value="${h}" class="comprimentoParte w-16 border rounded px-2 py-1 text-xs"></td>
-        <td class="p-2"><input type="number" value="${q}" class="qtdParte w-12 border rounded px-2 py-1 text-xs"></td>
+        <td class="p-2"><input type="number" value="${w}" class="larguraParte w-24 border rounded px-2 py-1 text-xs"></td>
+        <td class="p-2"><input type="number" value="${h}" class="comprimentoParte w-24 border rounded px-2 py-1 text-xs"></td>
+        <td class="p-2"><input type="number" value="${q}" class="qtdParte w-16 border rounded px-2 py-1 text-xs"></td>
         <td class="p-2 text-center"><button onclick="this.closest('tr').remove()" class="text-red-500 cursor-pointer"><i class="fa-solid fa-trash"></i></button></td>
       `;
       tbody.appendChild(tr);
-      atualizarLarguraBobinaSelect(tr.querySelector('.materialParte'));
-    }
-
-    function atualizarLarguraBobinaSelect(selectEl) {
-      const selectedOption = selectEl.options[selectEl.selectedIndex];
-      if (selectedOption) {
-        larguraBobinaAtual = parseFloat(selectedOption.getAttribute('data-largura')) || 100;
-        if(larguraBobinaAtual > 150) larguraBobinaAtual = 150;
-      }
     }
 
     function processarECalcular() {
       const linhas = document.querySelectorAll("#partes tr");
       pecasEmCache = [];
-      let larguraMaxEncontrada = 100;
       let cursorX = 0, cursorY = 0, alturaLinha = 0;
       let maxAlturaAtingida = 100;
 
@@ -493,22 +501,15 @@
         const w = parseFloat(tr.querySelector(".larguraParte").value) || 0;
         const h = parseFloat(tr.querySelector(".comprimentoParte").value) || 0;
         const q = parseInt(tr.querySelector(".qtdParte").value) || 1;
-        const selectEl = tr.querySelector(".materialParte");
-        const selectedOption = selectEl.options[selectEl.selectedIndex];
-        const larguraBobinaItem = parseFloat(selectedOption.getAttribute('data-largura')) || 100;
 
-        if (w > larguraBobinaItem) {
-          alert(`A peça "${nome}" (${w}cm) excede a largura do papel/bobina selecionado (${larguraBobinaItem}cm)! Ajuste o tamanho.`);
+        if (w > larguraBobinaAtual) {
+          alert(`A peça "${nome}" (${w}cm) excede a largura da bobina principal selecionada (${larguraBobinaAtual}cm)! Ajuste o tamanho.`);
           return;
-        }
-
-        if (larguraBobinaItem > larguraMaxEncontrada) {
-          larguraMaxEncontrada = larguraBobinaItem;
         }
 
         if (w>0 && h>0) {
           for(let i=0; i<q; i++) {
-            if (cursorX + w > larguraBobinaItem) {
+            if (cursorX + w > larguraBobinaAtual) {
               cursorX = 0;
               cursorY += alturaLinha;
               alturaLinha = 0;
@@ -518,7 +519,7 @@
               nome, 
               largura: w, 
               comprimento: h, 
-              larguraBobina: larguraBobinaItem, 
+              larguraBobina: larguraBobinaAtual, 
               posX: cursorX, 
               posY: cursorY,
               cor: `#${Math.floor(Math.abs(Math.sin(index+i+1)*16777215)).toString(16).padStart(6,'0')}` 
@@ -532,7 +533,6 @@
         }
       });
 
-      larguraBobinaAtual = larguraMaxEncontrada;
       alturaTotalLayout = maxAlturaAtingida + 50; 
       
       renderizarPecasNoCanvas();
