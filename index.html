@@ -3,19 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ProFull - Gestão de E-commerce</title>
+    <title>Sistema de Corte e Custos</title>
     <style>
         :root {
-            --primary-color: #4f46e5;
-            --primary-hover: #4338ca;
-            --bg-color: #f3f4f6;
+            --primary-color: #2563eb;
+            --primary-hover: #1d4ed8;
+            --bg-color: #f8fafc;
             --card-bg: #ffffff;
-            --text-main: #1f2937;
-            --text-muted: #6b7280;
-            --border-color: #d1d5db;
-            --focus-ring: rgba(79, 70, 229, 0.2);
-            --success: #10b981;
-            --warning: #f59e0b;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --border-color: #cbd5e1;
+            --success: #16a34a;
+            --danger: #dc2626;
         }
 
         * {
@@ -31,7 +30,7 @@
             min-height: 100vh;
         }
 
-        /* --- TELA DE LOGIN --- */
+        /* --- 1 & 2. TELA DE LOGIN --- */
         #login-screen {
             display: flex;
             justify-content: center;
@@ -43,202 +42,154 @@
             background-color: var(--card-bg);
             padding: 40px 30px;
             border-radius: 12px;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
             width: 100%;
             max-width: 400px;
-            position: relative;
-        }
-
-        .login-header {
             text-align: center;
-            margin-bottom: 30px;
         }
 
         .login-header h1 {
-            font-size: 24px;
-            color: var(--text-main);
+            font-size: 22px;
             margin-bottom: 8px;
+            color: var(--text-main);
         }
 
         .login-header p {
             font-size: 14px;
             color: var(--text-muted);
+            margin-bottom: 24px;
         }
 
         .input-group {
-            margin-bottom: 20px;
+            margin-bottom: 16px;
+            text-align: left;
         }
 
         .input-group label {
             display: block;
-            font-size: 14px;
-            font-weight: 500;
+            font-size: 13px;
+            font-weight: 600;
             margin-bottom: 6px;
-            color: var(--text-main);
         }
 
-        .input-group input {
+        .input-group input, .input-group select {
             width: 100%;
-            padding: 12px 14px;
+            padding: 10px 12px;
             border: 1px solid var(--border-color);
-            border-radius: 8px;
+            border-radius: 6px;
             font-size: 14px;
-            transition: all 0.3s ease;
             outline: none;
         }
 
-        .input-group input:focus {
+        .input-group input:focus, .input-group select:focus {
             border-color: var(--primary-color);
-            box-shadow: 0 0 0 3px var(--focus-ring);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
         }
 
-        .btn-submit {
+        .btn {
             width: 100%;
             padding: 12px;
             background-color: var(--primary-color);
             color: white;
             border: none;
-            border-radius: 8px;
-            font-size: 16px;
+            border-radius: 6px;
+            font-size: 15px;
             font-weight: 600;
             cursor: pointer;
-            transition: background-color 0.3s ease;
-            margin-top: 10px;
+            transition: background-color 0.2s;
         }
 
-        .btn-submit:hover {
+        .btn:hover {
             background-color: var(--primary-hover);
         }
 
-        .login-footer {
-            text-align: center;
-            margin-top: 30px;
-            border-top: 1px solid #e5e7eb;
-            padding-top: 15px;
+        .btn-google {
+            background-color: #fff;
+            color: #334155;
+            border: 1px solid var(--border-color);
+            margin-top: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
         }
 
-        .version-badge {
+        .btn-google:hover {
+            background-color: #f1f5f9;
+        }
+
+        .version-footer {
+            margin-top: 24px;
             font-size: 12px;
             color: var(--text-muted);
-            background-color: #f9fafb;
-            padding: 4px 10px;
-            border-radius: 20px;
-            display: inline-block;
-            border: 1px solid #e5e7eb;
+            border-top: 1px solid #e2e8f0;
+            padding-top: 12px;
         }
 
-        /* --- DASHBOARD APP (PARTE INTERNA MANTIDA) --- */
+        /* --- APLICATIVO PRINCIPAL --- */
         #app-screen {
             display: none;
-            grid-template-columns: 260px 1fr;
-            min-height: 100vh;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
         }
 
-        aside {
-            background-color: var(--card-bg);
-            border-right: 1px solid var(--border-color);
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            padding: 24px;
-        }
-
-        .sidebar-brand {
-            font-size: 20px;
-            font-weight: bold;
-            color: var(--primary-color);
-            margin-bottom: 30px;
-        }
-
-        .sidebar-menu {
-            list-style: none;
-            flex-grow: 1;
-        }
-
-        .sidebar-menu li {
-            margin-bottom: 8px;
-        }
-
-        .sidebar-menu a {
-            display: block;
-            padding: 10px 14px;
-            color: var(--text-muted);
-            text-decoration: none;
-            border-radius: 8px;
-            font-weight: 500;
-            transition: all 0.2s;
-        }
-
-        .sidebar-menu a:hover, .sidebar-menu a.active {
-            background-color: #eef2ff;
-            color: var(--primary-color);
-        }
-
-        main {
-            padding: 40px;
-            overflow-y: auto;
-        }
-
-        .dashboard-header {
+        header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 30px;
-        }
-
-        .dashboard-header h2 {
-            font-size: 24px;
-        }
-
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
-        }
-
-        .stat-card {
-            background-color: var(--card-bg);
-            padding: 20px;
-            border-radius: 10px;
-            border: 1px solid var(--border-color);
+            background: var(--card-bg);
+            padding: 15px 25px;
+            border-radius: 8px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+            margin-bottom: 20px;
         }
 
-        .stat-card h3 {
-            font-size: 14px;
-            color: var(--text-muted);
-            margin-bottom: 8px;
+        .app-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
         }
 
-        .stat-card .value {
-            font-size: 24px;
-            font-weight: bold;
-            color: var(--text-main);
+        @media(max-width: 900px) {
+            .app-grid {
+                grid-template-columns: 1fr;
+            }
         }
 
-        .card-table {
-            background-color: var(--card-bg);
-            border-radius: 10px;
-            border: 1px solid var(--border-color);
+        .card {
+            background: var(--card-bg);
             padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+            margin-bottom: 20px;
         }
 
-        .card-table h3 {
+        .card h3 {
+            font-size: 16px;
             margin-bottom: 15px;
-            font-size: 18px;
+            color: var(--text-main);
+            border-bottom: 2px solid #f1f5f9;
+            padding-bottom: 8px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
         }
 
         table {
             width: 100%;
             border-collapse: collapse;
-            text-align: left;
+            margin-top: 10px;
         }
 
         th, td {
-            padding: 12px;
-            border-bottom: 1px solid var(--border-color);
-            font-size: 14px;
+            padding: 8px 10px;
+            font-size: 13px;
+            border-bottom: 1px solid #e2e8f0;
+            text-align: left;
         }
 
         th {
@@ -246,153 +197,295 @@
             font-weight: 600;
         }
 
-        .badge-status {
-            padding: 4px 8px;
-            border-radius: 12px;
-            font-size: 12px;
-            font-weight: 500;
+        .actions-bar {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
         }
 
-        .badge-status.success { background-color: #d1fae5; color: #065f46; }
-        .badge-status.warning { background-color: #fef3c7; color: #92400e; }
-
-        .btn-logout {
-            background: none;
-            border: none;
-            color: #ef4444;
-            font-weight: 600;
-            cursor: pointer;
-            text-align: left;
-            padding: 10px 14px;
-            width: 100%;
-            border-radius: 8px;
+        /* Área de Desenho / Aproveitamento */
+        #preview-canvas-container {
+            background: #1e293b;
+            border-radius: 6px;
+            height: 250px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #94a3b8;
+            font-size: 14px;
+            position: relative;
+            overflow: hidden;
         }
-        .btn-logout:hover {
-            background-color: #fef2f2;
+
+        /* Impressão / Esconder na tela normal */
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+            #print-area, #print-area * {
+                visibility: visible;
+            }
+            #print-area {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+            }
         }
     </style>
 </head>
 <body>
 
-    <!-- TELA DE LOGIN ATUALIZADA -->
+    <!-- 1 & 2. TELA DE LOGIN -->
     <div id="login-screen">
         <div class="login-container">
             <div class="login-header">
-                <h1>Bem-vindo de volta</h1>
-                <p>Entre com suas credenciais para acessar</p>
+                <h1>Sistema de Corte</h1>
+                <p>Controle de Bobinas, Peças e Custos</p>
             </div>
-
-            <form onsubmit="handleLogin(event)">
+            <form onsubmit="realizarLogin(event)">
                 <div class="input-group">
-                    <label for="email">E-mail</label>
-                    <input type="email" id="email" name="email" placeholder="seu@email.com" value="admin@profull.com" required>
+                    <label>E-mail de Acesso</label>
+                    <input type="email" id="login-email" placeholder="seu@email.com" required value="usuario@teste.com">
                 </div>
-
                 <div class="input-group">
-                    <label for="password">Senha</label>
-                    <input type="password" id="password" name="password" placeholder="••••••••" value="123456" required>
+                    <label>Senha</label>
+                    <input type="password" id="login-senha" placeholder="••••••••" required value="123456">
                 </div>
-
-                <button type="submit" class="btn-submit">Entrar</button>
+                <button type="submit" class="btn">Entrar no Sistema</button>
+                <button type="button" class="btn btn-google" onclick="realizarLogin(event)">Entrar com Conta Google</button>
             </form>
-
-            <div class="login-footer">
-                <span class="version-badge">Versão 1.2.0</span>
+            <div class="version-footer">
+                Versão Atual: <strong id="app-version">1.0.0</strong>
             </div>
         </div>
     </div>
 
-    <!-- TELA INTERNA (DASHBOARD COMPLETA PRESERVADA) -->
+    <!-- APLICATIVO PRINCIPAL -->
     <div id="app-screen">
-        <aside>
+        <header>
             <div>
-                <div class="sidebar-brand">ProFull Dashboard</div>
-                <ul class="sidebar-menu">
-                    <li><a href="#" class="active">Visão Geral</a></li>
-                    <li><a href="#">Produtos & Estoque</a></li>
-                    <li><a href="#">Pedidos Recentes</a></li>
-                    <li><a href="#">Configurações</a></li>
-                </ul>
+                <strong id="info-cliente-projeto" style="font-size: 16px;">Cliente: - | Projeto: -</strong>
             </div>
             <div>
-                <button class="btn-logout" onclick="handleLogout()">Sair do Sistema</button>
-                <div style="text-align: center; margin-top: 15px;">
-                    <span class="version-badge">v1.2.0</span>
-                </div>
+                <button class="btn" style="padding: 6px 12px; font-size: 13px; background-color: #64748b;" onclick="fazerLogout()">Sair</button>
             </div>
-        </aside>
+        </header>
 
-        <main>
-            <div class="dashboard-header">
-                <h2>Painel de Controle</h2>
-                <span style="font-size: 14px; color: var(--text-muted);">Bem-vindo de volta!</span>
+        <div class="app-grid">
+            <!-- Coluna Esquerda: Dados, Bobina e Peças -->
+            <div>
+                <!-- 3. Informar Cliente e Projeto -->
+                <div class="card">
+                    <h3>3. Dados do Cliente e Projeto</h3>
+                    <div class="form-row">
+                        <div class="input-group">
+                            <label>Nome do Cliente</label>
+                            <input type="text" id="cliente" placeholder="Ex: João da Silva" oninput="atualizarCabecalho()">
+                        </div>
+                        <div class="input-group">
+                            <label>Nome do Projeto</label>
+                            <input type="text" id="projeto" placeholder="Ex: Fachada Lojas" oninput="atualizarCabecalho()">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 4. Informar Rolo / Bobina -->
+                <div class="card">
+                    <h3>4. Rolo / Bobina de Corte</h3>
+                    <div class="form-row">
+                        <div class="input-group">
+                            <label>Largura da Bobina (cm)</label>
+                            <input type="number" id="bobina-largura" placeholder="Ex: 120" value="120">
+                        </div>
+                        <div class="input-group">
+                            <label>Custo do Rolo (R$)</label>
+                            <input type="number" id="bobina-custo" placeholder="Ex: 350.00" value="350">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 5. Adicionar / Remover / Editar Peças -->
+                <div class="card">
+                    <h3>5. Gerenciamento de Peças</h3>
+                    <div class="form-row">
+                        <div class="input-group">
+                            <label>Largura X (cm)</label>
+                            <input type="number" id="peca-x" placeholder="Ex: 50">
+                        </div>
+                        <div class="input-group">
+                            <label>Altura Y (cm)</label>
+                            <input type="number" id="peca-y" placeholder="Ex: 30">
+                        </div>
+                    </div>
+                    <div class="input-group">
+                        <label>Quantidade</label>
+                        <input type="number" id="peca_qtd" placeholder="Ex: 4" value="1">
+                    </div>
+                    <button class="btn" onclick="adicionarPeca()">Adicionar Peça</button>
+
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Medida (X x Y)</th>
+                                <th>Qtd</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabela-pecas-corpo">
+                            <!-- Inserido via JS -->
+                        </tbody>
+                    </table>
+                </div>
             </div>
 
-            <div class="stats-grid">
-                <div class="stat-card">
-                    <h3>Vendas Hoje</h3>
-                    <div class="value">R$ 4.280,00</div>
+            <!-- Coluna Direita: Custos, Aproveitamento e Desenho -->
+            <div>
+                <!-- 6. Demais Custos -->
+                <div class="card">
+                    <h3>6. Custos Adicionais</h3>
+                    <div class="form-row">
+                        <div class="input-group">
+                            <label>Mão de Obra (R$)</label>
+                            <input type="number" id="custo-MO" value="50" oninput="calcularTudo()">
+                        </div>
+                        <div class="input-group">
+                            <label>Energia / Operacional (R$)</label>
+                            <input type="number" id="custo-energia" value="15" oninput="calcularTudo()">
+                        </div>
+                    </div>
+                    <div class="input-group">
+                        <label>Frete / Outros (R$)</label>
+                        <input type="number" id="custo-frete" value="20" oninput="calcularTudo()">
+                    </div>
                 </div>
-                <div class="stat-card">
-                    <h3>Pedidos Pendentes</h3>
-                    <div class="value">18</div>
-                </div>
-                <div class="stat-card">
-                    <h3>Produtos em Estoque</h3>
-                    <div class="value">1.423</div>
-                </div>
-            </div>
 
-            <div class="card-table">
-                <h3>Últimos Pedidos dos Marketplaces</h3>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Pedido</th>
-                            <th>Cliente</th>
-                            <th>Canal</th>
-                            <th>Valor</th>
-                            <th>Status</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>#9824</td>
-                            <td>Carlos Silva</td>
-                            <td>Mercado Livre</td>
-                            <td>R$ 189,90</td>
-                            <td><span class="badge-status success">Enviado</span></td>
-                        </tr>
-                        <tr>
-                            <td>#9823</td>
-                            <td>Ana Souza</td>
-                            <td>Shopee</td>
-                            <td>R$ 74,50</td>
-                            <td><span class="badge-status warning">Preparando</span></td>
-                        </tr>
-                        <tr>
-                            <td>#9822</td>
-                            <td>Marcos Lima</td>
-                            <td>Mercado Livre</td>
-                            <td>R$ 310,00</td>
-                            <td><span class="badge-status success">Enviado</span></td>
-                        </tr>
-                    </tbody>
-                </table>
+                <!-- 7. Cálculo de Custos e Quantidade de Material -->
+                <div class="card">
+                    <h3>7. Resumo de Custos e Material</h3>
+                    <p style="font-size: 14px; margin-bottom: 8px;">Material Utilizado: <strong id="res-material">0 cm</strong></p>
+                    <p style="font-size: 14px; margin-bottom: 8px;">Custo Estimado do Material: <strong id="res-custo-mat">R$ 0,00</strong></p>
+                    <p style="font-size: 14px; margin-bottom: 8px;">Custo Total (Com Adicionais): <strong id="res-custo-total" style="color: var(--primary-color);">R$ 0,00</strong></p>
+                </div>
+
+                <!-- 8. Desenho com Aproveitamento Máximo -->
+                <div class="card" id="print-area">
+                    <h3>8. Esquema de Corte (Aproveitamento Máximo)</h3>
+                    <div id="preview-canvas-container">
+                        <span>Simulação de Encaixe de Peças no Rolo</span>
+                    </div>
+                </div>
+
+                <!-- 10. Exportar, Salvar e Backup -->
+                <div class="actions-bar">
+                    <button class="btn" style="background-color: var(--success);" onclick="salvarBackup()">Salvar / Backup</button>
+                    <button class="btn" style="background-color: #475569;" onclick="window.print()">Exportar / Imprimir</button>
+                </div>
             </div>
-        </main>
+        </div>
     </div>
 
     <script>
-        function handleLogin(event) {
-            event.preventDefault();
+        let pecas = [];
+        const VERSAO_SISTEMA = "1.0.1";
+        document.getElementById('app-version').innerText = VERSAO_SISTEMA;
+
+        function realizarLogin(e) {
+            e.preventDefault();
             document.getElementById('login-screen').style.display = 'none';
-            document.getElementById('app-screen').style.display = 'grid';
+            document.getElementById('app-screen').style.display = 'block';
         }
 
-        function handleLogout() {
+        function fazerLogout() {
             document.getElementById('app-screen').style.display = 'none';
             document.getElementById('login-screen').style.display = 'flex';
+        }
+
+        function atualizarCabecalho() {
+            let cli = document.getElementById('cliente').value || '-';
+            let proj = document.getElementById('projeto').value || '-';
+            document.getElementById('info-cliente-projeto').innerText = `Cliente: ${cli} | Projeto: ${proj}`;
+        }
+
+        function adicionarPeca() {
+            let x = parseFloat(document.getElementById('peca-x').value);
+            let y = parseFloat(document.getElementById('peca-y').value);
+            let qtd = parseInt(document.getElementById('peca_qtd').value);
+
+            if(!x || !y || !qtd) {
+                alert('Preencha todas as medidas e quantidade da peça!');
+                return;
+            }
+
+            pecas.push({ x, y, qtd });
+            document.getElementById('peca-x').value = '';
+            document.getElementById('peca-y').value = '';
+            document.getElementById('peca_qtd').value = '1';
+
+            renderizarTabelaPecas();
+            calcularTudo();
+        }
+
+        function removerPeca(index) {
+            pecas.splice(index, 1);
+            renderizarTabelaPecas();
+            calcularTudo();
+        }
+
+        function renderizarTabelaPecas() {
+            let tbody = document.getElementById('tabela-pecas-corpo');
+            tbody.innerHTML = '';
+            pecas.forEach((p, index) => {
+                tbody.innerHTML += `
+                    <tr>
+                        <td>${p.x}cm x ${p.y}cm</td>
+                        <td>${p.qtd}</td>
+                        <td><button onclick="removerPeca(${index})" style="background:var(--danger);color:#fff;border:none;padding:4px 8px;border-radius:4px;cursor:pointer;">Remover</button></td>
+                    </tr>
+                `;
+            });
+        }
+
+        function calcularTudo() {
+            let larguraBobina = parseFloat(document.getElementById('bobina-largura').value) || 120;
+            let custoRolo = parseFloat(document.getElementById('bobina-custo').value) || 0;
+            
+            // Lógica simplificada de cálculo de aproveitamento linear/área
+            let areaTotalPecasCm2 = 0;
+            pecas.forEach(p => {
+                areaTotalPecasCm2 += (p.x * p.y) * p.qtd;
+            });
+
+            // Estimativa linear no rolo baseada na largura
+            let comprimentoNecessario = larguraBobina > 0 ? areaTotalPecasCm2 / larguraBobina : 0;
+            
+            // Custos
+            let custoMat = (comprimentoNecessario / 100) * (custoRolo / 10); // Exemplo proporcional
+            let mo = parseFloat(document.getElementById('custo-MO').value) || 0;
+            let energia = parseFloat(document.getElementById('custo-energia').value) || 0;
+            let frete = parseFloat(document.getElementById('custo-frete').value) || 0;
+            
+            let totalGeral = custoMat + mo + energia + frete;
+
+            document.getElementById('res-material').innerText = `${comprimentoNecessario.toFixed(1)} cm`;
+            document.getElementById('res-custo-mat').innerText = `R$ ${custoMat.toFixed(2)}`;
+            document.getElementById('res-custo-total').innerText = `R$ ${totalGeral.toFixed(2)}`;
+        }
+
+        function salvarBackup() {
+            let dados = {
+                cliente: document.getElementById('cliente').value,
+                projeto: document.getElementById('projeto').value,
+                bobinaLargura: document.getElementById('bobina-largura').value,
+                bobinaCusto: document.getElementById('bobina-custo').value,
+                pecas: pecas
+            };
+            let blob = new Blob([JSON.stringify(dados, null, 2)], {type: 'application/json'});
+            let url = URL.createObjectURL(blob);
+            let a = document.createElement('a');
+            a.href = url;
+            a.download = `backup-projeto-${dados.projeto || 'corte'}.json`;
+            a.click();
         }
     </script>
 </body>
