@@ -6,7 +6,6 @@
   <title>CalculaJá Pro - Nesting RIP de Materiais com Réguas CorelDRAW (cm)</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <!-- Biblioteca para exportar imagem do RIP (Html2Canvas) -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
@@ -49,7 +48,7 @@
       <div class="text-center space-y-2">
         <i class="fa-solid fa-scissors text-3xl text-emerald-600"></i>
         <h2 class="text-xl font-bold text-slate-800">CalculaJá Pro</h2>
-        <p class="text-xs text-slate-500">Mecanismo de Nesting & Corte de Plásticos, Tecidos e Chapas (Versão v1.4.2)</p>
+        <p class="text-xs text-slate-500">Mecanismo de Nesting & Corte (Versão v1.4.3)</p>
       </div>
       <button onclick="loginComGoogle()" class="w-full bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 font-bold py-2.5 rounded-xl text-sm flex items-center justify-center space-x-2 transition shadow-sm cursor-pointer">
         <i class="fa-brands fa-google text-red-500"></i>
@@ -168,7 +167,7 @@
 
         <!-- Bloco de Resultado & Visualizador Tipo RIP -->
         <div id="resultado" class="border-t pt-4 space-y-4">
-          <div class="text-center py-6 text-slate-400 text-sm">Preencha as peças e clique em <b>Processar Cálculo & RIP Nesting</b> para simular o encaixe automático exato com réguas milimetradas de 5 em 5 cm.</div>
+          <div class="text-center py-6 text-slate-400 text-sm">Preencha as peças e clique em <b>Processar Cálculo & RIP Nesting</b> para simular o encaixe exato lado a lado com réguas milimetradas.</div>
         </div>
 
       </div>
@@ -346,9 +345,9 @@
     });
   </script>
 
-  <!-- LÓGICA DE DETECÇÃO DE ATUALIZAÇÃO E NESTING COM RÉGUAS DE 5 EM 5 CM (Corel Style) -->
+  <!-- LÓGICA DE NESTING CORRIGIDA (Peças Lado a Lado + Réguas Corel) -->
   <script>
-    const VERSAO_ATUAL = "v1.4.2";
+    const VERSAO_ATUAL = "v1.4.3";
 
     function verificarAtualizacaoApp() {
       const versaoSalva = localStorage.getItem("app_versao_calculaja");
@@ -378,7 +377,8 @@
     window.addEventListener("DOMContentLoaded", () => {
       verificarAtualizacaoApp();
       renderTudo();
-      addParteVazia("Painel Principal", "Bobina: Bobina Plástico / Tecido 1.40m", 120, 80, 1, 0);
+      addParteVazia("Painel Lateral 1", "Bobina: Bobina Plástico / Tecido 1.40m", 45, 80, 2, 0);
+      addParteVazia("Painel Lateral 2", "Bobina: Bobina Plástico / Tecido 1.40m", 45, 80, 2, 0);
     });
 
     function mudarAba(aba) {
@@ -577,12 +577,11 @@
         let itensPosicionados = [];
 
         bData.pecas.forEach(p => {
-          let pW = p.l1;
-          let pH = p.l2;
-          let pWComPerda = pW * (1 + p.perda / 100);
-          let pHComPerda = pH * (1 + p.perda / 100);
+          let pW = p.l1 * (1 + p.perda / 100);
+          let pH = p.l2 * (1 + p.perda / 100);
 
-          if(cursorX + pWComPerda > larguraBobina) {
+          // Se a peça estourar a largura útil da bobina, desce para a próxima linha (empilhamento automático)
+          if(cursorX + pW > larguraBobina) {
             cursorX = 0;
             cursorY += alturaFaixaAtual;
             alturaFaixaAtual = 0;
@@ -592,14 +591,16 @@
             nome: p.nome,
             x: cursorX,
             y: cursorY,
-            w: pWComPerda,
-            h: pHComPerda,
-            wOriginal: pW,
-            hOriginal: pH
+            w: pW,
+            h: pH,
+            wOriginal: p.l1,
+            hOriginal: p.l2
           });
 
-          cursorX += pWComPerda;
-          if(pHComPerda > alturaFaixaAtual) alturaFaixaAtual = pHComPerda;
+          cursorX += pW;
+          if(pH > alturaFaixaAtual) {
+            alturaFaixaAtual = pH;
+          }
         });
 
         let comprimentoTotalCm = cursorY + alturaFaixaAtual;
@@ -607,7 +608,7 @@
         let custoBobinaAtual = metrosLineares * precoMetro;
         custoMat += custoBobinaAtual;
 
-        let escalaPx = 2;
+        let escalaPx = 2; // Fator de escala visual em pixels por cm
         let canvasW = larguraBobina * escalaPx;
         let canvasH = Math.max(300, comprimentoTotalCm * escalaPx);
 
@@ -620,26 +621,26 @@
             
             <!-- Visualizador RIP com Réguas Corretas -->
             <div class="overflow-auto border border-slate-700 bg-slate-950 p-6 rounded-lg relative max-h-[500px]">
-              <div id="container-rip-visual" class="relative inline-block" style="padding-left: 35px; padding-top: 30px;">
+              <div id="container-rip-visual" class="relative inline-block" style="padding-left: 45px; padding-top: 35px;">
                 
                 <!-- Régua Superior (Horizontal) -->
-                <div class="absolute top-[5px] left-[35px] h-[25px]" style="width: ${canvasW}px;">
+                <div class="absolute top-[5px] left-[45px] h-[30px]" style="width: ${canvasW}px;">
                   ${gerarReguaHorizontal(larguraBobina, escalaPx)}
                 </div>
 
                 <!-- Régua Esquerda (Vertical) -->
-                <div class="absolute top-[30px] left-[0px] w-[30px]" style="height: ${canvasH}px;">
+                <div class="absolute top-[35px] left-[0px] w-[40px]" style="height: ${canvasH}px;">
                   ${gerarReguaVertical(comprimentoTotalCm, escalaPx)}
                 </div>
 
-                <!-- Área da Bobina / Chapa (Desenho das Peças Lado a Lado) -->
-                <div id="bloco-exportavel-rip" class="relative bg-slate-900 border-2 border-slate-700" style="width: ${canvasW}px; height: ${canvasH}px;">
+                <!-- Área da Bobina / Chapa (Desenho exato das Peças Lado a Lado) -->
+                <div id="bloco-exportavel-rip" class="relative bg-slate-900 border-2 border-emerald-500/50 shadow-inner" style="width: ${canvasW}px; height: ${canvasH}px;">
                   ${itensPosicionados.map(item => `
-                    <div class="absolute border border-emerald-500/80 bg-emerald-950/40 text-emerald-200 flex flex-col items-center justify-center text-[10px] font-bold overflow-hidden shadow-sm"
+                    <div class="absolute border border-emerald-400 bg-emerald-900/60 text-emerald-100 flex flex-col items-center justify-center text-[10px] font-bold overflow-hidden shadow-sm transition hover:bg-emerald-800/80"
                          style="left: ${item.x * escalaPx}px; top: ${item.y * escalaPx}px; width: ${item.w * escalaPx}px; height: ${item.h * escalaPx}px;"
                          title="${item.nome}: ${item.wOriginal}x${item.hOriginal}cm">
                       <span class="truncate px-1 text-[11px] text-white">${item.nome}</span>
-                      <span class="text-[9px] text-emerald-400">${item.wOriginal}x${item.hOriginal}cm</span>
+                      <span class="text-[9px] text-emerald-300">${item.wOriginal}x${item.hOriginal}cm</span>
                     </div>
                   `).join('')}
                 </div>
@@ -695,14 +696,14 @@
         </div>
       `;
 
-      ultimoCache = { cliente, produto, totalVenda, data: new Date().toLocaleDateString() };
+      window.ultimoCache = { cliente, produto, totalVenda, data: new Date().toLocaleDateString() };
     }
 
     function gerarReguaHorizontal(larguraTotalCm, escalaPx) {
       let html = '';
       for (let cm = 0; cm <= larguraTotalCm; cm += 5) {
         let leftPx = cm * escalaPx;
-        html += `<div class="absolute top-0" style="left: ${leftPx}px;"><span class="absolute -translate-x-1/2 text-[9px] text-slate-400">${cm}</span><div class="h-2 w-[1px] bg-slate-500 mt-3"></div></div>`;
+        html += `<div class="absolute top-0" style="left: ${leftPx}px;"><span class="absolute -translate-x-1/2 text-[9px] text-slate-400">${cm}</span><div class="h-3 w-[1px] bg-emerald-500/60 mt-3"></div></div>`;
       }
       return html;
     }
@@ -711,14 +712,14 @@
       let html = '';
       for (let cm = 0; cm <= alturaTotalCm; cm += 5) {
         let topPx = cm * escalaPx;
-        html += `<div class="absolute left-0 flex items-center" style="top: ${topPx}px;"><span class="text-[9px] text-slate-400 mr-1 w-5 text-right">${cm}</span><div class="h-[1px] w-2 bg-slate-500"></div></div>`;
+        html += `<div class="absolute left-0 flex items-center" style="top: ${topPx}px;"><span class="text-[9px] text-slate-400 mr-1 w-6 text-right">${cm}</span><div class="h-[1px] w-3 bg-emerald-500/60"></div></div>`;
       }
       return html;
     }
 
     function salvarProjeto() {
-      if(!ultimoCache) { alert("Processe um cálculo primeiro para poder salvar."); return; }
-      projetosSalvos.push(ultimoCache);
+      if(!window.ultimoCache) { alert("Processe um cálculo primeiro para poder salvar."); return; }
+      projetosSalvos.push(window.ultimoCache);
       salvarLocal();
       alert("Orçamento salvo com sucesso!");
       mudarAba('salvos');
