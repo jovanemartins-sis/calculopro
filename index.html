@@ -195,7 +195,7 @@
         </div>
       </section>
 
-      <!-- ABA 3: DESENHO (RIP HP LATEX / NESTING) COM RÉGUA TÉCNICA ESCALONADA -->
+      <!-- ABA 3: DESENHO (RIP HP LATEX / NESTING) COM RÉGUA COMPACTA E PEÇAS COLADAS -->
       <section id="abaDesenho" class="hidden space-y-4">
         <div class="bg-slate-900 text-white p-5 rounded-xl shadow-inner space-y-4">
           <div class="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-slate-800 pb-3 gap-2">
@@ -209,27 +209,31 @@
             </div>
           </div>
 
-          <!-- RÉGUA TÉCNICA PROPORCIONAL DE CORTE / CAD -->
-          <div class="bg-slate-950 p-3 rounded-lg border border-slate-800 space-y-1">
+          <!-- RÉGUA TÉCNICA MENOR / ESCALA DE REFERÊNCIA CAD -->
+          <div class="bg-slate-950 p-2.5 rounded-lg border border-slate-800 space-y-1">
             <div class="flex justify-between items-center text-[10px] text-slate-400 font-mono">
-              <span class="font-bold text-cyan-400"><i class="fa-solid fa-ruler mr-1"></i> Régua Técnica Proporcional (Escala Real de Plotagem)</span>
-              <span id="escalaMetricaInfo">Escala: 1 px = 1 cm</span>
+              <span class="font-bold text-cyan-400"><i class="fa-solid fa-ruler-combined mr-1"></i> Escala de Referência (Régua Térmica / CAD)</span>
+              <span>10cm por marcação</span>
             </div>
-            <!-- Divisor milimetrado visual -->
-            <div class="relative h-4 w-full bg-slate-900 rounded border border-slate-800 flex items-center px-1 font-mono text-[9px] text-slate-400 justify-between">
-              <span>| 0cm</span>
-              <span>| 25cm</span>
-              <span>| 50cm</span>
-              <span>| 75cm</span>
-              <span>| 100cm</span>
-              <span>| 125cm</span>
-              <span>| 150cm+</span>
+            <!-- Régua menor compacta com marcações finas -->
+            <div class="relative h-3 w-full bg-slate-900 rounded border border-slate-800 flex items-center px-1 font-mono text-[8px] text-slate-500 justify-between">
+              <span>|0</span>
+              <span>|10</span>
+              <span>|20</span>
+              <span>|30</span>
+              <span>|40</span>
+              <span>|50</span>
+              <span>|60</span>
+              <span>|70</span>
+              <span>|80</span>
+              <span>|90</span>
+              <span>|100cm</span>
             </div>
           </div>
 
-          <!-- ÁREA DE PLOTAGEM COM ESCALA PROPORCIONAL -->
-          <div class="overflow-x-auto bg-slate-950 p-4 rounded-lg border border-slate-800 min-h-[300px] flex items-center shadow-inner">
-            <div id="containerPlotagem" class="relative border-l-2 border-dashed border-cyan-500 pl-4 flex gap-3 items-center flex-wrap">
+          <!-- ÁREA DE PLOTAGEM COM NESTING CONTÍNUO (PEÇAS COLADAS, SEM GAP) -->
+          <div class="overflow-x-auto bg-slate-950 p-3 rounded-lg border border-slate-800 min-h-[260px] flex items-center shadow-inner">
+            <div id="containerPlotagem" class="relative border-l border-cyan-500 pl-2 flex flex-row items-center gap-0 flex-nowrap">
               <div class="text-slate-500 text-xs py-8 w-full text-center">Nenhuma peça processada. Vá para a aba "Orçamento" e clique em calcular.</div>
             </div>
           </div>
@@ -603,16 +607,16 @@
 
       if (pecasParaProcessar.length > 0) {
         pecasParaProcessar.forEach(p => {
-          // ESCALA REAL PROPORCIONAL: 1cm = 1.2px para largura e 0.8px para comprimento mantendo proporção visual de plotter
-          const wPx = Math.max(50, p.largura * 1.2);
-          const hPx = Math.max(60, p.comprimento * 0.8);
+          // ESCALA MENOR E COMPACTA: Peças coladas lado a lado sem margens externas excessivas (Nesting Contínuo)
+          const wPx = Math.max(35, p.largura * 0.7);
+          const hPx = Math.max(45, p.comprimento * 0.5);
           
           visualizadorHtml += `
-            <div style="width: ${wPx}px; height: ${hPx}px; background-color: ${p.cor};" 
-                 class="rounded border border-white/30 p-1.5 flex flex-col justify-between text-[10px] text-white shadow-md font-bold overflow-hidden relative">
-              <span class="truncate bg-black/60 px-1 py-0.5 rounded">${p.nome}</span>
-              <div class="text-[9px] bg-black/40 px-1 py-0.5 rounded self-start font-mono">
-                ${p.largura} x ${p.comprimento} cm
+            <div style="width: ${wPx}px; height: ${hPx}px; background-color: ${p.cor}; margin-right: 0px;" 
+                 class="border border-white/20 p-1 flex flex-col justify-between text-[9px] text-white font-bold overflow-hidden relative shadow-sm shrink-0">
+              <span class="truncate bg-black/60 px-1 py-0.2 rounded">${p.nome}</span>
+              <div class="text-[8px] bg-black/40 px-1 py-0.2 rounded self-start font-mono">
+                ${p.largura}x${p.comprimento}
               </div>
             </div>
           `;
