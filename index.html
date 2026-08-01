@@ -45,7 +45,7 @@
       <div class="text-center space-y-2">
         <i class="fa-solid fa-print text-3xl text-emerald-600"></i>
         <h2 class="text-xl font-bold text-slate-800">CalculaJá Pro</h2>
-        <p class="text-xs text-slate-500">RIP de Impressão com Régua de Avanço Contínuo HP Latex (v1.4.6)</p>
+        <p class="text-xs text-slate-500">RIP de Impressão com Régua de Avanço Contínuo HP Latex (v1.4.7)</p>
       </div>
       <button onclick="loginComGoogle()" class="w-full bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 font-bold py-2.5 rounded-xl text-sm flex items-center justify-center space-x-2 transition shadow-sm cursor-pointer">
         <i class="fa-brands fa-google text-red-500"></i>
@@ -169,7 +169,7 @@
 
         <!-- Bloco de Resultado & Visualizador Tipo HP Latex RIP -->
         <div id="resultado" class="border-t pt-4 space-y-4">
-          <div class="text-center py-6 text-slate-400 text-sm">Preencha as peças e clique em <b>Processar Cálculo & RIP HP Latex</b> para simular o avanço linear contínuo do rolo.</div>
+          <div class="text-center py-6 text-slate-400 text-sm">Preencha as peças e clique em <b>Processar Cálculo & RIP HP Latex</b> para simular o avanço linear proporcional do rolo.</div>
         </div>
 
       </div>
@@ -351,9 +351,9 @@
     });
   </script>
 
-  <!-- LÓGICA DE RIP HP LATEX COM RÉGUA DE AVANÇO CONTINUO -->
+  <!-- LÓGICA DE RIP HP LATEX COM MESMA ESCALA PROPORCIONAL EIXO X / Y -->
   <script>
-    const VERSAO_ATUAL = "v1.4.6";
+    const VERSAO_ATUAL = "v1.4.7";
 
     function verificarAtualizacaoApp() {
       const versaoSalva = localStorage.getItem("app_versao_calculaja");
@@ -372,7 +372,7 @@
         <i class="fa-solid fa-rocket text-emerald-400 text-xl"></i>
         <div>
           <p class="text-xs font-bold">App Atualizado!</p>
-          <p class="text-[10px] text-slate-400">Versão ${novaVersao} com Régua de Avanço HP Latex carregada.</p>
+          <p class="text-[10px] text-slate-400">Versão ${novaVersao} com Escala 1:1 Proporcional (Eixos X e Y Iguais).</p>
         </div>
         <button onclick="this.parentElement.remove()" class="ml-3 text-slate-400 hover:text-white text-xs font-bold">✕</button>
       `;
@@ -398,7 +398,7 @@
       { id: 1, nome: "Ilhós NBR", unidade: "un", valor: 0.15 }
     ];
     let bobinas = JSON.parse(localStorage.getItem("bobinas_v8")) || [
-      { id: 1, nome: "Bobina Lona 140cm x 5000cm", largura: 140, comprimentoRolo: 5000, preco: 38.00, regra: "RIP HP Latex Avanço Contínuo" }
+      { id: 1, nome: "Bobina Lona 140cm x 5000cm", largura: 140, comprimentoRolo: 5000, preco: 38.00, regra: "RIP HP Latex Avanço Proporcional" }
     ];
     let projetosSalvos = JSON.parse(localStorage.getItem("projetos_v8")) || [];
 
@@ -463,7 +463,7 @@
         largura: parseFloat(document.getElementById("larguraBobina").value), 
         comprimentoRolo: parseFloat(document.getElementById("comprimentoBobina").value) || 5000,
         preco: parseFloat(document.getElementById("precoBobina").value), 
-        regra: document.getElementById("regraBobina").value || "RIP HP Latex Avanço Contínuo" 
+        regra: document.getElementById("regraBobina").value || "RIP HP Latex Avanço Proporcional" 
       });
       salvarLocal(); renderTudo(); this.reset();
     });
@@ -580,7 +580,6 @@
         for(let i=0; i<p.q; i++) {
           let w = p.l1;
           let h = p.l2;
-          // Rotação inteligente se necessário para ajustar na largura da impressora
           if (w > larguraBobina && h <= larguraBobina) {
             w = p.l2; h = p.l1;
           }
@@ -591,12 +590,9 @@
         }
       });
 
-      // Ordenar por altura decrescente para otimizar fileiras (prateleiras de impressão)
       itens.sort((a, b) => b.h - a.h);
 
       let prateleiras = [{ y: 0, alturaPrateleira: 0, larguraOcupada: 0, itens: [] }];
-
-      // Margem lateral e espaçamento padrão de RIP profissional (ex: 1cm de respiro entre cópias)
       const GAP = 1.0; 
 
       itens.forEach(item => {
@@ -618,7 +614,6 @@
 
         if (!colocado) {
           let ultimaPrateleira = prateleiras[prateleiras.length - 1];
-          // Adicionar margem de avanço de cabeça de impressão / secagem HP (ex: 2cm de respiro entre fileiras)
           const MARGEM_AVANCO_ROLO = 2.0;
           let novoY = ultimaPrateleira.y + ultimaPrateleira.alturaPrateleira + MARGEM_AVANCO_ROLO;
           let novaPrateleira = {
@@ -632,7 +627,7 @@
       });
 
       let ultima = prateleiras[prateleiras.length - 1];
-      let alturaTotalConsumidaCm = ultima ? (ultima.y + ultima.alturaPrateleira + 5.0) : 0; // +5cm de margem final de corte do rolo
+      let alturaTotalConsumidaCm = ultima ? (ultima.y + ultima.alturaPrateleira + 5.0) : 0;
 
       let listaPlana = [];
       prateleiras.forEach(s => {
@@ -709,34 +704,39 @@
       for(let bNome in dadosProcessadosBobinas) {
         const dados = dadosProcessadosBobinas[bNome];
         const larguraBobina = dados.obj.largura; 
-        const alturaConsumidaReal = Math.max(100, dados.alturaTotalCm);
+        const alturaConsumidaReal = Math.max(50, dados.alturaTotalCm);
 
-        // Régua Superior X (Largura exata da impressora de 10 em 10 cm com marcações HP Latex)
+        // ESCALA 1:1 REAL EM TELA (Exatamente a mesma proporção em pixels por centímetro nos eixos X e Y)
+        // Definimos uma base fixa de 4 pixels por centímetro (4px = 1cm real na tela para X e Y)
+        const PIXELS_POR_CM = 4.0;
+        const larguraContainerPx = larguraBobina * PIXELS_POR_CM;
+        const alturaContainerPx = alturaConsumidaReal * PIXELS_POR_CM;
+
+        // Régua Superior X (Marcações de 10 em 10 cm baseadas na largura exata proporcional)
         let reguaXHtml = '';
         for(let x = 0; x <= larguraBobina; x += 10) {
-          let posPct = (x / larguraBobina) * 100;
-          reguaXHtml += `<div class="absolute flex flex-col items-center" style="left: ${posPct}%; transform: translateX(-50%);"><span class="text-[9px] text-cyan-400 font-mono">${x}cm</span><div class="h-2 w-0.5 bg-cyan-500"></div></div>`;
+          let posX = x * PIXELS_POR_CM;
+          reguaXHtml += `<div class="absolute flex flex-col items-center" style="left: ${posX}px; transform: translateX(-50%);"><span class="text-[9px] text-cyan-400 font-mono">${x}cm</span><div class="h-2 w-0.5 bg-cyan-500"></div></div>`;
         }
 
-        // Régua Lateral Y (Avanço Contínuo do Rolo - Estilo HP Latex RIP Professional com marcação precisa em cm)
+        // Régua Lateral Y (Avanço Contínuo proporcional em cm com a mesma escala exata)
         let reguaYHtml = '';
-        let passoY = 50; 
+        let passoY = 20;
+        if(alturaConsumidaReal > 200) passoY = 50;
         if(alturaConsumidaReal > 500) passoY = 100;
-        if(alturaConsumidaReal > 2000) passoY = 500;
+        if(alturaConsumidaReal > 1500) passoY = 500;
 
         for(let y = 0; y <= alturaConsumidaReal; y += passoY) {
-          let topoPct = (y / alturaConsumidaReal) * 100;
-          reguaYHtml += `<div class="absolute flex items-center w-full" style="top: ${topoPct}%; transform: translateY(-50%);"><span class="text-[9px] text-cyan-400 font-mono w-12 text-right pr-1">${y}cm</span><div class="w-3 h-0.5 bg-cyan-500"></div></div>`;
+          let posY = y * PIXELS_POR_CM;
+          reguaYHtml += `<div class="absolute flex items-center w-full" style="top: ${posY}px; transform: translateY(-50%);"><span class="text-[9px] text-cyan-400 font-mono w-14 text-right pr-1">${y}cm</span><div class="w-3 h-0.5 bg-cyan-500"></div></div>`;
         }
-
-        let alturaVisualContainer = Math.max(500, Math.min(2500, (alturaConsumidaReal / 100) * 120));
 
         htmlPaineis += `
           <div class="bg-slate-900 border border-slate-700 rounded-xl p-4 space-y-3">
             <div class="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-slate-700 pb-3 gap-3">
               <div>
-                <h5 class="font-bold text-white text-sm"><i class="fa-solid fa-print text-cyan-400 mr-1"></i> RIP HP Latex Avanço Contínuo — ${bNome}</h5>
-                <p class="text-xs text-slate-400">Largura Bobina: <b>${larguraBobina} cm</b> | Comprimento Total RIP (Avanço Real): <b class="text-cyan-300">${alturaConsumidaReal.toFixed(1)} cm</b></p>
+                <h5 class="font-bold text-white text-sm"><i class="fa-solid fa-print text-cyan-400 mr-1"></i> RIP HP Latex Escala Real 1:1 (Eixos X = Y) — ${bNome}</h5>
+                <p class="text-xs text-slate-400">Largura Bobina: <b>${larguraBobina} cm</b> | Comprimento Total RIP: <b class="text-cyan-300">${alturaConsumidaReal.toFixed(1)} cm</b> (Mesma Escala Proporcional)</p>
               </div>
               <div class="flex items-center gap-2">
                 <span class="text-xs font-bold bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 px-2.5 py-1 rounded-lg">R$ ${(dados.metrosLineares * dados.obj.preco).toFixed(2)}</span>
@@ -749,32 +749,32 @@
             </div>
 
             <div class="overflow-x-auto overflow-y-auto max-h-[600px] border border-slate-800 rounded-xl p-2 bg-slate-950 shadow-inner" id="bloco-exportavel-rip">
-              <div class="container-rip-visual bg-slate-950 p-2 transition-transform duration-200" style="min-width: 700px;">
+              <div class="container-rip-visual bg-slate-950 p-2 transition-transform duration-200" style="width: fit-content;">
                 
-                <!-- REGUA SUPERIOR X (LARGURA) -->
-                <div class="relative h-8 ml-16 mr-2 border-b-2 border-cyan-500 select-none bg-slate-900 rounded-t pt-1">
+                <!-- REGUA SUPERIOR X (LARGURA NA MESMA ESCALA) -->
+                <div class="relative h-8 ml-16 mr-2 border-b-2 border-cyan-500 select-none bg-slate-900 rounded-t pt-1" style="width: ${larguraContainerPx}px;">
                   ${reguaXHtml}
                 </div>
 
                 <div class="flex">
-                  <!-- REGUA LATERAL Y (AVANÇO DO ROLO HP LATEX) -->
-                  <div class="relative w-16 border-r-2 border-cyan-500 select-none bg-slate-900" style="height: ${alturaVisualContainer}px;">
+                  <!-- REGUA LATERAL Y (AVANÇO DO ROLO NA MESMA ESCALA) -->
+                  <div class="relative w-16 border-r-2 border-cyan-500 select-none bg-slate-900" style="height: ${alturaContainerPx}px;">
                     ${reguaYHtml}
                   </div>
 
-                  <!-- AREA DE IMPRESSÃO / NESTING COM COORDENADAS REAIS -->
+                  <!-- AREA DE IMPRESSÃO / NESTING COM COORDENADAS PROPORCIONAIS EXATAS (X e Y com a mesma proporção visual) -->
                   <div class="flex-grow pl-0 bg-slate-950">
-                    <div class="relative bg-slate-900 border border-slate-800 overflow-hidden m-0" style="height: ${alturaVisualContainer}px;">
+                    <div class="relative bg-slate-900 border border-slate-800 overflow-hidden m-0" style="width: ${larguraContainerPx}px; height: ${alturaContainerPx}px;">
         `;
 
         dados.itensNesting.forEach((item, idx) => {
-          let leftPct = (item.x / larguraBobina) * 100;
-          let topPct = (item.y / alturaConsumidaReal) * 100;
-          let widthPct = (item.w / larguraBobina) * 100;
-          let heightPct = (item.h / alturaConsumidaReal) * 100;
+          let leftPx = item.x * PIXELS_POR_CM;
+          let topPx = item.y * PIXELS_POR_CM;
+          let widthPx = item.w * PIXELS_POR_CM;
+          let heightPx = item.h * PIXELS_POR_CM;
 
           htmlPaineis += `
-            <div style="position: absolute; left: ${leftPct}%; top: ${topPct}%; width: ${widthPct}%; height: ${heightPct}%;" class="bg-slate-100 hover:bg-white text-slate-900 p-1 border border-cyan-600 flex flex-col justify-between transition box-border shadow-md overflow-hidden z-10 rounded-sm">
+            <div style="position: absolute; left: ${leftPx}px; top: ${topPx}px; width: ${widthPx}px; height: ${heightPx}px;" class="bg-slate-100 hover:bg-white text-slate-900 p-1 border border-cyan-600 flex flex-col justify-between transition box-border shadow-md overflow-hidden z-10 rounded-sm">
               <div class="flex justify-between items-center text-[9px] font-bold border-b border-slate-300 pb-0.5 text-slate-700">
                 <span class="truncate">#${idx+1} ${item.nome}</span>
                 <span class="bg-cyan-100 text-cyan-900 px-1 rounded font-mono">${item.w}x${item.h}cm</span>
@@ -790,9 +790,9 @@
                   </div>
                 </div>
 
-                <div class="flex justify-between text-[10px] text-slate-400 font-mono mt-2 pt-1 px-1 border-t border-slate-800">
+                <div class="flex justify-between text-[10px] text-slate-400 font-mono mt-2 pt-1 px-1 border-t border-slate-800" style="width: ${larguraContainerPx + 64}px;">
                   <span>Origem 0,0 (Início do Job RIP)</span>
-                  <span class="text-cyan-400 font-bold">Régua de Avanço HP Latex Ativa — Comprimento Linear Exato</span>
+                  <span class="text-cyan-400 font-bold">Escala 1:1 Proporcional Ativa (Eixo X e Y com a mesma proporção visual)</span>
                   <span>Avanço Total: ${(alturaConsumidaReal/100).toFixed(2)}m</span>
                 </div>
               </div>
@@ -822,7 +822,7 @@
             </div>
           </div>
           <div class="space-y-3 pt-2">
-            <h4 class="font-bold text-slate-700 text-sm">Simulador RIP Profissional com Régua de Avanço HP Latex</h4>
+            <h4 class="font-bold text-slate-700 text-sm">Simulador RIP Proporcional (Mesma Escala Eixo X e Y)</h4>
             ${htmlPaineis || '<p class="text-xs text-slate-400">Nenhum material selecionado.</p>'}
           </div>
         </div>
