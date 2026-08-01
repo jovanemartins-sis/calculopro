@@ -31,7 +31,7 @@
       </div>
 
       <!-- BOTÃO GOOGLE -->
-      <button onclick="loginComGoogle()" class="w-full bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 font-bold py-2.5 rounded-xl text-sm flex items-center justify-center space-x-2 transition shadow-sm">
+      <button onclick="loginComGoogle()" class="w-full bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 font-bold py-2.5 rounded-xl text-sm flex items-center justify-center space-x-2 transition shadow-sm cursor-pointer">
         <i class="fa-brands fa-google text-red-500"></i>
         <span>Continuar com Google</span>
       </button>
@@ -42,7 +42,7 @@
         <div class="flex-grow border-t border-slate-200"></div>
       </div>
 
-      <!-- FORMULÁRIO DE EMAIL E SENHA (LOGIN / CADASTRO FUNCIONAL) -->
+      <!-- FORMULÁRIO DE EMAIL E SENHA -->
       <form id="formEmailSenha" class="space-y-4" onsubmit="tratarLoginEmail(event)">
         <div>
           <label class="block text-xs font-bold uppercase text-slate-500 mb-1">E-mail</label>
@@ -56,22 +56,14 @@
         <div id="erro-auth" class="text-xs text-red-500 text-center font-medium hidden"></div>
 
         <div class="grid grid-cols-2 gap-2 pt-2">
-          <button type="submit" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-2.5 rounded-xl text-xs transition">
+          <button type="submit" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-2.5 rounded-xl text-xs transition cursor-pointer">
             Entrar
           </button>
-          <button type="button" onclick="cadastrarComEmail()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-xl text-xs transition">
+          <button type="button" onclick="cadastrarComEmail()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-xl text-xs transition cursor-pointer">
             Cadastrar
           </button>
         </div>
       </form>
-
-      <!-- ÁREA PARA QUEM JÁ LOGOU MAS QUER TROCAR DE CONTA NA TELA INICIAL -->
-      <div id="info-conta-atual" class="hidden pt-4 border-t text-center space-y-2">
-        <p class="text-xs text-slate-600">Conectado como: <b id-email-logado class="text-slate-800"></b></p>
-        <button onclick="sairDaConta()" class="text-xs text-red-500 hover:text-red-700 font-bold underline">
-          Desconectar / Trocar Conta
-        </button>
-      </div>
 
     </div>
   </div>
@@ -104,7 +96,7 @@
             <input type="number" id="valorPreco" step="0.01" min="0" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm outline-none focus:border-emerald-500" placeholder="0,00" required>
           </div>
         </div>
-        <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-lg text-sm transition">
+        <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-lg text-sm transition cursor-pointer">
           Cadastrar no Catálogo
         </button>
       </form>
@@ -144,7 +136,7 @@
         <div class="mb-4">
           <div class="flex justify-between items-center mb-2">
             <h3 class="text-sm font-bold text-slate-600">Partes / Peças do Corte</h3>
-            <button onclick="addParteVazia()" class="bg-slate-800 hover:bg-slate-900 text-white px-3 py-1.5 rounded-lg text-xs font-bold transition">
+            <button onclick="addParteVazia()" class="bg-slate-800 hover:bg-slate-900 text-white px-3 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer">
               <i class="fa-solid fa-plus mr-1"></i> Adicionar Peça
             </button>
           </div>
@@ -188,7 +180,7 @@
           </div>
         </div>
 
-        <button onclick="calcular()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl text-sm shadow-md transition">
+        <button onclick="calcular()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl text-sm shadow-md transition cursor-pointer">
           Calcular Orçamento Completo
         </button>
       </div>
@@ -272,29 +264,24 @@
       const appPrincipal = document.getElementById("app-principal");
       const telaLogin = document.getElementById("tela-login");
       const containerTopo = document.getElementById("auth-container-topo");
-      const infoConta = document.getElementById("info-conta-atual");
 
       if (user) {
-        // Logado: esconde a tela de login inicial, mostra o header e o app principal
         telaLogin.classList.add("hidden");
         headerPrincipal.classList.remove("hidden");
         appPrincipal.classList.remove("hidden");
 
         const nomeUser = user.displayName ? user.displayName.split(' ')[0] : user.email.split('@')[0];
         
-        // Botão de sair/trocar conta no topo do sistema
         containerTopo.innerHTML = `
           <div class="flex items-center space-x-3">
             <span class="text-sm font-medium">Olá, ${nomeUser}</span>
-            <button onclick="sairDaConta()" class="bg-red-500 hover:bg-red-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold transition">Sair / Trocar Conta</button>
+            <button onclick="sairDaConta()" class="bg-red-500 hover:bg-red-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer">Sair / Trocar Conta</button>
           </div>
         `;
       } else {
-        // Deslogado: mostra apenas o retângulo central de login/cadastro
         telaLogin.classList.remove("hidden");
         headerPrincipal.classList.add("hidden");
         appPrincipal.classList.add("hidden");
-        infoConta.classList.add("hidden");
       }
     });
   </script>
@@ -320,7 +307,7 @@
           <td class="p-2 font-semibold text-slate-700">${item.nome}</td>
           <td class="p-2 text-slate-500 text-xs">${item.unidade}</td>
           <td class="p-2 font-bold text-emerald-600">R$ ${item.valor.toFixed(2).replace(".",",")}</td>
-          <td class="p-2 text-center"><button onclick="removerPreco(${index})" class="text-red-500 hover:text-red-700 text-xs"><i class="fa-solid fa-trash"></i></button></td>
+          <td class="p-2 text-center"><button onclick="removerPreco(${index})" class="text-red-500 hover:text-red-700 text-xs cursor-pointer"><i class="fa-solid fa-trash"></i></button></td>
         `;
         tbody.appendChild(tr);
       });
@@ -371,7 +358,7 @@
         <td class="p-2"><input class="lado2 w-full border border-slate-300 rounded px-2 py-1 text-sm outline-none focus:border-blue-500" type="number" placeholder="0"></td>
         <td class="p-2"><input class="qtdParte w-full border border-slate-300 rounded px-2 py-1 text-sm outline-none focus:border-blue-500" type="number" placeholder="1" value="1"></td>
         <td class="p-2"><input class="perdaParte w-full border border-slate-300 rounded px-2 py-1 text-sm outline-none focus:border-blue-500" type="number" placeholder="0" value="0"></td>
-        <td class="p-2 text-center"><button class="bg-red-500 hover:bg-red-600 text-white p-1.5 rounded text-xs" type="button" onclick="this.closest('tr').remove()"><i class="fa-solid fa-xmark"></i></button></td>
+        <td class="p-2 text-center"><button class="bg-red-500 hover:bg-red-600 text-white p-1.5 rounded text-xs cursor-pointer" type="button" onclick="this.closest('tr').remove()"><i class="fa-solid fa-xmark"></i></button></td>
       `;
       tbody.appendChild(tr);
       atualizaSelectsCatalogo();
