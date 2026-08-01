@@ -3,180 +3,228 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Yuri Corretor - Nesting Visual Avançado (Plotter / Multi-Páginas)</title>
+  <title>Yuri Corretor - Sistema de Nesting & Gestão de Cortes</title>
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- FontAwesome Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <!-- html2canvas e jspdf para exportação completa -->
+  <!-- html2canvas e jspdf para exportação gráfica em PDF -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+    }
+  </script>
+  <style>
+    /* Estilização de Scrollbar Personalizada */
+    ::-webkit-scrollbar { width: 8px; height: 8px; }
+    ::-webkit-scrollbar-track { background: var(--scroll-track, #090d16); }
+    ::-webkit-scrollbar-thumb { background: var(--scroll-thumb, #1e293b); border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--scroll-thumb-hover, #334155); }
+  </style>
 </head>
-<body class="h-full bg-slate-950 font-sans text-slate-100 antialiased flex flex-col">
+<body id="corpo-app" class="h-full bg-slate-950 font-sans text-slate-100 antialiased flex flex-col selection:bg-emerald-500 selection:text-slate-950 transition-colors duration-200">
 
-  <!-- ================= TELA DE LOGIN ================= -->
-  <div id="tela-login" class="fixed inset-0 z-50 bg-slate-950 flex items-center justify-center p-4">
-    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-8 max-w-md w-full shadow-2xl space-y-6">
-      <div class="text-center space-y-2">
-        <div class="inline-flex bg-emerald-500 text-slate-950 p-3 rounded-2xl font-black shadow-lg">
+  <!-- ================= TELA DE LOGIN / CADASTRO ================= -->
+  <div id="tela-login" class="fixed inset-0 z-50 bg-slate-950/95 dark:bg-slate-950/95 bg-slate-100/95 backdrop-blur-md flex items-center justify-center p-4 transition-colors">
+    <div class="bg-slate-900 dark:bg-slate-900 bg-white border border-slate-800 dark:border-slate-800 border-slate-200 rounded-3xl p-8 max-w-md w-full shadow-2xl space-y-6">
+      
+      <!-- Seletor de Tema Rápido no Login -->
+      <div class="flex justify-between items-center">
+        <div class="inline-flex bg-emerald-500 text-slate-950 p-3 rounded-2xl font-black shadow-lg shadow-emerald-500/10">
           <i class="fa-solid fa-scissors text-xl"></i>
         </div>
-        <h2 class="text-xl font-bold tracking-tight text-white">Yuri Corretor - Nesting Pro</h2>
-        <p class="text-xs text-slate-400">Acesse o sistema completo de otimização e controle por páginas</p>
+        <button type="button" onclick="alternarTema()" class="text-xs font-bold px-3 py-1.5 rounded-xl border border-slate-700 dark:border-slate-700 border-slate-300 bg-slate-800 dark:bg-slate-800 bg-slate-200 text-slate-200 dark:text-slate-200 text-slate-800 cursor-pointer flex items-center space-x-2">
+          <i id="icone-modo-login" class="fa-solid fa-moon"></i>
+          <span id="texto-modo-login">Tema Claro</span>
+        </button>
       </div>
 
-      <form onsubmit="realizarLogin(event)" class="space-y-4">
-        <div>
-          <label class="block text-[11px] font-bold uppercase text-slate-400 mb-1">E-mail ou Usuário</label>
-          <div class="relative">
-            <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-500"><i class="fa-solid fa-envelope text-xs"></i></span>
-            <input type="text" id="login-email" value="yuri@corretor.com" required class="w-full bg-slate-950 border border-slate-700 rounded-xl pl-9 pr-3 py-2.5 text-xs text-white focus:outline-none focus:border-emerald-500">
-          </div>
-        </div>
+      <div class="text-center space-y-1">
+        <h2 class="text-2xl font-black tracking-tight text-white dark:text-white text-slate-900">Nesting Pro</h2>
+        <p class="text-xs text-slate-400 dark:text-slate-400 text-slate-600">Sistema avançado de otimização de bobinas & sobras</p>
+      </div>
 
-        <div>
-          <label class="block text-[11px] font-bold uppercase text-slate-400 mb-1">Senha de Acesso</label>
-          <div class="relative">
-            <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-500"><i class="fa-solid fa-lock text-xs"></i></span>
-            <input type="password" id="login-senha" value="123456" required class="w-full bg-slate-950 border border-slate-700 rounded-xl pl-9 pr-3 py-2.5 text-xs text-white focus:outline-none focus:border-emerald-500">
-          </div>
-        </div>
-
-        <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-500 text-slate-950 font-black py-3 rounded-xl text-xs transition cursor-pointer shadow-lg flex items-center justify-center space-x-2">
-          <span>Entrar no Sistema</span>
-          <i class="fa-solid fa-arrow-right"></i>
+      <div>
+        <!-- Botão Login Google / Trocar Conta -->
+        <button type="button" onclick="loginComGoogle(event)" class="w-full bg-white hover:bg-slate-100 text-slate-900 font-bold py-3.5 rounded-xl text-xs transition cursor-pointer shadow border border-slate-300 flex items-center justify-center space-x-3">
+          <svg class="w-4 h-4" viewBox="0 0 24 24">
+            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+          </svg>
+          <span id="texto-botao-google">Continuar com o Google (Trocar Conta)</span>
         </button>
-      </form>
+
+        <div class="flex items-center my-4">
+          <div class="flex-grow border-t border-slate-700 dark:border-slate-700 border-slate-300"></div>
+          <span class="px-3 text-[10px] uppercase text-slate-500 font-bold">Ou dados cadastrados</span>
+          <div class="flex-grow border-t border-slate-700 dark:border-slate-700 border-slate-300"></div>
+        </div>
+
+        <form onsubmit="realizarLogin(event)" class="space-y-3">
+          <div>
+            <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-400 text-slate-700 mb-1">E-mail de Cadastro / Acesso</label>
+            <div class="relative">
+              <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-500"><i class="fa-solid fa-envelope text-xs"></i></span>
+              <input type="email" id="login-email" value="contato@yuricorretor.com" required class="w-full bg-slate-950 dark:bg-slate-950 bg-slate-50 border border-slate-800 dark:border-slate-800 border-slate-300 rounded-xl pl-10 pr-3 py-2.5 text-xs text-white dark:text-white text-slate-900 focus:outline-none focus:border-emerald-500 transition">
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-400 text-slate-700 mb-1">Senha</label>
+            <div class="relative">
+              <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-500"><i class="fa-solid fa-lock text-xs"></i></span>
+              <input type="password" id="login-senha" value="123456" required class="w-full bg-slate-950 dark:bg-slate-950 bg-slate-50 border border-slate-800 dark:border-slate-800 border-slate-300 rounded-xl pl-10 pr-3 py-2.5 text-xs text-white dark:text-white text-slate-900 focus:outline-none focus:border-emerald-500 transition">
+            </div>
+          </div>
+
+          <button type="submit" class="w-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black py-3 rounded-xl text-xs transition cursor-pointer shadow-lg shadow-emerald-500/20 flex items-center justify-center space-x-2">
+            <span>Entrar no Sistema</span>
+            <i class="fa-solid fa-arrow-right"></i>
+          </button>
+        </form>
+      </div>
     </div>
   </div>
 
-  <!-- ================= APLICAÇÃO PRINCIPAL (Oculta até o login) ================= -->
+  <!-- ================= APLICAÇÃO PRINCIPAL ================= -->
   <div id="app-principal" class="flex-1 flex flex-col hidden">
     
     <!-- Header / Barra Superior -->
-    <header class="bg-slate-900 border-b border-slate-800 text-white shadow-lg sticky top-0 z-40">
-      <div class="max-w-7xl mx-auto px-4 py-3 flex flex-col sm:flex-row justify-between items-center gap-3">
+    <header class="bg-slate-900 dark:bg-slate-900 bg-white border-b border-slate-800 dark:border-slate-800 border-slate-200 text-white dark:text-white text-slate-900 shadow-xl sticky top-0 z-40 transition-colors">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex flex-col sm:flex-row justify-between items-center gap-3">
         <div class="flex items-center space-x-3">
-          <div class="bg-emerald-500 text-slate-950 p-2.5 rounded-xl font-black shadow">
+          <div class="bg-emerald-500 text-slate-950 p-2.5 rounded-xl font-black shadow-md">
             <i class="fa-solid fa-scissors text-lg"></i>
           </div>
           <div>
             <h1 class="text-base font-bold tracking-tight flex items-center space-x-2">
-              <span>Nesting Inteligente de Bobina (Plotter Style)</span>
-              <span class="bg-emerald-500/20 text-emerald-400 text-[10px] px-2 py-0.5 rounded-full uppercase font-mono">Pro v3.2</span>
+              <span>Nesting Inteligente de Bobina</span>
+              <span class="bg-emerald-500/20 text-emerald-400 text-[10px] px-2 py-0.5 rounded-full uppercase font-mono font-bold">Pro v3.5</span>
             </h1>
-            <p class="text-xs text-slate-400">Encaixe lateral de sobras com suporte a múltiplas páginas e painéis</p>
+            <p class="text-xs text-slate-400 dark:text-slate-400 text-slate-600">Layout interativo com cálculo de encaixe em sobras laterais</p>
           </div>
         </div>
-        <div class="flex items-center space-x-2">
-          <button onclick="carregarExemploSobras()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold px-3 py-2 rounded-xl text-xs transition cursor-pointer border border-slate-700 flex items-center space-x-1.5">
+
+        <!-- Ações Globais & Tema -->
+        <div class="flex items-center space-x-2 flex-wrap">
+          <!-- Botão Trocar Tema -->
+          <button onclick="alternarTema()" class="bg-slate-800 dark:bg-slate-800 bg-slate-100 hover:bg-slate-700 dark:hover:bg-slate-700 hover:bg-slate-200 text-slate-200 dark:text-slate-200 text-slate-800 font-bold px-3 py-2 rounded-xl text-xs transition cursor-pointer border border-slate-700 dark:border-slate-700 border-slate-300 flex items-center space-x-1.5">
+            <i id="icone-modo-app" class="fa-solid fa-moon text-amber-400"></i>
+            <span id="texto-modo-app">Tema Claro</span>
+          </button>
+          
+          <button onclick="carregarExemploSobras()" class="bg-slate-800 dark:bg-slate-800 bg-slate-100 hover:bg-slate-700 dark:hover:bg-slate-700 hover:bg-slate-200 text-slate-200 dark:text-slate-200 text-slate-800 font-bold px-3 py-2 rounded-xl text-xs transition cursor-pointer border border-slate-700 dark:border-slate-700 border-slate-300 flex items-center space-x-1.5">
             <i class="fa-solid fa-lightbulb text-amber-400"></i>
             <span>Exemplo 130+10cm</span>
           </button>
-          <button onclick="exportarRelatorioPDF()" class="bg-blue-600 hover:bg-blue-500 text-white font-bold px-3 py-2 rounded-xl text-xs transition cursor-pointer flex items-center space-x-1.5 shadow">
+          <button onclick="exportarRelatorioPDF()" class="bg-blue-600 hover:bg-blue-500 text-white font-bold px-3 py-2 rounded-xl text-xs transition cursor-pointer flex items-center space-x-1.5 shadow-md">
             <i class="fa-solid fa-file-pdf"></i>
             <span>Exportar PDF</span>
           </button>
-          <button onclick="fazerLogout()" class="bg-red-950/40 hover:bg-red-900/60 text-red-400 border border-red-800/50 font-bold px-3 py-2 rounded-xl text-xs transition cursor-pointer flex items-center space-x-1.5">
+          <button onclick="fazerLogout()" class="bg-red-950/40 dark:bg-red-950/40 bg-red-100 hover:bg-red-900/60 text-red-400 dark:text-red-400 text-red-700 border border-red-800/50 dark:border-red-800/50 border-red-300 font-bold px-3 py-2 rounded-xl text-xs transition cursor-pointer flex items-center space-x-1.5" title="Sair e Trocar de Conta">
             <i class="fa-solid fa-right-from-bracket"></i>
-            <span>Sair</span>
+            <span>Sair / Trocar Conta</span>
           </button>
         </div>
       </div>
 
       <!-- Navegação Interna de Páginas / Abas -->
-      <div class="bg-slate-950/60 border-t border-slate-800/80 px-4 flex space-x-2">
-        <button onclick="mudarAba('nesting')" id="btn-aba-nesting" class="px-4 py-2.5 text-xs font-bold text-emerald-400 border-b-2 border-emerald-500 transition cursor-pointer flex items-center space-x-2">
+      <div class="bg-slate-950/80 dark:bg-slate-950/80 bg-slate-200 border-t border-slate-800/80 dark:border-slate-800/80 border-slate-300 px-4 sm:px-6 flex space-x-2">
+        <button onclick="mudarAba('nesting')" id="btn-aba-nesting" class="px-4 py-3 text-xs font-bold text-emerald-400 border-b-2 border-emerald-500 transition cursor-pointer flex items-center space-x-2">
           <i class="fa-solid fa-shapes"></i>
           <span>Painel de Nesting & Cortes</span>
         </button>
-        <button onclick="mudarAba('historico')" id="btn-aba-historico" class="px-4 py-2.5 text-xs font-bold text-slate-400 hover:text-slate-200 border-b-2 border-transparent transition cursor-pointer flex items-center space-x-2">
+        <button onclick="mudarAba('historico')" id="btn-aba-historico" class="px-4 py-3 text-xs font-bold text-slate-400 dark:text-slate-400 text-slate-700 hover:text-slate-200 border-b-2 border-transparent transition cursor-pointer flex items-center space-x-2">
           <i class="fa-solid fa-clock-rotate-left"></i>
-          <span>Histórico & Projetos Salvos</span>
+          <span>Histórico de Projetos</span>
         </button>
       </div>
     </header>
 
-    <!-- Container Principal -->
-    <main class="flex-1 max-w-7xl w-full mx-auto p-4 md:p-6 overflow-y-auto space-y-6">
+    <!-- Container Conteúdo Principal -->
+    <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 overflow-y-auto space-y-6">
 
       <!-- ================= ABA 1: NESTING & CORTES ================= -->
       <div id="conteudo-nesting" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         
-        <!-- Coluna Esquerda: Configurações & Lista de Peças -->
+        <!-- Coluna Esquerda: Formulários & Lista de Peças -->
         <div class="lg:col-span-1 space-y-4">
           
-          <!-- Bloco Bobina -->
-          <div class="bg-slate-900 p-4 rounded-2xl border border-slate-800 space-y-3 shadow-md">
+          <!-- Configuração da Bobina -->
+          <div class="bg-slate-900 dark:bg-slate-900 bg-white border border-slate-800 dark:border-slate-800 border-slate-200 p-4 rounded-2xl space-y-3 shadow-lg transition-colors">
             <h3 class="font-bold text-xs uppercase tracking-wider text-emerald-400 flex items-center space-x-2">
               <i class="fa-solid fa-scroll"></i>
-              <span>Parâmetros da Bobina / Material</span>
+              <span>Parâmetros da Bobina</span>
             </h3>
             <div class="grid grid-cols-2 gap-3">
               <div>
-                <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Largura Bobina (cm)</label>
-                <input type="number" id="largura-bobina" value="140" onchange="calcularNestingVisual()" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-emerald-500 font-bold text-white">
+                <label class="block text-[10px] font-bold uppercase text-slate-400 dark:text-slate-400 text-slate-700 mb-1">Largura Bobina (cm)</label>
+                <input type="number" id="largura-bobina" value="140" onchange="calcularNestingVisual()" class="w-full bg-slate-950 dark:bg-slate-950 bg-slate-50 border border-slate-800 dark:border-slate-800 border-slate-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-emerald-500 font-bold text-white dark:text-white text-slate-900">
               </div>
               <div>
-                <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Margem/Espaço (cm)</label>
-                <input type="number" id="margem-corte" value="0" onchange="calcularNestingVisual()" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-emerald-500 font-bold text-white">
+                <label class="block text-[10px] font-bold uppercase text-slate-400 dark:text-slate-400 text-slate-700 mb-1">Margem/Espaçamento (cm)</label>
+                <input type="number" id="margem-corte" value="0" onchange="calcularNestingVisual()" class="w-full bg-slate-950 dark:bg-slate-950 bg-slate-50 border border-slate-800 dark:border-slate-800 border-slate-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-emerald-500 font-bold text-white dark:text-white text-slate-900">
               </div>
             </div>
-            <p class="text-[10px] text-slate-500">Ex: 140cm. Peça de 130cm deixa sobra lateral de 10cm para encaixar outra peça.</p>
+            <p class="text-[10px] text-slate-400 dark:text-slate-400 text-slate-600">Peças com larguras menores que o espaço restante ocupam a sobra na mesma linha horizontal.</p>
           </div>
 
-          <!-- Bloco Adicionar Peça -->
-          <div class="bg-slate-900 p-4 rounded-2xl border border-slate-800 space-y-3 shadow-md">
+          <!-- Formulário Adicionar Peça -->
+          <div class="bg-slate-900 dark:bg-slate-900 bg-white border border-slate-800 dark:border-slate-800 border-slate-200 p-4 rounded-2xl space-y-3 shadow-lg transition-colors">
             <h3 class="font-bold text-xs uppercase tracking-wider text-emerald-400 flex items-center space-x-2">
-              <i class="fa-solid fa-puzzle-piece"></i>
-              <span>Adicionar Peça ao Corte</span>
+              <i class="fa-solid fa-plus-circle"></i>
+              <span>Inserir Peça na Fila</span>
             </h3>
             
-            <div class="space-y-2">
+            <div class="space-y-2.5">
               <div>
-                <label class="block text-[10px] uppercase font-bold text-slate-400 mb-0.5">Nome / Identificação</label>
-                <input type="text" id="peca-nome" value="Faixa Lateral" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white">
+                <label class="block text-[10px] uppercase font-bold text-slate-400 dark:text-slate-400 text-slate-700 mb-1">Identificação / Nome</label>
+                <input type="text" id="peca-nome" placeholder="Ex: Faixa Principal" class="w-full bg-slate-950 dark:bg-slate-950 bg-slate-50 border border-slate-800 dark:border-slate-800 border-slate-300 rounded-xl px-3 py-2 text-xs text-white dark:text-white text-slate-900 focus:outline-none focus:border-emerald-500">
               </div>
               <div class="grid grid-cols-2 gap-2">
                 <div>
-                  <label class="block text-[10px] uppercase font-bold text-slate-400 mb-0.5">Largura (cm)</label>
-                  <input type="number" id="peca-largura" value="130" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white font-bold">
+                  <label class="block text-[10px] uppercase font-bold text-slate-400 dark:text-slate-400 text-slate-700 mb-1">Largura (cm)</label>
+                  <input type="number" id="peca-largura" value="130" class="w-full bg-slate-950 dark:bg-slate-950 bg-slate-50 border border-slate-800 dark:border-slate-800 border-slate-300 rounded-xl px-3 py-2 text-xs text-white dark:text-white text-slate-900 font-bold focus:outline-none focus:border-emerald-500">
                 </div>
                 <div>
-                  <label class="block text-[10px] uppercase font-bold text-slate-400 mb-0.5">Comprimento (cm)</label>
-                  <input type="number" id="peca-comprimento" value="50" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white font-bold">
+                  <label class="block text-[10px] uppercase font-bold text-slate-400 dark:text-slate-400 text-slate-700 mb-1">Comprimento (cm)</label>
+                  <input type="number" id="peca-comprimento" value="50" class="w-full bg-slate-950 dark:bg-slate-950 bg-slate-50 border border-slate-800 dark:border-slate-800 border-slate-300 rounded-xl px-3 py-2 text-xs text-white dark:text-white text-slate-900 font-bold focus:outline-none focus:border-emerald-500">
                 </div>
               </div>
               <div class="grid grid-cols-2 gap-2">
                 <div>
-                  <label class="block text-[10px] uppercase font-bold text-slate-400 mb-0.5">Quantidade</label>
-                  <input type="number" id="peca-qtd" value="1" min="1" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white">
+                  <label class="block text-[10px] uppercase font-bold text-slate-400 dark:text-slate-400 text-slate-700 mb-1">Quantidade</label>
+                  <input type="number" id="peca-qtd" value="1" min="1" class="w-full bg-slate-950 dark:bg-slate-950 bg-slate-50 border border-slate-800 dark:border-slate-800 border-slate-300 rounded-xl px-3 py-2 text-xs text-white dark:text-white text-slate-900 focus:outline-none focus:border-emerald-500">
                 </div>
                 <div class="flex items-end">
-                  <button onclick="adicionarPecaManual()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-slate-950 font-black py-2 rounded-lg text-xs transition cursor-pointer">Adicionar</button>
+                  <button onclick="adicionarPecaManual()" class="w-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black py-2 rounded-xl text-xs transition cursor-pointer shadow-md">Adicionar</button>
                 </div>
               </div>
             </div>
           </div>
 
-          <!-- Tabela de Peças Cadastradas -->
-          <div class="bg-slate-900 p-4 rounded-2xl border border-slate-800 space-y-3 shadow-md">
-            <div class="flex justify-between items-center">
-              <h3 class="font-bold text-xs uppercase tracking-wider text-slate-300">Fila de Produção</h3>
-              <button onclick="limparFila()" class="text-[10px] text-red-400 hover:underline cursor-pointer">Limpar Tudo</button>
+          <!-- Tabela de Peças a Serem Otimizadas -->
+          <div class="bg-slate-900 dark:bg-slate-900 bg-white border border-slate-800 dark:border-slate-800 border-slate-200 p-4 rounded-2xl space-y-3 shadow-lg transition-colors">
+            <div class="flex justify-between items-center border-b border-slate-800 dark:border-slate-800 border-slate-200 pb-2">
+              <h3 class="font-bold text-xs uppercase tracking-wider text-slate-300 dark:text-slate-300 text-slate-700">Fila de Produção</h3>
+              <button onclick="limparFila()" class="text-[10px] text-red-400 hover:underline cursor-pointer font-bold">Limpar Fila</button>
             </div>
-            <div class="overflow-x-auto max-h-[260px] overflow-y-auto">
+            <div class="overflow-x-auto max-h-[240px] overflow-y-auto">
               <table class="w-full text-left text-xs border-collapse">
                 <thead>
-                  <tr class="bg-slate-950 text-slate-400 border-b border-slate-800">
+                  <tr class="bg-slate-950 dark:bg-slate-950 bg-slate-100 text-slate-400 dark:text-slate-400 text-slate-600 border-b border-slate-800 dark:border-slate-800 border-slate-200">
                     <th class="p-2">Peça</th>
-                    <th class="p-2">L x C</th>
+                    <th class="p-2">Medidas (L x C)</th>
                     <th class="p-2">Qtd</th>
-                    <th class="p-2 text-center">Ações</th>
+                    <th class="p-2 text-center">Excluir</th>
                   </tr>
                 </thead>
-                <tbody id="tabela-pecas-input" class="divide-y divide-slate-800/50">
-                  <!-- Preenchido via JS -->
+                <tbody id="tabela-pecas-input" class="divide-y divide-slate-800/50 dark:divide-slate-800/50 divide-slate-200">
+                  <!-- Preenchido dinamicamente pelo JavaScript -->
                 </tbody>
               </table>
             </div>
@@ -184,51 +232,51 @@
 
         </div>
 
-        <!-- Coluna Direita: Tela Visual (Plotter / RIP) -->
+        <!-- Coluna Direita: Palco de Renderização Gráfica -->
         <div class="lg:col-span-2 space-y-4">
-          <div class="bg-slate-900 p-5 rounded-2xl border border-slate-800 space-y-4 shadow-xl">
-            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 border-b border-slate-800 pb-3">
+          <div class="bg-slate-900 dark:bg-slate-900 bg-white border border-slate-800 dark:border-slate-800 border-slate-200 p-5 rounded-2xl space-y-4 shadow-xl transition-colors">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 border-b border-slate-800 dark:border-slate-800 border-slate-200 pb-3">
               <div>
-                <h3 class="font-bold text-sm text-white flex items-center space-x-2">
+                <h3 class="font-bold text-sm text-white dark:text-white text-slate-900 flex items-center space-x-2">
                   <i class="fa-solid fa-desktop text-emerald-400"></i>
-                  <span>Simulação Visual de Encaixe na Bobina (Plotter RIP)</span>
+                  <span>Simulação Visual de Nesting (Plotter RIP)</span>
                 </h3>
-                <p class="text-xs text-slate-400">As peças entram lado a lado na mesma faixa horizontal se couberem na sobra.</p>
+                <p class="text-xs text-slate-400 dark:text-slate-400 text-slate-600">Visualização escalada e réguas dinâmicas em centímetros</p>
               </div>
               <div class="flex items-center space-x-2">
-                <button onclick="ajustarZoom(-0.2)" class="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 rounded text-xs text-white font-bold cursor-pointer border border-slate-700">- Zoom</button>
-                <button onclick="ajustarZoom(0.2)" class="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 rounded text-xs text-white font-bold cursor-pointer border border-slate-700">+ Zoom</button>
+                <button onclick="ajustarZoom(-0.15)" class="px-3 py-1 bg-slate-800 dark:bg-slate-800 bg-slate-100 hover:bg-slate-700 dark:hover:bg-slate-700 hover:bg-slate-200 rounded-lg text-xs text-white dark:text-white text-slate-800 font-bold cursor-pointer border border-slate-700 dark:border-slate-700 border-slate-300">- Zoom</button>
+                <button onclick="ajustarZoom(0.15)" class="px-3 py-1 bg-slate-800 dark:bg-slate-800 bg-slate-100 hover:bg-slate-700 dark:hover:bg-slate-700 hover:bg-slate-200 rounded-lg text-xs text-white dark:text-white text-slate-800 font-bold cursor-pointer border border-slate-700 dark:border-slate-700 border-slate-300">+ Zoom</button>
               </div>
             </div>
 
-            <!-- Palco / Canvas Gráfico com Réguas -->
-            <div class="overflow-auto max-h-[550px] border border-slate-800 rounded-xl bg-slate-950 p-6 relative shadow-inner">
-              <div id="container-plotter-canvas" class="relative transition-transform duration-200" style="min-width: 500px; min-height: 400px;">
+            <!-- Palco / Canvas com Réguas Graduadas -->
+            <div class="overflow-auto max-h-[520px] border border-slate-800 dark:border-slate-800 border-slate-200 rounded-xl bg-slate-950 dark:bg-slate-950 bg-slate-50 p-6 relative shadow-inner">
+              <div id="container-plotter-canvas" class="relative transition-transform duration-200" style="min-width: 450px; min-height: 380px;">
                 <!-- Renderizado dinamicamente -->
               </div>
             </div>
 
-            <!-- Resumo de Consumo -->
-            <div id="resumo-metricas" class="grid grid-cols-2 sm:grid-cols-3 gap-3 pt-2">
-              <!-- Preenchido via JS -->
+            <!-- Métricas Principais -->
+            <div id="resumo-metricas" class="grid grid-cols-2 sm:grid-cols-3 gap-3 pt-1">
+              <!-- Preenchido via JavaScript -->
             </div>
           </div>
         </div>
 
       </div>
 
-      <!-- ================= ABA 2: HISTÓRICO & PROJETOS ================= -->
+      <!-- ================= ABA 2: HISTÓRICO DE PROJETOS ================= -->
       <div id="conteudo-historico" class="space-y-4 hidden">
-        <div class="bg-slate-900 p-6 rounded-2xl border border-slate-800 space-y-4 shadow-xl">
-          <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+        <div class="bg-slate-900 dark:bg-slate-900 bg-white border border-slate-800 dark:border-slate-800 border-slate-200 p-6 rounded-2xl space-y-4 shadow-xl transition-colors">
+          <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 border-b border-slate-800 dark:border-slate-800 border-slate-200 pb-4">
             <div>
-              <h3 class="font-bold text-sm text-white flex items-center space-x-2">
+              <h3 class="font-bold text-sm text-white dark:text-white text-slate-900 flex items-center space-x-2">
                 <i class="fa-solid fa-clock-rotate-left text-emerald-400"></i>
-                <span>Histórico de Orçamentos e Cortes Realizados</span>
+                <span>Histórico & Registros de Otimizações</span>
               </h3>
-              <p class="text-xs text-slate-400">Projetos salvos recentemente no sistema.</p>
+              <p class="text-xs text-slate-400 dark:text-slate-400 text-slate-600">Consulte layouts e cortes gerados anteriormente</p>
             </div>
-            <button onclick="salvarProjetoAtual()" class="bg-emerald-600 hover:bg-emerald-500 text-slate-950 font-bold px-3 py-2 rounded-xl text-xs transition cursor-pointer flex items-center space-x-1.5 shadow">
+            <button onclick="salvarProjetoAtual()" class="bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black px-4 py-2.5 rounded-xl text-xs transition cursor-pointer flex items-center space-x-2 shadow-md">
               <i class="fa-solid fa-floppy-disk"></i>
               <span>Salvar Projeto Atual</span>
             </button>
@@ -237,22 +285,22 @@
           <div class="overflow-x-auto">
             <table class="w-full text-left text-xs border-collapse">
               <thead>
-                <tr class="bg-slate-950 text-slate-400 border-b border-slate-800">
+                <tr class="bg-slate-950 dark:bg-slate-950 bg-slate-100 text-slate-400 dark:text-slate-400 text-slate-600 border-b border-slate-800 dark:border-slate-800 border-slate-200">
                   <th class="p-3">Data / Hora</th>
                   <th class="p-3">Largura Bobina</th>
                   <th class="p-3">Total Peças</th>
                   <th class="p-3">Consumo Linear</th>
-                  <th class="p-3 text-center">Ações</th>
+                  <th class="p-3 text-center">Status</th>
                 </tr>
               </thead>
-              <tbody id="tabela-historico" class="divide-y divide-slate-800/50">
-                <tr class="hover:bg-slate-950/50">
-                  <td class="p-3 text-white font-bold">01/08/2026 - 10:30</td>
-                  <td class="p-3 text-slate-300">140 cm</td>
-                  <td class="p-3 text-slate-300">5 un</td>
+              <tbody id="tabela-historico" class="divide-y divide-slate-800/50 dark:divide-slate-800/50 divide-slate-200">
+                <tr class="hover:bg-slate-950/50 transition">
+                  <td class="p-3 text-white dark:text-white text-slate-900 font-bold">01/08/2026 - 10:30</td>
+                  <td class="p-3 text-slate-300 dark:text-slate-300 text-slate-600">140 cm</td>
+                  <td class="p-3 text-slate-300 dark:text-slate-300 text-slate-600">5 peças</td>
                   <td class="p-3 text-emerald-400 font-bold">2.40 metros</td>
                   <td class="p-3 text-center">
-                    <button onclick="alert('Projeto carregado com sucesso!')" class="text-blue-400 hover:text-blue-200 cursor-pointer p-1"><i class="fa-solid fa-eye"></i></button>
+                    <span class="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2 py-0.5 rounded-full text-[10px] font-bold">Concluído</span>
                   </td>
                 </tr>
               </tbody>
@@ -265,10 +313,44 @@
 
   </div>
 
-  <!-- Script Principal de Login, Abas e Nesting Avançado -->
+  <!-- LÓGICA E SCRIPT PRINCIPAL DO APLICATIVO -->
   <script>
+    // Gerenciamento de Tema (Claro / Escuro)
+    let modoEscuro = true;
+
+    function alternarTema() {
+      modoEscuro = !modoEscuro;
+      const htmlEl = document.documentElement;
+      const iconeLogin = document.getElementById("icone-modo-login");
+      const textoLogin = document.getElementById("texto-modo-login");
+      const iconeApp = document.getElementById("icone-modo-app");
+      const textoApp = document.getElementById("texto-modo-app");
+
+      if (modoEscuro) {
+        htmlEl.classList.add('dark');
+        if(iconeLogin) { iconeLogin.className = "fa-solid fa-moon"; textoLogin.innerText = "Tema Claro"; }
+        if(iconeApp) { iconeApp.className = "fa-solid fa-moon text-amber-400"; textoApp.innerText = "Tema Claro"; }
+      } else {
+        htmlEl.classList.remove('dark');
+        if(iconeLogin) { iconeLogin.className = "fa-solid fa-sun text-amber-400"; textoLogin.innerText = "Tema Escuro"; }
+        if(iconeApp) { iconeApp.className = "fa-solid fa-sun text-amber-500"; textoApp.innerText = "Tema Escuro"; }
+      }
+      calcularNestingVisual();
+    }
+
+    // Gerenciamento de Sessão / Login
     function realizarLogin(e) {
       e.preventDefault();
+      entrarNoSistema();
+    }
+
+    function loginComGoogle(e) {
+      e.preventDefault();
+      // Simula selecao/troca de conta Google
+      entrarNoSistema();
+    }
+
+    function entrarNoSistema() {
       document.getElementById("tela-login").classList.add("hidden");
       document.getElementById("app-principal").classList.remove("hidden");
       renderTabelaPecas();
@@ -276,10 +358,12 @@
     }
 
     function fazerLogout() {
+      // Limpa ou preserva campos conforme escolha, permitindo trocar de conta perfeitamente
       document.getElementById("app-principal").classList.add("hidden");
       document.getElementById("tela-login").classList.remove("hidden");
     }
 
+    // Gerenciamento de Navegação Interna (Abas)
     function mudarAba(aba) {
       const btnNesting = document.getElementById("btn-aba-nesting");
       const btnHistorico = document.getElementById("btn-aba-historico");
@@ -287,14 +371,14 @@
       const contHistorico = document.getElementById("conteudo-historico");
 
       if (aba === 'nesting') {
-        btnNesting.className = "px-4 py-2.5 text-xs font-bold text-emerald-400 border-b-2 border-emerald-500 transition cursor-pointer flex items-center space-x-2";
-        btnHistorico.className = "px-4 py-2.5 text-xs font-bold text-slate-400 hover:text-slate-200 border-b-2 border-transparent transition cursor-pointer flex items-center space-x-2";
+        btnNesting.className = "px-4 py-3 text-xs font-bold text-emerald-400 border-b-2 border-emerald-500 transition cursor-pointer flex items-center space-x-2";
+        btnHistorico.className = "px-4 py-3 text-xs font-bold text-slate-400 dark:text-slate-400 text-slate-700 hover:text-slate-200 border-b-2 border-transparent transition cursor-pointer flex items-center space-x-2";
         contNesting.classList.remove("hidden");
         contHistorico.classList.add("hidden");
         calcularNestingVisual();
       } else {
-        btnHistorico.className = "px-4 py-2.5 text-xs font-bold text-emerald-400 border-b-2 border-emerald-500 transition cursor-pointer flex items-center space-x-2";
-        btnNesting.className = "px-4 py-2.5 text-xs font-bold text-slate-400 hover:text-slate-200 border-b-2 border-transparent transition cursor-pointer flex items-center space-x-2";
+        btnHistorico.className = "px-4 py-3 text-xs font-bold text-emerald-400 border-b-2 border-emerald-500 transition cursor-pointer flex items-center space-x-2";
+        btnNesting.className = "px-4 py-3 text-xs font-bold text-slate-400 dark:text-slate-400 text-slate-700 hover:text-slate-200 border-b-2 border-transparent transition cursor-pointer flex items-center space-x-2";
         contHistorico.classList.remove("hidden");
         contNesting.classList.add("hidden");
       }
@@ -304,20 +388,21 @@
       alert("Projeto atual salvo no histórico com sucesso!");
     }
 
+    // Dados Globais de Peças na Fila
     let pecasFila = [
-      { nome: "Painel Principal", largura: 130, comprimento: 100, qtd: 1 },
-      { nome: "Filete de Sombra (10cm)", largura: 10, comprimento: 100, qtd: 1 },
-      { nome: "Adesivo Lateral", largura: 70, comprimento: 40, qtd: 2 },
-      { nome: "Sobra Utilizada (Canto)", largura: 60, comprimento: 40, qtd: 1 }
+      { nome: "Faixa 130cm", largura: 130, comprimento: 80, qtd: 1 },
+      { nome: "Tirinha Sobra", largura: 10, comprimento: 80, qtd: 1 },
+      { nome: "Adesivo Lateral", largura: 60, comprimento: 40, qtd: 2 },
+      { nome: "Etiqueta Sobra", largura: 70, comprimento: 40, qtd: 1 }
     ];
     let zoomAtual = 1;
 
     function carregarExemploSobras() {
       pecasFila = [
         { nome: "Faixa 130cm", largura: 130, comprimento: 80, qtd: 1 },
-        { nome: "Tirinha 10cm", largura: 10, comprimento: 80, qtd: 1 },
-        { nome: "Adesivo Pequeno", largura: 50, comprimento: 40, qtd: 2 },
-        { nome: "Etiqueta 30cm", largura: 30, comprimento: 40, qtd: 1 }
+        { nome: "Tirinha Sobra", largura: 10, comprimento: 80, qtd: 1 },
+        { nome: "Adesivo 50cm", largura: 50, comprimento: 40, qtd: 2 },
+        { nome: "Faixa 30cm", largura: 30, comprimento: 40, qtd: 1 }
       ];
       renderTabelaPecas();
       calcularNestingVisual();
@@ -330,22 +415,24 @@
     }
 
     function adicionarPecaManual() {
-      const nome = document.getElementById("peca-nome").value.trim() || "Peça";
+      const nomeInput = document.getElementById("peca-nome");
+      const nome = nomeInput.value.trim() || "Peça";
       const largura = parseFloat(document.getElementById("peca-largura").value);
       const comprimento = parseFloat(document.getElementById("peca-comprimento").value);
       const qtd = parseInt(document.getElementById("peca-qtd").value) || 1;
 
       if(isNaN(largura) || isNaN(comprimento) || largura <= 0 || comprimento <= 0) {
-        alert("Informe larguras e comprimentos válidos maiores que zero.");
+        alert("Por favor, digite medidas de largura e comprimento válidas.");
         return;
       }
 
       const larguraBobina = parseFloat(document.getElementById("largura-bobina").value) || 140;
       if(largura > larguraBobina) {
-        alert(`Atenção: A peça "${nome}" tem ${largura}cm de largura, mas a bobina tem apenas ${larguraBobina}cm. Ela não caberá na horizontal.`);
+        alert(`Atenção: A peça "${nome}" tem ${largura}cm de largura, excedendo a largura da bobina (${larguraBobina}cm).`);
       }
 
       pecasFila.push({ nome, largura, comprimento, qtd });
+      nomeInput.value = "";
       renderTabelaPecas();
       calcularNestingVisual();
     }
@@ -361,15 +448,15 @@
       if (!tbody) return;
       tbody.innerHTML = "";
       if(pecasFila.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-slate-500 text-xs">Nenhuma peça na fila.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-slate-500 text-xs">Fila de produção vazia.</td></tr>`;
         return;
       }
       pecasFila.forEach((p, idx) => {
         tbody.innerHTML += `
-          <tr class="hover:bg-slate-950/50">
-            <td class="p-2 font-bold text-white">${p.nome}</td>
-            <td class="p-2 text-slate-300 font-mono">${p.largura}x${p.comprimento}cm</td>
-            <td class="p-2 text-slate-300">${p.qtd}x</td>
+          <tr class="hover:bg-slate-950/50 transition">
+            <td class="p-2 font-bold text-white dark:text-white text-slate-900">${p.nome}</td>
+            <td class="p-2 text-slate-300 dark:text-slate-300 text-slate-600 font-mono">${p.largura}x${p.comprimento} cm</td>
+            <td class="p-2 text-slate-300 dark:text-slate-300 text-slate-600 font-bold">${p.qtd}x</td>
             <td class="p-2 text-center">
               <button onclick="removerPecaFila(${idx})" class="text-red-400 hover:text-red-200 cursor-pointer p-1"><i class="fa-solid fa-trash"></i></button>
             </td>
@@ -383,7 +470,7 @@
       calcularNestingVisual();
     }
 
-    // Algoritmo de Shelf Packing com preenchimento lateral inteligente de sobras
+    // ALGORITMO DE NESTING (Shelf Packing com Encaixe Lateral Inteligente)
     function calcularNestingVisual() {
       const larguraBobinaInput = document.getElementById("largura-bobina");
       if (!larguraBobinaInput) return;
@@ -398,7 +485,7 @@
         }
       });
 
-      // Ordenar por comprimento decrescente (Shelf Packing)
+      // Ordena por comprimento decrescente (Shelf Packing)
       listaExpandida.sort((a, b) => b.comprimento - a.comprimento);
 
       let linhas = [];
@@ -409,9 +496,7 @@
         let pL = peca.largura;
         let pC = peca.comprimento;
 
-        // Verificar se cabe na largura restante da linha atual (aproveitamento de sobras horizontais)
         if(linhaAtual.xCursor + pL > larguraBobina) {
-          // Quebra para a próxima linha vertical na bobina
           linhaAtual = { y: linhaAtual.y + linhaAtual.alturaMax, alturaMax: 0, xCursor: 0, itens: [] };
           linhas.push(linhaAtual);
         }
@@ -434,10 +519,10 @@
       let metrosLineares = alturaTotalBobinaCm / 100;
       let areaTotalM2 = (larguraBobina * alturaTotalBobinaCm) / 10000;
 
-      // Renderização Visual Plotter Style com Réguas em cm
+      // Renderização do Canvas e Réguas
       const pxPorCm = 3.2;
       let stageW = larguraBobina * pxPorCm;
-      let stageH = Math.max(200, alturaTotalBobinaCm * pxPorCm);
+      let stageH = Math.max(220, alturaTotalBobinaCm * pxPorCm);
 
       let reguasX = '';
       for(let c = 0; c <= larguraBobina; c += 10) {
@@ -445,7 +530,7 @@
         reguasX += `
           <div class="absolute top-0 text-[9px] text-slate-400 font-mono select-none" style="left: ${lPx}px; transform: translateX(-50%);">
             ${c}
-            <div class="w-[1px] h-2.5 bg-slate-600 mx-auto mt-0.5"></div>
+            <div class="w-[1px] h-2.5 bg-slate-700 mx-auto mt-0.5"></div>
           </div>
         `;
       }
@@ -456,7 +541,7 @@
         reguasY += `
           <div class="absolute left-0 text-[9px] text-slate-400 font-mono select-none flex items-center" style="top: ${tPx}px; transform: translateY(-50%);">
             <span class="mr-1">${c}</span>
-            <div class="w-2.5 h-[1px] bg-slate-600"></div>
+            <div class="w-2.5 h-[1px] bg-slate-700"></div>
           </div>
         `;
       }
@@ -470,11 +555,11 @@
           let hPx = item.h * pxPorCm;
           
           pecasHtml += `
-            <div class="absolute bg-slate-900/95 border-2 border-emerald-500/80 rounded flex flex-col items-center justify-center p-1 shadow-md hover:bg-emerald-950 transition group overflow-hidden"
+            <div class="absolute bg-slate-900/95 dark:bg-slate-900/95 bg-white/95 border-2 border-emerald-500/80 rounded flex flex-col items-center justify-center p-1 shadow-md hover:bg-emerald-950/80 transition group overflow-hidden"
                  style="left: ${lPx}px; top: ${tPx}px; width: ${wPx}px; height: ${hPx}px;"
                  title="${item.nome} (${item.w}x${item.h}cm)">
-              <span class="text-[10px] font-bold text-emerald-300 leading-tight truncate w-full text-center">${item.nome}</span>
-              <span class="text-[9px] text-slate-300 font-mono leading-tight">${Math.round(item.w)}x${Math.round(item.h)}cm</span>
+              <span class="text-[10px] font-bold text-emerald-400 leading-tight truncate w-full text-center">${item.nome}</span>
+              <span class="text-[9px] text-slate-300 dark:text-slate-300 text-slate-700 font-mono leading-tight">${Math.round(item.w)}x${Math.round(item.h)} cm</span>
             </div>
           `;
         });
@@ -485,45 +570,46 @@
       
       container.innerHTML = `
         <div id="plotter-inner-stage" class="relative transition-transform duration-200" style="width: ${stageW + 40}px; height: ${stageH + 40}px; transform: scale(${zoomAtual}); transform-origin: top left;">
-          <!-- Régua Superior X -->
-          <div class="absolute top-0 left-8 right-0 h-6 border-b border-slate-800 bg-slate-900/90">${reguasX}</div>
-          <!-- Régua Lateral Y -->
-          <div class="absolute top-6 left-0 w-8 bottom-0 border-r border-slate-800 bg-slate-900/90">${reguasY}</div>
+          <!-- Régua Superior Horizontal -->
+          <div class="absolute top-0 left-8 right-0 h-6 border-b border-slate-800 dark:border-slate-800 border-slate-200 bg-slate-900/90 dark:bg-slate-900/90 bg-white/90">${reguasX}</div>
+          <!-- Régua Lateral Vertical -->
+          <div class="absolute top-6 left-0 w-8 bottom-0 border-r border-slate-800 dark:border-slate-800 border-slate-200 bg-slate-900/90 dark:bg-slate-900/90 bg-white/90">${reguasY}</div>
           
-          <!-- Palco da Bobina (Fundo quadriculado simulando plotter) -->
-          <div id="capture-area-print" class="absolute top-6 left-8 bg-slate-900 border-2 border-emerald-500/40 shadow-2xl overflow-hidden" style="width: ${stageW}px; height: ${stageH}px; background-image: radial-gradient(#334155 1px, transparent 1px); background-size: 20px 20px;">
+          <!-- Palco da Bobina Quadriculado -->
+          <div id="capture-area-print" class="absolute top-6 left-8 bg-slate-900 dark:bg-slate-900 bg-white border-2 border-emerald-500/40 shadow-2xl overflow-hidden" style="width: ${stageW}px; height: ${stageH}px; background-image: radial-gradient(#334155 1px, transparent 1px); background-size: 20px 20px;">
             ${pecasHtml}
           </div>
         </div>
       `;
 
-      // Atualizar Métricas
+      // Atualizar bloco de estatísticas
       const resumo = document.getElementById("resumo-metricas");
       if (resumo) {
         resumo.innerHTML = `
-          <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 text-center">
+          <div class="bg-slate-950 dark:bg-slate-950 bg-slate-100 p-3 rounded-xl border border-slate-800 dark:border-slate-800 border-slate-200 text-center">
             <span class="text-[10px] uppercase font-bold text-slate-500">Consumo Linear</span>
             <p class="text-base font-bold text-emerald-400 mt-0.5">${metrosLineares.toFixed(2)} metros</p>
           </div>
-          <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 text-center">
+          <div class="bg-slate-950 dark:bg-slate-950 bg-slate-100 p-3 rounded-xl border border-slate-800 dark:border-slate-800 border-slate-200 text-center">
             <span class="text-[10px] uppercase font-bold text-slate-500">Área Ocupada</span>
-            <p class="text-base font-bold text-slate-200 mt-0.5">${areaTotalM2.toFixed(2)} m²</p>
+            <p class="text-base font-bold text-slate-200 dark:text-slate-200 text-slate-800 mt-0.5">${areaTotalM2.toFixed(2)} m²</p>
           </div>
-          <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 text-center col-span-2 sm:col-span-1">
-            <span class="text-[10px] uppercase font-bold text-slate-500">Total Peças Encaixadas</span>
-            <p class="text-base font-bold text-blue-400 mt-0.5">${listaExpandida.length} un</p>
+          <div class="bg-slate-950 dark:bg-slate-950 bg-slate-100 p-3 rounded-xl border border-slate-800 dark:border-slate-800 border-slate-200 text-center col-span-2 sm:col-span-1">
+            <span class="text-[10px] uppercase font-bold text-slate-500">Peças Otimizadas</span>
+            <p class="text-base font-bold text-blue-400 mt-0.5">${listaExpandida.length} unidades</p>
           </div>
         `;
       }
     }
 
+    // Exportação do Plano de Corte em PDF
     async function exportarRelatorioPDF() {
       const { jsPDF } = window.jspdf;
       const doc = new jsPDF('p', 'mm', 'a4');
       
       doc.setFont("helvetica", "bold");
       doc.setFontSize(16);
-      doc.text("Yuri Corretor - Relatorio de Nesting (Plotter)", 14, 20);
+      doc.text("Plano de Corte & Nesting de Bobina", 14, 20);
       
       doc.setFontSize(10);
       doc.setFont("helvetica", "normal");
@@ -531,9 +617,8 @@
 
       const element = document.getElementById("capture-area-print");
       if(element) {
-        const canvas = await html2canvas(element, { scale: 2, backgroundColor: "#0f172a" });
+        const canvas = await html2canvas(element, { scale: 2, backgroundColor: modoEscuro ? "#0f172a" : "#ffffff" });
         const imgData = canvas.toDataURL('image/png');
-        
         const imgWidth = 180;
         const imgHeight = (canvas.height * imgWidth) / canvas.width;
         
