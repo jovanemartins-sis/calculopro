@@ -14,7 +14,7 @@
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
 </head>
-<body class="bg-slate-100 text-slate-800 font-sans antialiased min-h-screen text-[64%]" data-versao="3.4-master-forcada">
+<body class="bg-slate-100 text-slate-800 font-sans antialiased min-h-screen text-[64%]" data-versao="3.5-master-forcada">
 
   <!-- TELA DE LOGIN / AUTENTICAÇÃO FIREBASE -->
   <div id="authModal" class="fixed inset-0 bg-slate-900/90 z-50 flex items-center justify-center p-4">
@@ -23,7 +23,7 @@
         <div class="inline-flex items-center justify-center w-14 h-14 bg-cyan-600 text-white rounded-xl shadow-lg mb-2">
           <i class="fa-solid fa-cubes text-2xl"></i>
         </div>
-        <h2 class="text-xl font-bold text-slate-900">CalculaJá Pro <span class="text-xs text-cyan-600 font-normal">v3.4 Master</span></h2>
+        <h2 class="text-xl font-bold text-slate-900">CalculaJá Pro <span class="text-xs text-cyan-600 font-normal">v3.5 Master</span></h2>
         <p class="text-xs text-slate-500">Insira as credenciais fornecidas pelo administrador para acessar o sistema</p>
       </div>
 
@@ -57,7 +57,7 @@
       <div class="flex items-center space-x-3 justify-start w-full md:w-auto">
         <h1 class="text-sm font-bold text-cyan-400 flex items-center">
           <i class="fa-solid fa-cubes mr-2"></i> CalculaJá Pro 
-          <span class="text-xs text-cyan-200 font-bold ml-1.5 bg-cyan-900 px-2 py-0.5 rounded border border-cyan-500/50">v3.4 Master</span>
+          <span class="text-xs text-cyan-200 font-bold ml-1.5 bg-cyan-900 px-2 py-0.5 rounded border border-cyan-500/50">v3.5 Master</span>
         </h1>
       </div>
       <nav class="flex items-center space-x-2 overflow-x-auto py-1 justify-start w-full md:w-auto">
@@ -69,6 +69,9 @@
         </button>
         <button onclick="mudarAba('desenho')" id="btnAbaDesenho" class="px-3 py-1.5 rounded text-xs font-medium bg-slate-800 text-slate-300 hover:bg-slate-700 transition cursor-pointer whitespace-nowrap flex items-center justify-start">
           <i class="fa-solid fa-network-wired mr-1.5"></i> Desenho (RIP)
+        </button>
+        <button onclick="mudarAba('meusOrcamentos')" id="btnAbaMeusOrcamentos" class="px-3 py-1.5 rounded text-xs font-medium bg-slate-800 text-slate-300 hover:bg-slate-700 transition cursor-pointer whitespace-nowrap flex items-center justify-start">
+          <i class="fa-solid fa-folder-open mr-1.5"></i> Meus Orçamentos
         </button>
         <button onclick="mudarAba('backup')" id="btnAbaBackup" class="px-3 py-1.5 rounded text-xs font-medium bg-slate-800 text-slate-300 hover:bg-slate-700 transition cursor-pointer whitespace-nowrap flex items-center justify-start">
           <i class="fa-solid fa-database mr-1.5"></i> Backup / Dados
@@ -242,6 +245,9 @@
               <i class="fa-solid fa-arrow-left mr-2"></i> Voltar para Orçamento
             </button>
             <div class="flex items-center space-x-2">
+              <button type="button" onclick="salvarOrcamentoServidor()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded text-xs font-bold transition cursor-pointer flex items-center shadow">
+                <i class="fa-solid fa-cloud-arrow-up mr-2"></i> Salvar no Servidor (Adm)
+              </button>
               <button type="button" onclick="exportarCSV()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded text-xs font-bold transition cursor-pointer flex items-center shadow">
                 <i class="fa-solid fa-file-excel mr-2"></i> Exportar CSV / Dados
               </button>
@@ -253,7 +259,40 @@
         </div>
       </section>
 
-      <!-- ABA 4: BACKUP E GERENCIAMENTO DE DADOS -->
+      <!-- ABA 4: MEUS ORÇAMENTOS (SERVIDOR DO ADM) -->
+      <section id="abaMeusOrcamentos" class="hidden space-y-4">
+        <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 space-y-4">
+          <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+            <div>
+              <h2 class="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center"><i class="fa-solid fa-folder-open mr-1 text-cyan-600"></i> Meus Orçamentos Salvos na Nuvem</h2>
+              <p class="text-[11px] text-slate-400">Visualize, carregue ou remova seus orçamentos salvos diretamente no servidor do administrador.</p>
+            </div>
+            <button type="button" onclick="carregarMeusOrcamentos()" class="bg-cyan-600 hover:bg-cyan-700 text-white px-3 py-1.5 rounded text-xs font-bold transition cursor-pointer flex items-center">
+              <i class="fa-solid fa-rotate mr-1"></i> Atualizar Lista
+            </button>
+          </div>
+
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse text-xs">
+              <thead>
+                <tr class="bg-slate-100 text-slate-600 border-b border-slate-200">
+                  <th class="p-2">Data / Hora</th>
+                  <th class="p-2">Cliente</th>
+                  <th class="p-2">Produto / Projeto</th>
+                  <th class="p-2">Bobina</th>
+                  <th class="p-2">Valor Total</th>
+                  <th class="p-2 text-center">Ações</th>
+                </tr>
+              </thead>
+              <tbody id="tabelaMeusOrcamentos" class="divide-y divide-slate-100">
+                <tr><td colspan="6" class="p-4 text-center text-slate-400">Clique em "Atualizar Lista" para carregar seus orçamentos.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ABA 5: BACKUP E GERENCIAMENTO DE DADOS -->
       <section id="abaBackup" class="hidden space-y-4">
         <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 space-y-6">
           <div class="border-b border-slate-100 pb-3">
@@ -314,7 +353,7 @@
 
   <!-- Script JavaScript Integrado -->
   <script>
-    const VERSAO_SISTEMA = "3.4 Master";
+    const VERSAO_SISTEMA = "3.5 Master";
     console.log("CalculaJá Pro carregado - Versão atual:", VERSAO_SISTEMA);
 
     const firebaseConfig = {
@@ -324,6 +363,7 @@
     };
     if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
+    const db = firebase.firestore();
 
     let ESCALA_BASE = 24; 
     let zoomAtual = 1.0;
@@ -356,6 +396,7 @@
 
         atualizarSelectGlobalBobinas();
         renderizarTabelaSuprimentos();
+        carregarMeusOrcamentos();
         
         setTimeout(() => {
           calcularEscalaFit150();
@@ -463,6 +504,7 @@
       document.getElementById("abaDados").classList.add("hidden");
       document.getElementById("abaSuprimentos").classList.add("hidden");
       document.getElementById("abaDesenho").classList.add("hidden");
+      document.getElementById("abaMeusOrcamentos").classList.add("hidden");
       document.getElementById("abaBackup").classList.add("hidden");
 
       if (aba === 'dados') document.getElementById("abaDados").classList.remove("hidden");
@@ -474,6 +516,10 @@
         document.getElementById("abaDesenho").classList.remove("hidden");
         calcularEscalaFit150();
         if(pecasEmCache.length === 0) gerarDimensoesReguas();
+      }
+      if (aba === 'meusOrcamentos') {
+        document.getElementById("abaMeusOrcamentos").classList.remove("hidden");
+        carregarMeusOrcamentos();
       }
       if (aba === 'backup') {
         document.getElementById("abaBackup").classList.remove("hidden");
@@ -692,6 +738,109 @@
       container.style.width = (larguraBobinaAtual * escalaPxPorCm) + "px";
       container.style.height = (alturaReguaY * escalaPxPorCm) + "px";
       container.innerHTML = html;
+    }
+
+    function salvarOrcamentoServidor() {
+      const user = auth.currentUser;
+      if (!user) {
+        alert("Você precisa estar logado para salvar no servidor.");
+        return;
+      }
+      if (pecasEmCache.length === 0) {
+        alert("Nenhum cálculo efetuado para salvar.");
+        return;
+      }
+
+      const cliente = document.getElementById("cliente").value || "Cliente Geral";
+      const produto = document.getElementById("produto").value || "Serviço";
+
+      const dadosOrcamento = {
+        userId: user.uid,
+        userEmail: user.email,
+        cliente: cliente,
+        produto: produto,
+        larguraBobina: larguraBobinaAtual,
+        valorTotal: valorOrcamentoCalculado,
+        pecas: pecasEmCache,
+        dataCriacao: firebase.firestore.FieldValue.serverTimestamp(),
+        dataStr: new Date().toLocaleString('pt-BR')
+      };
+
+      db.collection("orcamentos").add(dadosOrcamento)
+        .then(() => {
+          alert("Orçamento salvo com sucesso no servidor do administrador!");
+          mudarAba('meusOrcamentos');
+        })
+        .catch((error) => {
+          alert("Erro ao salvar orçamento: " + error.message);
+        });
+    }
+
+    function carregarMeusOrcamentos() {
+      const user = auth.currentUser;
+      const tbody = document.getElementById("tabelaMeusOrcamentos");
+      if (!user) return;
+
+      tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-slate-400">Carregando orçamentos do servidor...</td></tr>`;
+
+      db.collection("orcamentos")
+        .where("userId", "==", user.uid)
+        .get()
+        .then((querySnapshot) => {
+          if (querySnapshot.empty) {
+            tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-slate-400">Nenhum orçamento salvo na nuvem ainda.</td></tr>`;
+            return;
+          }
+
+          let html = "";
+          querySnapshot.forEach((doc) => {
+            const o = doc.data();
+            const idDoc = doc.id;
+            html += `
+              <tr class="hover:bg-slate-50">
+                <td class="p-2 font-mono text-[11px] text-slate-600">${o.dataStr || 'Data recente'}</td>
+                <td class="p-2 font-medium">${o.cliente}</td>
+                <td class="p-2">${o.produto}</td>
+                <td class="p-2">${o.larguraBobina} cm</td>
+                <td class="p-2 font-bold text-emerald-600">R$ ${Number(o.valorTotal).toFixed(2)}</td>
+                <td class="p-2 text-center space-x-2">
+                  <button onclick='carregarOrcamentoDoServidor(${JSON.stringify(o.pecas).replace(/'/g, "&apos;")}, "${o.cliente}", "${o.produto}", ${o.larguraBobina}, ${o.valorTotal})' class="text-cyan-600 hover:text-cyan-800 cursor-pointer font-medium" title="Visualizar no App"><i class="fa-solid fa-eye mr-1"></i> Ver</button>
+                  <button onclick="deletarOrcamentoServidor('${idDoc}')" class="text-red-500 hover:text-red-700 cursor-pointer" title="Excluir"><i class="fa-solid fa-trash"></i></button>
+                </td>
+              </tr>
+            `;
+          });
+          tbody.innerHTML = html;
+        })
+        .catch((error) => {
+          tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-red-500">Erro ao carregar orçamentos: ${error.message}</td></tr>`;
+        });
+    }
+
+    function carregarOrcamentoDoServidor(pecas, cliente, produto, larguraBobina, valorTotal) {
+      pecasEmCache = pecas;
+      larguraBobinaAtual = larguraBobina;
+      valorOrcamentoCalculado = valorTotal;
+
+      document.getElementById("cliente").value = cliente;
+      document.getElementById("produto").value = produto;
+      document.getElementById("infoClienteDesenho").innerText = `Cliente: ${cliente} | Produto: ${produto} | Bobina: ${larguraBobinaAtual}cm`;
+      document.getElementById("valorFinalDesenho").innerText = `R$ ${valorOrcamentoCalculado.toFixed(2)}`;
+
+      atualizarSelectGlobalBobinas();
+      mudarAba('desenho');
+    }
+
+    function deletarOrcamentoServidor(idDoc) {
+      if(confirm("Deseja realmente excluir este orçamento do servidor?")) {
+        db.collection("orcamentos").doc(idDoc).delete()
+          .then(() => {
+            carregarMeusOrcamentos();
+          })
+          .catch((error) => {
+            alert("Erro ao excluir: " + error.message);
+          });
+      }
     }
 
     function exportarCSV() {
