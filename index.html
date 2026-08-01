@@ -3,11 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>CalculaJá Pro - Nesting RIP Nesting de Materiais com Réguas e Escala Exata</title>
+  <title>CalculaJá Pro - Nesting RIP de Materiais com Réguas CorelDRAW (cm)</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <!-- Biblioteca para exportar imagem do RIP (Html2Canvas) -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
 </head>
 <body class="bg-slate-100 min-h-screen text-slate-800 flex flex-col">
 
@@ -46,7 +49,7 @@
       <div class="text-center space-y-2">
         <i class="fa-solid fa-scissors text-3xl text-emerald-600"></i>
         <h2 class="text-xl font-bold text-slate-800">CalculaJá Pro</h2>
-        <p class="text-xs text-slate-500">Mecanismo de Nesting & Corte de Plásticos, Tecidos e Chapas com Escala Exata</p>
+        <p class="text-xs text-slate-500">Mecanismo de Nesting & Corte de Plásticos, Tecidos e Chapas (Versão v1.3.0)</p>
       </div>
       <button onclick="loginComGoogle()" class="w-full bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 font-bold py-2.5 rounded-xl text-sm flex items-center justify-center space-x-2 transition shadow-sm cursor-pointer">
         <i class="fa-brands fa-google text-red-500"></i>
@@ -163,9 +166,9 @@
           </div>
         </div>
 
-        <!-- Bloco de Resultado & Visualizador Tipo RIP com Réguas Proporcionais e Ferramentas ao Lado -->
+        <!-- Bloco de Resultado & Visualizador Tipo RIP com Réguas Estilo CorelDRAW (Iniciando no Canto 0,0 e Peças Bem Justas) -->
         <div id="resultado" class="border-t pt-4 space-y-4">
-          <div class="text-center py-6 text-slate-400 text-sm">Preencha as peças e clique em <b>Processar Cálculo & RIP Nesting</b> para simular o encaixe automático exato com réguas e opções de exportação/zoom.</div>
+          <div class="text-center py-6 text-slate-400 text-sm">Preencha as peças e clique em <b>Processar Cálculo & RIP Nesting</b> para simular o encaixe automático exato com réguas estilo CorelDRAW e opções de zoom/exportação.</div>
         </div>
 
       </div>
@@ -343,8 +346,39 @@
     });
   </script>
 
-  <!-- LÓGICA DE NESTING AUTOMÁTICO COM RÉGUAS EM ESCALA, ZOOM E EXPORTAÇÃO -->
+  <!-- LÓGICA DE DETECÇÃO DE ATUALIZAÇÃO E NESTING COM RÉGUAS COREL-DRAW (cm) -->
   <script>
+    const VERSAO_ATUAL = "v1.3.0";
+
+    function verificarAtualizacaoApp() {
+      const versaoSalva = localStorage.getItem("app_versao_calculaja");
+      if (!versaoSalva) {
+        localStorage.setItem("app_versao_calculaja", VERSAO_ATUAL);
+      } else if (versaoSalva !== VERSAO_ATUAL) {
+        mostrarAlertaAtualizacao(VERSAO_ATUAL);
+        localStorage.setItem("app_versao_calculaja", VERSAO_ATUAL);
+      }
+    }
+
+    function mostrarAlertaAtualizacao(novaVersao) {
+      const div = document.createElement("div");
+      div.className = "fixed bottom-5 right-5 z-50 bg-slate-900 text-white px-4 py-3 rounded-xl shadow-2xl border border-emerald-500 flex items-center space-x-3";
+      div.innerHTML = `
+        <i class="fa-solid fa-rocket text-emerald-400 text-xl"></i>
+        <div>
+          <p class="text-xs font-bold">App Atualizado!</p>
+          <p class="text-[10px] text-slate-400">Nova versão ${novaVersao} carregada com sucesso.</p>
+        </div>
+        <button onclick="this.parentElement.remove()" class="ml-3 text-slate-400 hover:text-white text-xs font-bold">✕</button>
+      `;
+      document.body.appendChild(div);
+      setTimeout(() => { if(div) div.remove(); }, 6000);
+    }
+
+    window.addEventListener("DOMContentLoaded", () => {
+      verificarAtualizacaoApp();
+    });
+
     function mudarAba(aba) {
       ['calculo', 'bobinas', 'catalogo', 'salvos'].forEach(a => {
         document.getElementById('aba-' + a).classList.add('hidden');
@@ -469,7 +503,7 @@
     let nivelZoom = 1;
 
     function ajustarZoom(delta) {
-      nivelZoom = Math.max(0.6, Math.min(2.0, nivelZoom + delta));
+      nivelZoom = Math.max(0.6, Math.min(2.5, nivelZoom + delta));
       const visualizador = document.getElementById("container-rip-visual");
       if(visualizador) {
         visualizador.style.transform = `scale(${nivelZoom})`;
@@ -482,7 +516,7 @@
       if(!elemento) { alert("Nenhum layout processado para exportar."); return; }
       html2canvas(elemento, { scale: 2, backgroundColor: '#0f172a' }).then(canvas => {
         const link = document.createElement('a');
-        link.download = `Corte-Layout-${document.getElementById('cliente').value || 'Cliente'}.png`;
+        link.download = `Corte-Corel-Layout-${document.getElementById('cliente').value || 'Cliente'}.png`;
         link.href = canvas.toDataURL('image/png');
         link.click();
       });
@@ -552,74 +586,76 @@
 
       ultimoCache = { id: Date.now(), data: new Date().toLocaleDateString('pt-BR'), cliente, produto, mao, outros, lucro, imposto, custoMat, precoFinal, totalPecas, pecas: pecasArr };
 
-      // Renderizar Painel de Nesting com Réguas Proporcionais e Ferramentas ao Lado
+      // Renderizar Painel de Nesting com Réguas Estilo CorelDRAW (Iniciando estritamente no 0,0, sem margens soltas, peças coladas)
       let htmlPaineis = '';
       for(let bNome in agrupadoPorBobina) {
         const dados = agrupadoPorBobina[bNome];
         const larguraBobina = dados.obj.largura;
         const comprimentoTotalCm = dados.totalMetrosLinear * 100;
 
+        // Gerador de marcações da régua superior estilo Corel (em cm exatos a cada 10cm ou fração)
+        let reguaXHtml = '';
+        let passoX = larguraBobina > 200 ? 50 : (larguraBobina > 100 ? 20 : 10);
+        for(let x = 0; x <= larguraBobina; x += passoX) {
+          reguaXHtml += `<span class="absolute" style="left: ${(x/larguraBobina)*100}%; transform: translateX(-50%);">${x}cm</span>`;
+        }
+
         htmlPaineis += `
-          <div class="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-4">
-            <div class="flex flex-col md:flex-row justify-between items-start md:items-center border-b pb-3 gap-3">
+          <div class="bg-slate-900 border border-slate-700 rounded-xl p-4 space-y-3">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-slate-700 pb-3 gap-3">
               <div>
-                <h5 class="font-bold text-slate-800 text-sm"><i class="fa-solid fa-scissors text-emerald-600 mr-1"></i> Nesting de Corte - ${bNome}</h5>
-                <p class="text-xs text-slate-500">Largura Física: <b>${larguraBobina} cm (Eixo X)</b> | Comprimento de Corte: <b>${comprimentoTotalCm.toFixed(0)} cm (Eixo Y)</b></p>
+                <h5 class="font-bold text-white text-sm"><i class="fa-solid fa-ruler-combined text-amber-400 mr-1"></i> Réguas Estilo CorelDRAW - ${bNome}</h5>
+                <p class="text-xs text-slate-400">Origem (0,0 no canto superior esquerdo) | Largura: <b>${larguraBobina} cm</b> | Comprimento: <b>${comprimentoTotalCm.toFixed(0)} cm</b></p>
               </div>
               <div class="flex items-center gap-2">
-                <span class="text-xs font-bold bg-emerald-100 text-emerald-800 px-2.5 py-1 rounded-lg">R$ ${(dados.totalMetrosLinear * dados.obj.preco).toFixed(2)}</span>
-                <!-- FERRAMENTAS AO LADO: ZOOM E EXPORTAR -->
-                <div class="flex items-center bg-slate-200 rounded-lg p-0.5 space-x-1">
-                  <button onclick="ajustarZoom(-0.2)" title="Diminuir Zoom" class="px-2 py-1 bg-white hover:bg-slate-100 text-slate-700 rounded text-xs font-bold shadow-sm cursor-pointer"><i class="fa-solid fa-magnifying-glass-minus"></i></button>
-                  <button onclick="ajustarZoom(0.2)" title="Aumentar Zoom" class="px-2 py-1 bg-white hover:bg-slate-100 text-slate-700 rounded text-xs font-bold shadow-sm cursor-pointer"><i class="fa-solid fa-magnifying-glass-plus"></i></button>
-                  <button onclick="exportarLayoutRIP()" title="Exportar Imagem do Layout" class="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded text-xs font-bold shadow-sm cursor-pointer flex items-center gap-1"><i class="fa-solid fa-download"><span>Exportar</span></i></button>
+                <span class="text-xs font-bold bg-amber-500/20 text-amber-300 border border-amber-500/40 px-2.5 py-1 rounded-lg">R$ ${(dados.totalMetrosLinear * dados.obj.preco).toFixed(2)}</span>
+                <!-- FERRAMENTAS DE ZOOM E EXPORTAR -->
+                <div class="flex items-center bg-slate-800 rounded-lg p-0.5 space-x-1 border border-slate-700">
+                  <button onclick="ajustarZoom(-0.2)" title="Diminuir Zoom" class="px-2 py-1 bg-slate-700 hover:bg-slate-600 text-white rounded text-xs font-bold cursor-pointer"><i class="fa-solid fa-magnifying-glass-minus"></i></button>
+                  <button onclick="ajustarZoom(0.2)" title="Aumentar Zoom" class="px-2 py-1 bg-slate-700 hover:bg-slate-600 text-white rounded text-xs font-bold cursor-pointer"><i class="fa-solid fa-magnifying-glass-plus"></i></button>
+                  <button onclick="exportarLayoutRIP()" title="Exportar Imagem do Layout" class="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded text-xs font-bold cursor-pointer flex items-center gap-1"><i class="fa-solid fa-download"><span>Exportar</span></i></button>
                 </div>
               </div>
             </div>
 
-            <!-- SIMULADOR GRÁFICO DE CORTE COM RÉGUA DE ESCALA PRECISA -->
+            <!-- SIMULADOR GRÁFICO COM RÉGUAS ESTILO COREL-DRAW (CANTO 0,0 E PEÇAS BEM JUSTAS) -->
             <div class="overflow-x-auto" id="bloco-exportavel-rip">
-              <div id="container-rip-visual" class="bg-slate-900 rounded-xl p-4 border-2 border-slate-700 shadow-inner transition-transform duration-200" style="min-width: 500px;">
+              <div id="container-rip-visual" class="bg-slate-950 rounded-xl p-3 border border-slate-800 shadow-2xl transition-transform duration-200" style="min-width: 550px;">
                 
-                <!-- Régua Superior de Escala (Eixo X em cm) -->
-                <div class="flex justify-between text-[10px] text-emerald-400 font-mono mb-3 border-b border-slate-700 pb-1.5 px-1">
-                  <span>0 cm (Borda Esq.)</span>
-                  <span>| ${(larguraBobina/4).toFixed(0)}cm</span>
-                  <span class="font-bold">CENTRO (${(larguraBobina/2).toFixed(0)} cm)</span>
-                  <span>| ${((larguraBobina/4)*3).toFixed(0)}cm</span>
-                  <span>${larguraBobina} cm (Borda Dir.) |</span>
+                <!-- régua superior X (Corel Style) -->
+                <div class="relative h-6 ml-10 border-b border-amber-500/60 text-[9px] text-amber-400 font-mono select-none">
+                  ${reguaXHtml}
                 </div>
 
                 <div class="flex">
-                  <!-- Régua Lateral Esquerda (Eixo Y - Comprimento em cm em Escala Proporcional) -->
-                  <div class="w-16 flex flex-col justify-between text-[9px] text-slate-400 font-mono pr-2 border-r border-slate-700 text-right select-none py-1">
-                    <span>0 cm</span>
-                    <span>${(comprimentoTotalCm * 0.25).toFixed(0)} cm</span>
-                    <span>${(comprimentoTotalCm * 0.50).toFixed(0)} cm</span>
-                    <span>${(comprimentoTotalCm * 0.75).toFixed(0)} cm</span>
-                    <span><b>${comprimentoTotalCm.toFixed(0)} cm</b></span>
+                  <!-- régua lateral esquerda Y (Corel Style em cm) -->
+                  <div class="relative w-10 border-r border-amber-500/60 text-[9px] text-amber-400 font-mono select-none" style="height: 280px;">
+                    <span class="absolute top-0 left-1">0</span>
+                    <span class="absolute top-1/4 left-1">${(comprimentoTotalCm * 0.25).toFixed(0)}</span>
+                    <span class="absolute top-2/4 left-1">${(comprimentoTotalCm * 0.50).toFixed(0)}</span>
+                    <span class="absolute top-3/4 left-1">${(comprimentoTotalCm * 0.75).toFixed(0)}</span>
+                    <span class="absolute bottom-0 left-1">${comprimentoTotalCm.toFixed(0)}cm</span>
                   </div>
 
-                  <!-- Grade de Encaixe de Corte (Posicionamento milimetrado por faixas) -->
-                  <div class="flex-grow pl-3">
-                    <div class="relative bg-slate-800/90 rounded-lg border border-slate-600 p-4 min-h-[160px] flex flex-wrap gap-3 items-start content-start">
+                  <!-- Área de trabalho / Mesa de Corte (Peças perfeitamente juntas, coladas sem espaçamentos fantasmas) -->
+                  <div class="flex-grow pl-1">
+                    <div class="relative bg-slate-900 border border-slate-700 h-[280px] overflow-y-auto flex flex-wrap content-start p-0 m-0 gap-0">
         `;
 
         dados.pecas.forEach((p, idx) => {
-          let larguraVisualPct = Math.max(30, Math.min(100, (p.w / larguraBobina) * 100));
+          let larguraPct = Math.max(20, Math.min(100, (p.w / larguraBobina) * 100));
           
           htmlPaineis += `
-            <div style="width: ${larguraVisualPct}%;" class="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white rounded-lg p-3 shadow-md flex flex-col justify-between border border-emerald-400/50 transition">
-              <div class="flex justify-between items-center text-[11px] font-bold border-b border-emerald-500/40 pb-1 mb-1">
-                <span class="truncate"><i class="fa-solid fa-vector-square mr-1"></i>#${idx+1} ${p.nome}</span>
-                <span class="bg-emerald-900/80 px-1.5 py-0.5 rounded text-[10px] font-mono">${p.w}cm (L)</span>
+            <div style="width: ${larguraPct}%;" class="bg-emerald-600/90 hover:bg-emerald-500 text-white p-1.5 border border-emerald-400/40 flex flex-col justify-between transition m-0 box-border">
+              <div class="flex justify-between items-center text-[9px] font-bold border-b border-emerald-400/30 pb-0.5">
+                <span class="truncate">#${idx+1} ${p.nome}</span>
+                <span class="bg-black/30 px-1 rounded font-mono">${p.w}cm</span>
               </div>
-              <div class="text-center font-mono text-xs font-black tracking-wider bg-black/20 rounded py-1.5 my-1">
-                ${p.h} cm (Comp.)
+              <div class="text-center font-mono text-xs font-black py-1">
+                ${p.h}cm
               </div>
-              <div class="flex justify-between items-center text-[9px] text-emerald-200 pt-1 border-t border-emerald-500/30">
-                <span>Passada de Corte</span>
-                <span class="font-mono font-bold">Escala Exata</span>
+              <div class="text-[8px] text-emerald-200 text-right font-mono">
+                Corel 0,0
               </div>
             </div>
           `;
@@ -630,11 +666,11 @@
                   </div>
                 </div>
 
-                <!-- Legenda Rodapé Régua -->
-                <div class="flex justify-between text-[10px] text-slate-400 font-mono mt-3 pt-2 border-t border-slate-800 px-1">
-                  <span>Início do Material (0.00m)</span>
-                  <span class="text-emerald-400 font-bold">Simulação de Nesting e Otimização de Corte</span>
-                  <span>Fim do Serviço (${dados.totalMetrosLinear.toFixed(2)}m)</span>
+                <!-- Rodapé informativo de escala -->
+                <div class="flex justify-between text-[10px] text-slate-400 font-mono mt-2 pt-1 px-1 border-t border-slate-800">
+                  <span>Origem X:0 Y:0 (Canto Superior Esquerdo)</span>
+                  <span class="text-amber-400 font-bold">Unidade de Medida: Centímetros (cm) — Encaixe Justo</span>
+                  <span>Total Linear: ${dados.totalMetrosLinear.toFixed(2)}m</span>
                 </div>
               </div>
             </div>
@@ -663,7 +699,7 @@
             </div>
           </div>
           <div class="space-y-3 pt-2">
-            <h4 class="font-bold text-slate-700 text-sm">Simulador de Posicionamento e Régua Gráfica de Corte (Com Zoom e Exportação)</h4>
+            <h4 class="font-bold text-slate-700 text-sm">Simulador com Réguas Estilo CorelDRAW (Peças Justas, Zoom e Exportação)</h4>
             ${htmlPaineis || '<p class="text-xs text-slate-400">Nenhum material selecionado.</p>'}
           </div>
         </div>
