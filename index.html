@@ -3,145 +3,258 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>CalculaJá Pro - Sistema Integrado</title>
+  <title>CalculaJá Pro - Sistema Integrado Completo</title>
   <!-- Tailwind CSS via CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- FontAwesome Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
 </head>
 <body class="bg-slate-100 text-slate-800 font-sans antialiased min-h-screen">
 
-  <!-- Navegação por Abas / Páginas -->
-  <header class="flex justify-between items-center bg-slate-900 px-6 py-3 border-b border-slate-800 text-white shadow-md">
-    <h1 class="text-sm font-bold text-cyan-400"><i class="fa-solid fa-cubes mr-2"></i> CalculaJá Pro <span class="text-xs text-slate-400 font-normal">v1.9.3</span></h1>
-    <nav class="flex space-x-2">
-      <button onclick="mudarAba('dados')" id="btnAbaDados" class="px-3 py-1.5 rounded text-xs font-medium bg-cyan-600 text-white transition cursor-pointer shadow">
-        <i class="fa-solid fa-list-check mr-1"></i> Dados & Orçamento
-      </button>
-      <button onclick="mudarAba('desenho')" id="btnAbaDesenho" class="px-3 py-1.5 rounded text-xs font-medium bg-slate-800 text-slate-300 hover:bg-slate-700 transition cursor-pointer">
-        <i class="fa-solid fa-network-wired mr-1"></i> Formação de Desenho (RIP)
-      </button>
-    </nav>
-  </header>
-
-  <main class="p-4 max-w-7xl mx-auto space-y-4">
-    
-    <!-- ABA 1: PARÂMETROS, CADASTROS E PEÇAS -->
-    <section id="abaDados" class="space-y-4">
-      
-      <!-- Bloco de Informações Iniciais -->
-      <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 grid grid-cols-1 md:grid-cols-3 gap-3">
-        <div>
-          <label class="block text-[11px] font-bold text-slate-600 mb-1">Cliente</label>
-          <input type="text" id="cliente" placeholder="Nome do Cliente" class="w-full bg-slate-50 border border-slate-300 rounded px-3 py-1.5 text-xs text-slate-900 outline-none focus:border-cyan-500">
+  <!-- TELA DE LOGIN / AUTENTICAÇÃO FIREBASE -->
+  <div id="authModal" class="fixed inset-0 bg-slate-900/90 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-8 space-y-6 border border-slate-200">
+      <div class="text-center space-y-2">
+        <div class="inline-flex items-center justify-center w-14 h-14 bg-cyan-600 text-white rounded-xl shadow-lg mb-2">
+          <i class="fa-solid fa-cubes text-2xl"></i>
         </div>
-        <div>
-          <label class="block text-[11px] font-bold text-slate-600 mb-1">Produto / Projeto</label>
-          <input type="text" id="produto" placeholder="Ex: Fachada / Adesivos" class="w-full bg-slate-50 border border-slate-300 rounded px-3 py-1.5 text-xs text-slate-900 outline-none focus:border-cyan-500">
-        </div>
-        <div class="grid grid-cols-3 gap-2">
-          <div>
-            <label class="block text-[10px] font-bold text-slate-600 mb-1">Mão de Obra (R$)</label>
-            <input type="number" id="mao" value="0" class="w-full bg-slate-50 border border-slate-300 rounded px-2 py-1.5 text-xs text-slate-900 outline-none focus:border-cyan-500">
-          </div>
-          <div>
-            <label class="block text-[10px] font-bold text-slate-600 mb-1">Lucro (%)</label>
-            <input type="number" id="lucro" value="30" class="w-full bg-slate-50 border border-slate-300 rounded px-2 py-1.5 text-xs text-slate-900 outline-none focus:border-cyan-500">
-          </div>
-          <div>
-            <label class="block text-[10px] font-bold text-slate-600 mb-1">Imposto (%)</label>
-            <input type="number" id="imposto" value="0" class="w-full bg-slate-50 border border-slate-300 rounded px-2 py-1.5 text-xs text-slate-900 outline-none focus:border-cyan-500">
-          </div>
-        </div>
+        <h2 class="text-xl font-bold text-slate-900">CalculaJá Pro</h2>
+        <p class="text-xs text-slate-500">Faça login para acessar o sistema de orçamentos e RIP</p>
       </div>
 
-      <!-- Tabela de Peças e Insumos -->
-      <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 space-y-3">
-        <div class="flex justify-between items-center">
-          <h2 class="text-xs font-bold text-slate-700 uppercase tracking-wider"><i class="fa-solid fa-scissors mr-1 text-cyan-600"></i> Peças e Cortes do Projeto</h2>
-          <button type="button" onclick="addParteVazia()" class="bg-slate-800 hover:bg-slate-700 text-white px-3 py-1 rounded text-xs font-bold transition cursor-pointer">
-            <i class="fa-solid fa-plus mr-1"></i> Adicionar Peça
-          </button>
+      <div class="space-y-4">
+        <div>
+          <label class="block text-xs font-bold text-slate-600 mb-1">E-mail de Acesso</label>
+          <input type="email5" id="loginEmail" placeholder="seu.email@exemplo.com" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-xs text-slate-900 outline-none focus:border-cyan-500">
         </div>
-
-        <div class="overflow-x-auto">
-          <table class="w-full text-left border-collapse text-xs">
-            <thead>
-              <tr class="bg-slate-100 text-slate-600 border-b border-slate-200">
-                <th class="p-2">Nome da Peça</th>
-                <th class="p-2">Material / Bobina</th>
-                <th class="p-2">Largura (cm)</th>
-                <th class="p-2">Comprimento (cm)</th>
-                <th class="p-2">Qtd</th>
-                <th class="p-2">Perda (%)</th>
-                <th class="p-2 text-center">Ações</th>
-              </tr>
-            </thead>
-            <tbody id="partes" class="divide-y divide-slate-100">
-              <!-- Inserido dinamicamente via JS -->
-            </tbody>
-          </table>
+        <div>
+          <label class="block text-xs font-bold text-slate-600 mb-1">Senha</label>
+          <input type="password" id="loginSenha" placeholder="••••••••" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-xs text-slate-900 outline-none focus:border-cyan-500">
         </div>
-      </div>
-
-      <!-- Botão de Processar e Ir para o Desenho -->
-      <div class="flex justify-end pt-2">
-        <button type="button" onclick="processarECalcular()" class="bg-cyan-600 hover:bg-cyan-700 text-white px-6 py-2.5 rounded-lg text-xs font-bold transition shadow cursor-pointer flex items-center">
-          Calcular e Gerar Desenho RIP <i class="fa-solid fa-arrow-right ml-2"></i>
+        <button type="button" onclick="fazerLoginEmail()" class="w-full bg-cyan-600 hover:bg-cyan-700 text-white py-2.5 rounded-lg text-xs font-bold transition shadow cursor-pointer">
+          Entrar no Sistema
+        </button>
+        <div class="relative flex py-2 items-center">
+          <div class="flex-grow border-t border-slate-200"></div>
+          <span class="flex-shrink mx-4 text-[10px] text-slate-400 uppercase">ou</span>
+          <div class="flex-grow border-t border-slate-200"></div>
+        </div>
+        <button type="button" onclick="fazerLoginGoogle()" class="w-full bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 py-2.5 rounded-lg text-xs font-bold transition flex items-center justify-center space-x-2 cursor-pointer shadow-sm">
+          <i class="fa-brands fa-google text-red-500"></i>
+          <span>Continuar com Google</span>
         </button>
       </div>
+      <p id="authError" class="text-center text-xs text-red-500 font-medium"></p>
+    </div>
+  </div>
 
-      <!-- Campo Oculto de Custos Outros caso necessário -->
-      <input type="hidden" id="outros" value="0">
-    </section>
+  <!-- APLICATIVO PRINCIPAL (Oculto até autenticar) -->
+  <div id="appContainer" class="hidden min-h-screen flex flex-col">
+    
+    <!-- Navegação por Abas / Páginas -->
+    <header class="flex justify-between items-center bg-slate-900 px-6 py-3 border-b border-slate-800 text-white shadow-md">
+      <div class="flex items-center space-x-3">
+        <h1 class="text-sm font-bold text-cyan-400"><i class="fa-solid fa-cubes mr-2"></i> CalculaJá Pro <span class="text-xs text-slate-400 font-normal">v2.0 Enterprise</span></h1>
+      </div>
+      <nav class="flex items-center space-x-3">
+        <button onclick="mudarAba('dados')" id="btnAbaDados" class="px-3 py-1.5 rounded text-xs font-medium bg-cyan-600 text-white transition cursor-pointer shadow">
+          <i class="fa-solid fa-list-check mr-1"></i> Dados & Orçamento
+        </button>
+        <button onclick="mudarAba('desenho')" id="btnAbaDesenho" class="px-3 py-1.5 rounded text-xs font-medium bg-slate-800 text-slate-300 hover:bg-slate-700 transition cursor-pointer">
+          <i class="fa-solid fa-network-wired mr-1"></i> Formação de Desenho (RIP)
+        </button>
+        <button onclick="fazerLogout()" class="text-slate-400 hover:text-red-400 text-xs px-2 py-1 transition cursor-pointer" title="Sair do Sistema">
+          <i class="fa-solid fa-power-off"></i>
+        </button>
+      </nav>
+    </header>
 
-    <!-- ABA 2: NOVA PÁGINA DE FORMAÇÃO DE DESENHO (RIP HP LATEX) -->
-    <section id="abaDesenho" class="hidden space-y-4">
-      <div class="bg-slate-900 text-white p-5 rounded-xl shadow-inner space-y-4">
+    <main class="p-4 max-w-7xl mx-auto space-y-4 flex-grow w-full">
+      
+      <!-- ABA 1: PARÂMETROS, CADASTROS E REGRAS DE NEGÓCIO -->
+      <section id="abaDados" class="space-y-4">
         
-        <div class="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-slate-800 pb-3 gap-2">
+        <!-- Bloco de Informações Iniciais -->
+        <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 grid grid-cols-1 md:grid-cols-3 gap-3">
           <div>
-            <h3 class="text-xs font-bold text-cyan-400 uppercase tracking-widest"><i class="fa-solid fa-network-wired mr-1"></i> Simulação RIP HP Latex (Nesting Contínuo)</h3>
-            <p id="infoClienteDesenho" class="text-[11px] text-slate-400">Aguardando processamento de dados...</p>
+            <label class="block text-[11px] font-bold text-slate-600 mb-1">Cliente</label>
+            <input type="text" id="cliente" placeholder="Nome do Cliente" class="w-full bg-slate-50 border border-slate-300 rounded px-3 py-1.5 text-xs text-slate-900 outline-none focus:border-cyan-500">
           </div>
-          <div class="text-left md:text-right bg-slate-950 px-4 py-2 rounded-lg border border-slate-800 w-full md:w-auto">
-            <span id="valorFinalDesenho" class="text-sm font-bold text-emerald-400">R$ 0.00</span>
-            <p id="custoTotalDesenho" class="text-[10px] text-slate-400">Custo Total: R$ 0.00</p>
+          <div>
+            <label class="block text-[11px] font-bold text-slate-600 mb-1">Produto / Projeto</label>
+            <input type="text" id="produto" placeholder="Ex: Fachada / Adesivos" class="w-full bg-slate-50 border border-slate-300 rounded px-3 py-1.5 text-xs text-slate-900 outline-none focus:border-cyan-500">
           </div>
-        </div>
-
-        <!-- Régua de Escala até 200cm -->
-        <div class="bg-slate-800 p-2 rounded text-[10px] text-slate-300 flex justify-between items-center border border-slate-700">
-          <span class="font-semibold">Escala de Referência (Régua Térmica / CAD):</span>
-          <div class="flex space-x-6 font-mono text-cyan-300">
-            <span>0 cm</span>
-            <span>50 cm</span>
-            <span>100 cm</span>
-            <span>150 cm</span>
-            <span>200 cm+</span>
-          </div>
-        </div>
-
-        <!-- Área de Plotagem Gráfica (Isolada na Nova Página) -->
-        <div class="overflow-x-auto bg-slate-950 p-4 rounded-lg border border-slate-800 min-h-[250px] flex items-center shadow-inner">
-          <div id="containerPlotagem" class="relative border-l-2 border-dashed border-cyan-500 pl-3 flex gap-1 items-center">
-            <div class="text-slate-500 text-xs py-8 w-full text-center">Nenhuma peça processada. Vá para a aba "Dados & Orçamento" e clique em calcular.</div>
+          <div class="grid grid-cols-3 gap-2">
+            <div>
+              <label class="block text-[10px] font-bold text-slate-600 mb-1">Mão de Obra (R$)</label>
+              <input type="number" id="mao" value="0" class="w-full bg-slate-50 border border-slate-300 rounded px-2 py-1.5 text-xs text-slate-900 outline-none focus:border-cyan-500">
+            </div>
+            <div>
+              <label class="block text-[10px] font-bold text-slate-600 mb-1">Lucro (%)</label>
+              <input type="number" id="lucro" value="30" class="w-full bg-slate-50 border border-slate-300 rounded px-2 py-1.5 text-xs text-slate-900 outline-none focus:border-cyan-500">
+            </div>
+            <div>
+              <label class="block text-[10px] font-bold text-slate-600 mb-1">Imposto (%)</label>
+              <input type="number" id="imposto" value="0" class="w-full bg-slate-50 border border-slate-300 rounded px-2 py-1.5 text-xs text-slate-900 outline-none focus:border-cyan-500">
+            </div>
           </div>
         </div>
 
-        <div class="flex justify-between pt-2">
-          <button type="button" onclick="mudarAba('dados')" class="bg-slate-800 hover:bg-slate-700 text-slate-300 px-4 py-2 rounded text-xs transition cursor-pointer flex items-center">
-            <i class="fa-solid fa-arrow-left mr-2"></i> Voltar para Edição
+        <!-- Tabela de Peças, Insumos e Regras -->
+        <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 space-y-3">
+          <div class="flex justify-between items-center">
+            <h2 class="text-xs font-bold text-slate-700 uppercase tracking-wider"><i class="fa-solid fa-scissors mr-1 text-cyan-600"></i> Peças, Cortes e Insumos do Projeto</h2>
+            <button type="button" onclick="addParteVazia()" class="bg-slate-800 hover:bg-slate-700 text-white px-3 py-1 rounded text-xs font-bold transition cursor-pointer">
+              <i class="fa-solid fa-plus mr-1"></i> Adicionar Peça
+            </button>
+          </div>
+
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse text-xs">
+              <thead>
+                <tr class="bg-slate-100 text-slate-600 border-b border-slate-200">
+                  <th class="p-2">Nome da Peça</th>
+                  <th class="p-2">Material / Bobina</th>
+                  <th class="p-2">Largura (cm)</th>
+                  <th class="p-2">Comprimento (cm)</th>
+                  <th class="p-2">Qtd</th>
+                  <th class="p-2">Perda (%)</th>
+                  <th class="p-2 text-center">Ações</th>
+                </tr>
+              </thead>
+              <tbody id="partes" class="divide-y divide-slate-100">
+                <!-- Inserido dinamicamente via JS -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Botão de Processar e Ir para o Desenho -->
+        <div class="flex justify-end pt-2">
+          <button type="button" onclick="processarECalcular()" class="bg-cyan-600 hover:bg-cyan-700 text-white px-6 py-2.5 rounded-lg text-xs font-bold transition shadow cursor-pointer flex items-center">
+            Calcular Orçamento e Gerar Desenho RIP <i class="fa-solid fa-arrow-right ml-2"></i>
           </button>
         </div>
-      </div>
-    </section>
 
-  </main>
+        <input type="hidden" id="outros" value="0">
+      </section>
 
-  <!-- Script JavaScript Integrado -->
+      <!-- ABA 2: NOVA PÁGINA DE FORMAÇÃO DE DESENHO (RIP HP LATEX / NESTING) -->
+      <section id="abaDesenho" class="hidden space-y-4">
+        <div class="bg-slate-900 text-white p-5 rounded-xl shadow-inner space-y-4">
+          
+          <div class="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-slate-800 pb-3 gap-2">
+            <div>
+              <h3 class="text-xs font-bold text-cyan-400 uppercase tracking-widest"><i class="fa-solid fa-network-wired mr-1"></i> Simulação RIP HP Latex (Nesting Contínuo)</h3>
+              <p id="infoClienteDesenho" class="text-[11px] text-slate-400">Aguardando processamento de dados...</p>
+            </div>
+            <div class="text-left md:text-right bg-slate-950 px-4 py-2 rounded-lg border border-slate-800 w-full md:w-auto">
+              <span id="valorFinalDesenho" class="text-sm font-bold text-emerald-400">R$ 0.00</span>
+              <p id="custoTotalDesenho" class="text-[10px] text-slate-400">Custo Total: R$ 0.00</p>
+            </div>
+          </div>
+
+          <!-- Régua de Escala até 200cm -->
+          <div class="bg-slate-800 p-2 rounded text-[10px] text-slate-300 flex justify-between items-center border border-slate-700">
+            <span class="font-semibold">Escala de Referência (Régua Térmica / CAD):</span>
+            <div class="flex space-x-6 font-mono text-cyan-300">
+              <span>0 cm</span>
+              <span>50 cm</span>
+              <span>100 cm</span>
+              <span>150 cm</span>
+              <span>200 cm+</span>
+            </div>
+          </div>
+
+          <!-- Área de Plotagem Gráfica -->
+          <div class="overflow-x-auto bg-slate-950 p-4 rounded-lg border border-slate-800 min-h-[250px] flex items-center shadow-inner">
+            <div id="containerPlotagem" class="relative border-l-2 border-dashed border-cyan-500 pl-3 flex gap-1 items-center">
+              <div class="text-slate-500 text-xs py-8 w-full text-center">Nenhuma peça processada. Vá para a aba "Dados & Orçamento" e clique em calcular.</div>
+            </div>
+          </div>
+
+          <div class="flex justify-between pt-2">
+            <button type="button" onclick="mudarAba('dados')" class="bg-slate-800 hover:bg-slate-700 text-slate-300 px-4 py-2 rounded text-xs transition cursor-pointer flex items-center">
+              <i class="fa-solid fa-arrow-left mr-2"></i> Voltar para Edição
+            </button>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- Script JavaScript Integrado Completo (Firebase + Regras + RIP) -->
   <script>
-    // Bases de dados simuladas para testes e funcionamento dos selects
+    // Configuração do Firebase (Substitua com suas credenciais reais do projeto Firebase se necessário)
+    const firebaseConfig = {
+      apiKey: "AIzaSyD-ExemploChaveFirebaseCalculajaPro",
+      authDomain: "calculajapro.firebaseapp.com",
+      projectId: "calculajapro",
+      storageBucket: "calculajapro.appspot.com",
+      messagingSenderId: "1234567890",
+      appId: "1:123456:web:abcdef"
+    };
+
+    // Inicialização segura do Firebase com tratamento de duplicidade
+    if (!firebase.apps.length) {
+      firebase.initializeApp(firebaseConfig);
+    }
+    const auth = firebase.auth();
+
+    // Monitoramento de Estado de Autenticação
+    auth.onAuthStateChanged(user => {
+      const modal = document.getElementById("authModal");
+      const app = document.getElementById("appContainer");
+      if (user) {
+        modal.classList.add("hidden");
+        app.classList.remove("hidden");
+      } else {
+        modal.classList.remove("hidden");
+        app.classList.add("hidden");
+      }
+    });
+
+    // Funções de Login / Autenticação
+    function fazerLoginEmail() {
+      const email = document.getElementById("loginEmail").value;
+      const senha = document.getElementById("loginSenha").value;
+      const erroEl = document.getElementById("authError");
+
+      if (!email || !senha) {
+        erroEl.innerText = "Preencha o e-mail e a senha.";
+        return;
+      }
+
+      auth.signInWithEmailAndPassword(email, senha)
+        .catch(error => {
+          // Se o usuário não existir, cria automaticamente para facilitar o acesso de teste
+          if (error.code === 'auth/user-not-found' || error.code === 'auth/invalid-credential') {
+            auth.createUserWithEmailAndPassword(email, senha)
+              .catch(err => erroEl.innerText = err.message);
+          } else {
+            erroEl.innerText = error.message;
+          }
+        });
+    }
+
+    function fazerLoginGoogle() {
+      const provider = new firebase.auth.GoogleAuthProvider();
+      auth.signInWithPopup(provider).catch(error => {
+        document.getElementById("authError").innerText = error.message;
+      });
+    }
+
+    function fazerLogout() {
+      auth.signOut();
+    }
+
+    // Bases de Dados de Regras de Materiais e Insumos
     const bobinas = [
       { nome: "Bobina Adesivo Vinil Brilho 1.00m", largura: 100, preco: 15.00 },
       { nome: "Bobina Lona Frontlight 1.40m", largura: 140, preco: 18.50 },
@@ -153,12 +266,11 @@
       { nome: "Bastão de Madeira 1m", valor: 2.50 }
     ];
 
-    // Inicialização ao carregar a página
     window.onload = function() {
       addParteVazia("Adesivo Vitrine", "Bobina: Bobina Adesivo Vinil Brilho 1.00m", "50", "80", 2, 5);
     };
 
-    // Função para alternar entre as abas sem perder o estado dos inputs
+    // Controle de Abas
     function mudarAba(aba) {
       const secDados = document.getElementById("abaDados");
       const secDesenho = document.getElementById("abaDesenho");
@@ -168,25 +280,22 @@
       if (aba === 'dados') {
         secDados.classList.remove("hidden");
         secDesenho.classList.add("hidden");
-        
         btnDados.className = "px-3 py-1.5 rounded text-xs font-medium bg-cyan-600 text-white transition cursor-pointer shadow";
         btnDesenho.className = "px-3 py-1.5 rounded text-xs font-medium bg-slate-800 text-slate-300 hover:bg-slate-700 transition cursor-pointer";
       } else {
         secDados.classList.add("hidden");
         secDesenho.classList.remove("hidden");
-        
         btnDesenho.className = "px-3 py-1.5 rounded text-xs font-medium bg-cyan-600 text-white transition cursor-pointer shadow";
         btnDados.className = "px-3 py-1.5 rounded text-xs font-medium bg-slate-800 text-slate-300 hover:bg-slate-700 transition cursor-pointer";
       }
     }
 
-    // Aciona o cálculo original e direciona automaticamente para a aba de desenho
     function processarECalcular() {
       calcular();
       mudarAba('desenho');
     }
 
-    // Preenche os selects de materiais nas linhas da tabela
+    // Atualização dos selects de materiais e regras
     function atualizaSelectsPartes() {
       const selects = document.querySelectorAll(".materialParte");
       selects.forEach(select => {
@@ -217,7 +326,6 @@
       });
     }
 
-    // Altera quantidade de peças via botões + / -
     function alterarQtd(btn, delta) {
       const input = btn.parentElement.querySelector('.qtdParte');
       let val = parseInt(input.value) || 1;
@@ -226,7 +334,6 @@
       input.value = val;
     }
 
-    // Bloquear ou editar linha da tabela
     function editarLinhaPeca(btn) {
       const tr = btn.closest('tr');
       const inputs = tr.querySelectorAll('input, select');
@@ -256,7 +363,6 @@
       }
     }
 
-    // Adiciona uma linha vazia de peça na tabela
     function addParteVazia(nome = "", material = "", largura = "", comprimento = "", qtd = 1, perda = 0) {
       const tbody = document.getElementById("partes");
       const tr = document.createElement("tr");
@@ -298,7 +404,7 @@
       }
     }
 
-    // Motor de Cálculo e Renderização do RIP HP Latex
+    // Motor Completo de Cálculo e Renderização do RIP HP Latex
     function calcular() {
       const cliente = document.getElementById("cliente").value.trim() || "Cliente Padrão";
       const produto = document.getElementById("produto").value.trim() || "Impressão Digital / Corte";
@@ -309,7 +415,7 @@
 
       const linhas = document.querySelectorAll("#partes tr");
       if (linhas.length === 0) {
-        alert("Adicione pelo menos uma peça para calcular o orçamento e o layout de impressão.");
+        alert("Adicione pelo menos uma peça para calcular o orçamento.");
         return;
       }
 
@@ -361,7 +467,6 @@
       const fatorDivisor = 1 - ((margemLucro + taxaImposto) / 100);
       const precoFinalVenda = fatorDivisor > 0 ? custoDiretoTotal / fatorDivisor : custoDiretoTotal * 1.5;
 
-      // Atualiza os dados na nova página de desenho
       document.getElementById("infoClienteDesenho").innerText = `Cliente: ${cliente} | Projeto: ${produto}`;
       document.getElementById("valorFinalDesenho").innerText = `R$ ${precoFinalVenda.toFixed(2)}`;
       document.getElementById("custoTotalDesenho").innerText = `Custo Total: R$ ${custoDiretoTotal.toFixed(2)}`;
