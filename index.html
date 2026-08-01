@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ProCut — Sistema Completo de Corte & Estoque</title>
+    <title>ProCut — Matriz de Corte & Estoque</title>
     <style>
         :root {
             --bg-cad: #0a0f0d;
@@ -11,72 +11,65 @@
             --border-cad: #1e2e24;
             --green-neon: #00ff66;
             --green-dark: #004d1f;
-            --green-light: #e6fff0;
-            --text-cad: #e0f2fe;
             --text-muted: #6b8e78;
             --danger: #ff4d4d;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Consolas', 'Courier New', monospace; }
-        body { background-color: var(--bg-cad); color: #d1fae5; height: 100vh; overflow: hidden; }
+        body { background-color: var(--bg-cad); color: #d1fae5; height: 100vh; overflow: hidden; display: flex; flex-direction: column; }
 
         /* TELA DE LOGIN */
         #login-screen { position: fixed; inset: 0; background: var(--bg-cad); z-index: 999; display: flex; justify-content: center; align-items: center; }
-        .login-card { background: var(--panel-cad); border: 2px solid var(--green-neon); padding: 40px; border-radius: 8px; width: 360px; box-shadow: 0 0 20px rgba(0, 255, 102, 0.15); text-align: center; }
-        .login-card h2 { color: var(--green-neon); margin-bottom: 5px; font-size: 1.5rem; letter-spacing: 1px; }
+        .login-card { background: var(--panel-cad); border: 2px solid var(--green-neon); padding: 40px; border-radius: 8px; width: 360px; text-align: center; }
+        .login-card h2 { color: var(--green-neon); margin-bottom: 5px; font-size: 1.5rem; }
         .login-card p { color: var(--text-muted); font-size: 0.8rem; margin-bottom: 25px; }
         .login-card .form-group { text-align: left; margin-bottom: 15px; }
         .login-card button { width: 100%; margin-top: 10px; padding: 12px; font-size: 1rem; }
 
-        /* LAYOUT PRINCIPAL DO APP */
-        #app-screen { display: none; flex-direction: column; height: 100vh; }
-
         /* HEADER */
         header { background: var(--panel-cad); border-bottom: 2px solid var(--green-neon); padding: 12px 25px; display: flex; justify-content: space-between; align-items: center; }
-        .logo-box { display: flex; align-items: center; gap: 12px; }
         .logo-symbol { background: var(--green-neon); color: var(--bg-cad); font-weight: 900; padding: 4px 10px; border-radius: 4px; font-size: 1.2rem; }
-        .title-text h1 { font-size: 1.2rem; color: var(--green-neon); letter-spacing: 1px; }
+        .title-text h1 { font-size: 1.2rem; color: var(--green-neon); }
         .title-text p { font-size: 0.75rem; color: var(--text-muted); }
 
-        /* CONTROLES */
+        /* PAINEL DE CONTROLES */
         .controls { background: var(--panel-cad); border-bottom: 1px solid var(--border-cad); padding: 12px 25px; display: flex; gap: 15px; align-items: flex-end; flex-wrap: wrap; }
         .form-group { display: flex; flex-direction: column; gap: 6px; }
-        .form-group label { font-size: 0.7rem; color: var(--green-neon); text-transform: uppercase; letter-spacing: 1px; }
-        .form-group input, .form-group select { background: #060a08; border: 1px solid var(--green-dark); color: var(--green-neon); padding: 8px 12px; border-radius: 4px; outline: none; font-family: monospace; font-size: 0.9rem; }
-        .form-group input:focus, .form-group select:focus { border-color: var(--green-neon); box-shadow: 0 0 8px rgba(0, 255, 102, 0.3); }
+        .form-group label { font-size: 0.7rem; color: var(--green-neon); text-transform: uppercase; }
+        .form-group input, .form-group select { background: #060a08; border: 1px solid var(--green-dark); color: var(--green-neon); padding: 8px 12px; border-radius: 4px; outline: none; font-family: monospace; }
 
-        button { background: var(--green-neon); color: var(--bg-cad); border: none; padding: 9px 16px; border-radius: 4px; font-weight: bold; cursor: pointer; font-family: monospace; transition: all 0.2s; }
-        button:hover { background: #33ff85; box-shadow: 0 0 12px rgba(0, 255, 102, 0.4); }
+        button { background: var(--green-neon); color: var(--bg-cad); border: none; padding: 9px 16px; border-radius: 4px; font-weight: bold; cursor: pointer; font-family: monospace; }
+        button:hover { background: #33ff85; }
         .btn-danger { background: transparent; border: 1px solid var(--danger); color: var(--danger); }
-        .btn-danger:hover { background: var(--danger); color: white; box-shadow: none; }
+        .btn-danger:hover { background: var(--danger); color: white; }
 
-        /* WORKSPACE */
+        /* AREA DE TRABALHO */
         .main-container { flex: 1; display: grid; grid-template-columns: 1fr 340px; padding: 20px; gap: 20px; overflow: hidden; }
         .viewport-container { display: flex; flex-direction: column; gap: 15px; overflow: hidden; }
 
-        /* CANVAS COM RÉGUAS INTEGRADAS */
-        .canvas-area { background: #050806; border: 1px solid var(--border-cad); border-radius: 6px; padding: 55px 20px 20px 55px; flex: 1; overflow: auto; position: relative; }
+        /* CANVAS COM REGUA DIRETA */
+        .canvas-area { background: #050806; border: 1px solid var(--border-cad); border-radius: 6px; padding: 40px 20px 20px 45px; flex: 1; overflow: auto; position: relative; }
         
-        .ruler-x { position: absolute; top: 20px; left: 55px; height: 30px; border-bottom: 2px solid var(--green-neon); background: rgba(0, 255, 102, 0.03); }
-        .ruler-x-mark { position: absolute; border-left: 1px solid var(--green-dark); height: 8px; bottom: 0; font-size: 9px; color: var(--text-muted); padding-left: 2px; }
+        .ruler-x { position: absolute; top: 15px; left: 45px; height: 20px; border-bottom: 1px solid var(--green-neon); display: flex; }
+        .ruler-x-mark { position: absolute; border-left: 1px solid var(--green-dark); height: 6px; bottom: 0; font-size: 9px; color: var(--text-muted); padding-left: 2px; }
         
-        .ruler-y { position: absolute; top: 55px; left: 20px; width: 30px; border-right: 2px solid var(--green-neon); background: rgba(0, 255, 102, 0.03); }
-        .ruler-y-mark { position: absolute; border-top: 1px solid var(--green-dark); width: 8px; right: 0; font-size: 9px; color: var(--text-muted); padding-top: 1px; text-align: right; }
+        .ruler-y { position: absolute; top: 40px; left: 10px; width: 30px; border-right: 1px solid var(--green-neon); }
+        .ruler-y-mark { position: absolute; border-top: 1px solid var(--green-dark); width: 6px; right: 0; font-size: 9px; color: var(--text-muted); }
 
-        .canvas-wrapper { position: relative; border: 2px solid var(--green-neon); background: rgba(0, 255, 102, 0.02); box-shadow: 0 0 15px rgba(0, 255, 102, 0.05); transition: all 0.2s; }
+        .canvas-wrapper { position: relative; border: 2px solid var(--green-neon); background: rgba(0, 255, 102, 0.02); }
 
-        /* PEÇA DESENHADA */
-        .piece-green { position: absolute; background: rgba(0, 255, 102, 0.15); border: 1.5px dashed var(--green-neon); color: var(--green-neon); font-size: 11px; font-weight: bold; display: flex; flex-direction: column; justify-content: space-between; padding: 5px; box-sizing: border-box; }
+        /* BLOCO DE PEÇA DESENHADA */
+        .piece-green { position: absolute; background: rgba(0, 255, 102, 0.15); border: 1.5px dashed var(--green-neon); color: var(--green-neon); font-size: 11px; font-weight: bold; display: flex; flex-direction: column; justify-content: space-between; padding: 4px; box-sizing: border-box; }
 
-        /* LISTA DE PEÇAS */
+        /* TABELA DE PEÇAS */
         .list-section { background: var(--panel-cad); border: 1px solid var(--border-cad); border-radius: 6px; padding: 12px 15px; height: 130px; overflow-y: auto; }
         .list-table { width: 100%; border-collapse: collapse; font-size: 0.8rem; text-align: left; }
         .list-table th { color: var(--text-muted); border-bottom: 1px solid var(--border-cad); padding-bottom: 5px; }
         .list-table td { color: var(--green-neon); padding: 5px 0; border-bottom: 1px dashed #122419; }
 
-        /* PAINEL DE METRICAS */
+        /* TELEMETRIA LATERAL */
         .side-panel { background: var(--panel-cad); border: 1px solid var(--border-cad); border-radius: 6px; padding: 20px; display: flex; flex-direction: column; gap: 12px; overflow-y: auto; }
-        .panel-title { color: var(--green-neon); font-size: 0.85rem; text-transform: uppercase; border-bottom: 1px solid var(--border-cad); padding-bottom: 8px; letter-spacing: 1px; }
+        .panel-title { color: var(--green-neon); font-size: 0.85rem; text-transform: uppercase; border-bottom: 1px solid var(--border-cad); padding-bottom: 8px; }
 
         .data-row { display: flex; justify-content: space-between; font-size: 0.85rem; padding: 5px 0; border-bottom: 1px dashed var(--border-cad); }
         .data-row .val { color: var(--green-neon); font-weight: bold; }
@@ -99,7 +92,7 @@
                     <input type="text" id="user" value="admin" required>
                 </div>
                 <div class="form-group">
-                    <label>Senha de Acesso</label>
+                    <label>Senha</label>
                     <input type="password" id="pass" value="1234" required>
                 </div>
                 <button type="submit">ENTRAR NO SISTEMA</button>
@@ -108,18 +101,18 @@
     </div>
 
     <!-- TELA PRINCIPAL -->
-    <div id="app-screen">
+    <div id="app-screen" style="display:none; flex-direction:column; height:100vh;">
         <header>
-            <div class="logo-box">
+            <div style="display:flex; align-items:center; gap:12px;">
                 <div class="logo-symbol">CUT</div>
                 <div class="title-text">
                     <h1>ProCut Matrix</h1>
                     <p>Simulador de Aproveitamento e Custo de Bobina</p>
                 </div>
             </div>
-            <div style="display:flex; align-items:center; gap:15px;">
+            <div>
                 <span style="color: var(--green-neon); font-size: 0.8rem;">OP: <strong id="op-name">ADMIN</strong></span>
-                <button onclick="logout()" class="btn-danger" style="padding: 4px 10px; font-size: 0.75rem;">SAIR</button>
+                <button onclick="logout()" class="btn-danger" style="padding: 4px 10px; font-size: 0.75rem; margin-left: 10px;">SAIR</button>
             </div>
         </header>
 
@@ -149,7 +142,6 @@
         </div>
 
         <div class="main-container">
-            <!-- CANVAS COM RÉGUAS -->
             <div class="viewport-container">
                 <div class="canvas-area">
                     <div class="ruler-x" id="rulerX"></div>
@@ -172,7 +164,6 @@
                 </div>
             </div>
 
-            <!-- PAINEL DE CONTROLE -->
             <div class="side-panel">
                 <div class="panel-title">Métricas da Passada</div>
 
@@ -217,7 +208,7 @@
     </div>
 
     <script>
-        const scale = 4; // 1cm no mundo real = 4px na tela
+        const scale = 3; // Escala visual exata: 1cm = 3px
         let posCurrentX = 0;
         let maiorH = 0;
         let listaPecas = [];
@@ -237,25 +228,21 @@
         }
 
         function atualizarBobina() {
-            const select = document.getElementById('bobina-select');
-            const dados = select.value.split('|');
-            const larguraBobina = parseFloat(dados[0]);
-
             limparTudo();
         }
 
-        function gerarReguas(larguraCm, alturaCm) {
+        function desenharReguas(larguraCm, alturaCm) {
             const rx = document.getElementById('rulerX');
             const ry = document.getElementById('rulerY');
             rx.innerHTML = ''; ry.innerHTML = '';
 
-            const larguraPx = larguraCm * scale;
-            const alturaPx = Math.max(alturaCm * scale, 180);
+            const widthPx = larguraCm * scale;
+            const heightPx = Math.max(alturaCm * scale, 150);
 
-            rx.style.width = larguraPx + 'px';
-            ry.style.height = alturaPx + 'px';
+            rx.style.width = widthPx + 'px';
+            ry.style.height = heightPx + 'px';
 
-            // Marcações Régua X (de 10 em 10 cm)
+            // Régua Horizontal (Marcadores de 10 em 10cm)
             for(let i = 0; i <= larguraCm; i += 10) {
                 const mark = document.createElement('div');
                 mark.className = 'ruler-x-mark';
@@ -264,9 +251,9 @@
                 rx.appendChild(mark);
             }
 
-            // Marcações Régua Y (de 10 em 10 cm)
-            const alturaTotalCm = Math.ceil(alturaPx / scale);
-            for(let i = 0; i <= alturaTotalCm; i += 10) {
+            // Régua Vertical
+            const altTotal = Math.ceil(heightPx / scale);
+            for(let i = 0; i <= altTotal; i += 10) {
                 const mark = document.createElement('div');
                 mark.className = 'ruler-y-mark';
                 mark.style.top = (i * scale) + 'px';
@@ -288,7 +275,7 @@
 
             for(let i = 0; i < qtd; i++) {
                 if(posCurrentX + w > larguraBobina) {
-                    alert(`Não cabe mais peças nesta linha! Largura livre: ${larguraBobina - posCurrentX} cm.`);
+                    alert(`Espaço insuficiente na bobina! Sobra livre: ${larguraBobina - posCurrentX} cm`);
                     break;
                 }
 
@@ -319,12 +306,12 @@
 
         function atualizarCalculos(larguraBobina, custoM2) {
             const canvas = document.getElementById('canvas-cad');
-            const alturaCanvasPx = Math.max(maiorH * scale, 180);
+            const altPx = Math.max(maiorH * scale, 150);
             
             canvas.style.width = (larguraBobina * scale) + 'px';
-            canvas.style.height = alturaCanvasPx + 'px';
+            canvas.style.height = altPx + 'px';
 
-            gerarReguas(larguraBobina, maiorH);
+            desenharReguas(larguraBobina, maiorH);
 
             const sobra = larguraBobina - posCurrentX;
             const pct = posCurrentX > 0 ? ((posCurrentX / larguraBobina) * 100).toFixed(1) : 0;
@@ -371,9 +358,9 @@
 
             const canvas = document.getElementById('canvas-cad');
             canvas.style.width = (larguraBobina * scale) + 'px';
-            canvas.style.height = '180px';
+            canvas.style.height = '150px';
 
-            gerarReguas(larguraBobina, 0);
+            desenharReguas(larguraBobina, 0);
 
             document.getElementById('lbl-w').innerText = `${larguraBobina} cm`;
             document.getElementById('lbl-uso').innerText = `0 cm`;
