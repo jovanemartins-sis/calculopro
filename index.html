@@ -9,7 +9,7 @@
 </head>
 <body class="bg-slate-100 min-h-screen text-slate-800 flex flex-col">
 
-  <!-- TOPO / HEADER COM LOGIN -->
+  <!-- TOPO / HEADER COM LOGIN DO GOOGLE -->
   <header class="bg-slate-900 text-white shadow-md p-4 flex justify-between items-center">
     <div class="flex items-center space-x-3">
       <i class="fa-solid fa-calculator text-2xl text-emerald-400"></i>
@@ -116,7 +116,7 @@
 
   </main>
 
-  <!-- FIREBASE E SCRIPTS DE LÓGICA -->
+  <!-- FIREBASE E CONFIGURAÇÃO DE AUTENTICAÇÃO GOOGLE -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
     import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js";
@@ -164,6 +164,7 @@
     });
   </script>
 
+  <!-- LÓGICA DE CADASTRO E CÁLCULO -->
   <script>
     let catalogo = JSON.parse(localStorage.getItem("catalogo_calculaja")) || [
       { id: 1, nome: "Chapa PVC Cristal", unidade: "m²", valor: 25.00 }
@@ -215,7 +216,6 @@
       const margemLucro = parseFloat(document.getElementById("lucro").value) || 0;
       const taxaImposto = parseFloat(document.getElementById("imposto").value) || 0;
 
-      // Simulação rápida de custo baseada no primeiro item ou padrão
       const custoBaseMaterial = catalogo.length > 0 ? catalogo[0].valor * 2 : 50; 
       const custoTotalPuro = custoBaseMaterial + maoObra;
       const fatorMultiplicador = 1 + (margemLucro + taxaImposto) / 100;
@@ -242,7 +242,6 @@
       `;
     }
 
-    // Inicializar tabela na carga
     renderTabelaPrecos();
   </script>
 </body>
