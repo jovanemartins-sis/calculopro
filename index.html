@@ -496,44 +496,48 @@
       input.value = novo;
     }
 
-    // Função de Edição de Peça individual
+    // Função de Edição / Salvar de Peça individual
     function editarLinhaPeca(btn) {
       const tr = btn.closest('tr');
       const inputs = tr.querySelectorAll('input, select');
-      const isReadonly = inputs[0].hasAttribute('readonly');
+      // Verifica se atualmente está em modo somente leitura
+      const isReadonly = inputs[0].hasAttribute('readonly') || inputs[0].disabled;
       
       inputs.forEach(input => {
         if(isReadonly) {
           input.removeAttribute('readonly');
           input.removeAttribute('disabled');
           input.classList.remove('bg-slate-50', 'border-transparent');
-          input.classList.add('border-slate-300');
+          input.classList.add('border-slate-300', 'bg-white');
         } else {
           input.setAttribute('readonly', true);
           if(input.tagName === 'SELECT') input.setAttribute('disabled', true);
           input.classList.add('bg-slate-50', 'border-transparent');
-          input.classList.remove('border-slate-300');
+          input.classList.remove('border-slate-300', 'bg-white');
         }
       });
-      btn.innerHTML = isReadonly ? '<i class="fa-solid fa-check text-emerald-600"></i>' : '<i class="fa-solid fa-pen text-blue-500"></i>';
+      // Alterna o ícone entre Lápis (Editar) e Check (Salvar)
+      btn.innerHTML = isReadonly ? '<i class="fa-solid fa-check text-white"></i>' : '<i class="fa-solid fa-pen"></i>';
+      btn.className = isReadonly ? "bg-emerald-600 hover:bg-emerald-700 text-white p-1.5 rounded text-xs cursor-pointer shadow-sm" : "bg-blue-100 hover:bg-blue-200 text-blue-600 p-1.5 rounded text-xs cursor-pointer";
+      btn.title = isReadonly ? "Salvar Alteração" : "Editar";
     }
 
     function addParteVazia(nome="", mat="", l1="", l2="", q=1, p=0) {
       const tbody = document.getElementById("partes");
       const tr = document.createElement("tr");
       tr.innerHTML = `
-        <td class="p-2"><input class="nomeParte w-full border border-slate-300 rounded px-2 py-1 text-sm" type="text" placeholder="Ex: Peça Plástico / Tecido" value="${nome}"></td>
-        <td class="p-2"><select class="materialParte w-full border border-slate-300 rounded px-2 py-1 text-sm"><option value="">Selecione...</option></select></td>
-        <td class="p-2"><input class="lado1 w-full border border-slate-300 rounded px-2 py-1 text-sm" type="number" placeholder="cm" value="${l1}"></td>
-        <td class="p-2"><input class="lado2 w-full border border-slate-300 rounded px-2 py-1 text-sm" type="number" placeholder="cm" value="${l2}"></td>
+        <td class="p-2"><input class="nomeParte w-full border border-slate-300 rounded px-2 py-1 text-sm bg-white" type="text" placeholder="Ex: Peça Plástico / Tecido" value="${nome}"></td>
+        <td class="p-2"><select class="materialParte w-full border border-slate-300 rounded px-2 py-1 text-sm bg-white"><option value="">Selecione...</option></select></td>
+        <td class="p-2"><input class="lado1 w-full border border-slate-300 rounded px-2 py-1 text-sm bg-white" type="number" placeholder="cm" value="${l1}"></td>
+        <td class="p-2"><input class="lado2 w-full border border-slate-300 rounded px-2 py-1 text-sm bg-white" type="number" placeholder="cm" value="${l2}"></td>
         <td class="p-2">
           <div class="flex items-center space-x-1">
             <button type="button" onclick="alterarQtd(this, -1)" class="bg-slate-200 hover:bg-slate-300 text-slate-700 px-1.5 py-1 rounded text-xs font-bold cursor-pointer">-</button>
-            <input class="qtdParte w-12 text-center border border-slate-300 rounded px-1 py-1 text-sm" type="number" value="${q}">
+            <input class="qtdParte w-12 text-center border border-slate-300 rounded px-1 py-1 text-sm bg-white" type="number" value="${q}">
             <button type="button" onclick="alterarQtd(this, 1)" class="bg-slate-200 hover:bg-slate-300 text-slate-700 px-1.5 py-1 rounded text-xs font-bold cursor-pointer">+</button>
           </div>
         </td>
-        <td class="p-2"><input class="perdaParte w-full border border-slate-300 rounded px-2 py-1 text-sm" type="number" placeholder="0" value="${p}"></td>
+        <td class="p-2"><input class="perdaParte w-full border border-slate-300 rounded px-2 py-1 text-sm bg-white" type="number" placeholder="0" value="${p}"></td>
         <td class="p-2 text-center flex items-center justify-center space-x-1">
           <button class="bg-blue-100 hover:bg-blue-200 text-blue-600 p-1.5 rounded text-xs cursor-pointer" type="button" onclick="editarLinhaPeca(this)" title="Editar"><i class="fa-solid fa-pen"></i></button>
           <button class="bg-red-500 hover:bg-red-600 text-white p-1.5 rounded text-xs cursor-pointer" type="button" onclick="this.closest('tr').remove()" title="Excluir"><i class="fa-solid fa-xmark"></i></button>
