@@ -3,176 +3,151 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>CalculaJá Pro - Sistema Industrial</title>
+  <title>CalculaJá Pro - Painel Gráfico de Corte Real</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body class="bg-slate-100 min-h-screen text-slate-800 flex flex-col">
 
-  <!-- TOPO / HEADER (SÓ APARECE DEPOIS DE LOGADO) -->
+  <!-- TOPO / HEADER -->
   <header id="header-principal" class="hidden bg-slate-900 text-white shadow-md p-4 flex flex-col md:flex-row justify-between items-center gap-4">
     <div class="flex items-center space-x-3 w-full md:w-auto justify-between md:justify-start">
       <div class="flex items-center space-x-2">
-        <i class="fa-solid fa-calculator text-2xl text-emerald-400"></i>
+        <i class="fa-solid fa-ruler-combined text-2xl text-emerald-400"></i>
         <h1 class="text-xl font-bold tracking-wide">CalculaJá <span class="text-emerald-400">Pro</span></h1>
       </div>
-      <!-- Botão Sair mobile -->
       <div id="auth-container-topo-mobile" class="md:hidden"></div>
     </div>
 
-    <!-- ABAS DE NAVEGAÇÃO ENTRE AS PÁGINAS DO APP -->
+    <!-- ABAS -->
     <nav class="flex flex-wrap justify-center gap-2 bg-slate-800 p-1.5 rounded-xl border border-slate-700">
-      <button onclick="mudarAba('calculo')" id="btn-aba-calculo" class="px-4 py-2 rounded-lg text-xs font-bold transition bg-emerald-600 text-white shadow">
-        <i class="fa-solid fa-ruler-combined mr-1"></i> Cálculo & Orçamento
+      <button onclick="mudarAba('calculo')" id="btn-aba-calculo" class="px-3.5 py-2 rounded-lg text-xs font-bold transition bg-emerald-600 text-white shadow">
+        <i class="fa-solid fa-scissors mr-1"></i> Orçamento & Corte
       </button>
-      <button onclick="mudarAba('desenho')" id="btn-aba-desenho" class="px-4 py-2 rounded-lg text-xs font-bold transition text-slate-300 hover:bg-slate-700 hover:text-white">
-        <i class="fa-solid fa-compass-drafting mr-1"></i> Desenho & Corte
+      <button onclick="mudarAba('bobinas')" id="btn-aba-bobinas" class="px-3.5 py-2 rounded-lg text-xs font-bold transition text-slate-300 hover:bg-slate-700 hover:text-white">
+        <i class="fa-solid fa-scroll mr-1"></i> Bobinas & Rolos
       </button>
-      <button onclick="mudarAba('catalogo')" id="btn-aba-catalogo" class="px-4 py-2 rounded-lg text-xs font-bold transition text-slate-300 hover:bg-slate-700 hover:text-white">
-        <i class="fa-solid fa-boxes-stacked mr-1"></i> Catálogo
+      <button onclick="mudarAba('catalogo')" id="btn-aba-catalogo" class="px-3.5 py-2 rounded-lg text-xs font-bold transition text-slate-300 hover:bg-slate-700 hover:text-white">
+        <i class="fa-solid fa-boxes-stacked mr-1"></i> Insumos Avulsos
       </button>
-      <button onclick="mudarAba('salvos')" id="btn-aba-salvos" class="px-4 py-2 rounded-lg text-xs font-bold transition text-slate-300 hover:bg-slate-700 hover:text-white">
-        <i class="fa-solid fa-folder-open mr-1"></i> Projetos Salvos
+      <button onclick="mudarAba('salvos')" id="btn-aba-salvos" class="px-3.5 py-2 rounded-lg text-xs font-bold transition text-slate-300 hover:bg-slate-700 hover:text-white">
+        <i class="fa-solid fa-folder-open mr-1"></i> Salvos
       </button>
     </nav>
 
-    <div id="auth-container-topo" class="hidden md:block">
-      <!-- Botão de Sair/Trocar Conta no topo (Desktop) -->
-    </div>
+    <div id="auth-container-topo" class="hidden md:block"></div>
   </header>
 
-  <!-- TELA INICIAL: RETÂNGULO CENTRAL (LOGIN / CADASTRO ANTES DE ENTRAR NO APP) -->
+  <!-- LOGIN -->
   <div id="tela-login" class="flex-grow flex flex-col items-center justify-center p-6">
     <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-200 max-w-md w-full space-y-6">
-      
       <div class="text-center space-y-2">
-        <i class="fa-solid fa-calculator text-3xl text-emerald-600"></i>
+        <i class="fa-solid fa-ruler-combined text-3xl text-emerald-600"></i>
         <h2 class="text-xl font-bold text-slate-800">CalculaJá Pro</h2>
-        <p class="text-xs text-slate-500">Sistema Industrial Completo para Orçamentos e Cortes</p>
+        <p class="text-xs text-slate-500">Acesse para faturar com painel de corte real</p>
       </div>
-
-      <!-- BOTÃO GOOGLE -->
       <button onclick="loginComGoogle()" class="w-full bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 font-bold py-2.5 rounded-xl text-sm flex items-center justify-center space-x-2 transition shadow-sm cursor-pointer">
         <i class="fa-brands fa-google text-red-500"></i>
         <span>Continuar com Google</span>
       </button>
-
       <div class="flex items-center my-2">
         <div class="flex-grow border-t border-slate-200"></div>
         <span class="px-3 text-xs text-slate-400 uppercase font-bold">ou e-mail</span>
         <div class="flex-grow border-t border-slate-200"></div>
       </div>
-
-      <!-- FORMULÁRIO DE EMAIL E SENHA -->
       <form id="formEmailSenha" class="space-y-4" onsubmit="tratarLoginEmail(event)">
         <div>
           <label class="block text-xs font-bold uppercase text-slate-500 mb-1">E-mail</label>
-          <input type="email" id="emailInput" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm outline-none focus:border-emerald-500" placeholder="seu@email.com" required>
+          <input type="email" id="emailInput" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm outline-none focus:border-emerald-500" required>
         </div>
         <div>
           <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Senha</label>
-          <input type="password" id="senhaInput" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm outline-none focus:border-emerald-500" placeholder="Sua senha" required>
+          <input type="password" id="senhaInput" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm outline-none focus:border-emerald-500" required>
         </div>
-        
         <div id="erro-auth" class="text-xs text-red-500 text-center font-medium hidden"></div>
-
         <div class="grid grid-cols-2 gap-2 pt-2">
-          <button type="submit" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-2.5 rounded-xl text-xs transition cursor-pointer">
-            Entrar
-          </button>
-          <button type="button" onclick="cadastrarComEmail()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-xl text-xs transition cursor-pointer">
-            Cadastrar
-          </button>
+          <button type="submit" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-2.5 rounded-xl text-xs transition cursor-pointer">Entrar</button>
+          <button type="button" onclick="cadastrarComEmail()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-xl text-xs transition cursor-pointer">Cadastrar</button>
         </div>
       </form>
-
     </div>
   </div>
 
-  <!-- APLICAÇÃO PRINCIPAL (OCULTADA ATÉ O LOGIN) -->
+  <!-- APLICAÇÃO -->
   <main id="app-principal" class="hidden flex-grow container mx-auto p-4 max-w-7xl">
     
-    <!-- ABA 1: CÁLCULO E ORÇAMENTO -->
+    <!-- ABA 1: ORÇAMENTO & CORTE -->
     <section id="aba-calculo" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
       
-      <!-- Coluna lateral: Atalho Catálogo Rápido -->
+      <!-- Lateral de Bobinas -->
       <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 lg:col-span-1 space-y-4">
         <h2 class="text-base font-bold text-slate-700 flex items-center space-x-2">
-          <i class="fa-solid fa-boxes-stacked text-emerald-600"></i>
-          <span>Materiais Disponíveis</span>
+          <i class="fa-solid fa-scroll text-emerald-600"></i>
+          <span>Insumos & Bobinas Ativas</span>
         </h2>
-        <div class="overflow-x-auto max-h-96 border rounded-lg">
+        <div class="overflow-x-auto max-h-[500px] border rounded-lg">
           <table class="w-full text-left border-collapse text-sm">
-            <tbody id="tabelaPrecosResumo" class="divide-y divide-slate-100">
-              <!-- Preenchido via script -->
-            </tbody>
+            <tbody id="tabelaResumoPrecosBobinas" class="divide-y divide-slate-100"></tbody>
           </table>
         </div>
-        <button onclick="mudarAba('catalogo')" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2 rounded-lg text-xs transition cursor-pointer">
-          Gerenciar Catálogo Completo
-        </button>
+        <button onclick="mudarAba('bobinas')" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2 rounded-lg text-xs transition cursor-pointer">Gerenciar Bobinas</button>
       </div>
 
-      <!-- Coluna Principal: Orçamento -->
-      <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 lg:col-span-2 flex flex-col justify-between space-y-6">
+      <!-- Centro de Montagem -->
+      <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 lg:col-span-2 flex flex-col space-y-6">
         <div>
           <h2 class="text-lg font-bold mb-4 text-slate-700 flex items-center space-x-2">
-            <i class="fa-solid fa-ruler-combined text-blue-600"></i>
-            <span>Painel de Orçamento e Peças</span>
+            <i class="fa-solid fa-calculator text-blue-600"></i>
+            <span>Orçamento & Peças a Cortar</span>
           </h2>
-          
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
             <div>
-              <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Cliente / Projeto</label>
+              <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Cliente</label>
               <input type="text" id="cliente" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-500" placeholder="Nome do Cliente">
             </div>
             <div>
-              <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Produto / Serviço</label>
-              <input type="text" id="produto" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-500" placeholder="Ex: Caixa de Acrílico Sob Medida">
+              <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Projeto / Descrição</label>
+              <input type="text" id="produto" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-500" placeholder="Ex: Capas e Painéis">
             </div>
           </div>
 
-          <!-- TABELA DE PARTES -->
           <div class="mb-4">
             <div class="flex justify-between items-center mb-2">
-              <h3 class="text-sm font-bold text-slate-600">Partes / Peças do Projeto</h3>
+              <h3 class="text-sm font-bold text-slate-600">Lista de Peças (Medidas em cm)</h3>
               <button onclick="addParteVazia()" class="bg-slate-800 hover:bg-slate-900 text-white px-3 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer">
-                <i class="fa-solid fa-plus mr-1"></i> Adicionar Peça
+                <i class="fa-solid fa-plus mr-1"></i> Add Peça
               </button>
             </div>
             <div class="overflow-x-auto border rounded-lg max-h-56">
               <table class="w-full text-left border-collapse text-sm">
                 <thead class="bg-slate-50 border-b text-xs text-slate-500 uppercase">
                   <tr>
-                    <th class="p-2">Nome</th>
-                    <th class="p-2">Material</th>
-                    <th class="p-2">Lado 1 (cm)</th>
-                    <th class="p-2">Lado 2 (cm)</th>
+                    <th class="p-2">Nome Peça</th>
+                    <th class="p-2">Bobina / Insumo</th>
+                    <th class="p-2">Largura (cm)</th>
+                    <th class="p-2">Comprimento (cm)</th>
                     <th class="p-2">Qtd</th>
-                    <th class="p-2">Perda (%)</th>
+                    <th class="p-2">Perda%</th>
                     <th class="p-2 text-center">Ação</th>
                   </tr>
                 </thead>
-                <tbody id="partes" class="divide-y divide-slate-100">
-                  <!-- Linhas inseridas dinamicamente -->
-                </tbody>
+                <tbody id="partes" class="divide-y divide-slate-100"></tbody>
               </table>
             </div>
           </div>
 
-          <!-- CUSTOS EXTRAS E MARGENS -->
           <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
             <div>
               <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Mão de Obra (R$)</label>
               <input type="number" id="mao" step="0.01" value="0" class="w-full border border-slate-300 rounded-lg px-2 py-1.5 text-sm">
             </div>
             <div>
-              <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Outros Custos (R$)</label>
+              <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Outros (R$)</label>
               <input type="number" id="outros" step="0.01" value="0" class="w-full border border-slate-300 rounded-lg px-2 py-1.5 text-sm">
             </div>
             <div>
               <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Lucro (%)</label>
-              <input type="number" id="lucro" step="1" value="30" class="w-full border border-slate-300 rounded-lg px-2 py-1.5 text-sm">
+              <input type="number" id="lucro" step="1" value="35" class="w-full border border-slate-300 rounded-lg px-2 py-1.5 text-sm">
             </div>
             <div>
               <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Imposto (%)</label>
@@ -181,79 +156,105 @@
           </div>
 
           <div class="flex gap-2">
-            <button onclick="calcular()" class="flex-grow bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl text-sm shadow-md transition cursor-pointer">
-              Calcular Orçamento Completo
-            </button>
-            <button onclick="salvarProjeto()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-5 py-3 rounded-xl text-sm shadow-md transition cursor-pointer" title="Salvar Projeto">
-              <i class="fa-solid fa-floppy-disk mr-1"></i> Salvar
-            </button>
+            <button onclick="calcular()" class="flex-grow bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl text-sm shadow-md transition cursor-pointer">Processar Cálculo & Painel de Corte</button>
+            <button onclick="salvarProjeto()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-5 py-3 rounded-xl text-sm shadow-md transition cursor-pointer"><i class="fa-solid fa-floppy-disk mr-1"></i> Salvar</button>
           </div>
         </div>
 
-        <!-- RESULTADO DO CÁLCULO -->
-        <div id="resultado" class="border-t pt-4">
-          <div class="text-center py-4 text-slate-400 text-sm">
-            <p>Adicione as peças, preencha os custos e clique em <b>Calcular Orçamento Completo</b>.</p>
+        <!-- Bloco de Resultado & Painel Gráfico Relativo -->
+        <div id="resultado" class="border-t pt-4 space-y-4">
+          <div class="text-center py-6 text-slate-400 text-sm">Preencha as peças e clique em <b>Processar Cálculo & Painel de Corte</b> para gerar o orçamento financeiro e a régua proporcional do rolo.</div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ABA 2: BOBINAS E ROLOS -->
+    <section id="aba-bobinas" class="hidden grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 md:col-span-1">
+        <h2 class="text-base font-bold mb-4 text-slate-700 flex items-center space-x-2">
+          <i class="fa-solid fa-plus-circle text-emerald-600"></i>
+          <span>Cadastrar Nova Bobina / Rolo</span>
+        </h2>
+        <form id="formBobina" class="space-y-4">
+          <div>
+            <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Nome da Bobina</label>
+            <input type="text" id="nomeBobina" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm outline-none focus:border-emerald-500" placeholder="Ex: Bobina Vinil 1.40m" required>
           </div>
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Largura (cm)</label>
+              <input type="number" id="larguraBobina" step="0.1" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm outline-none focus:border-emerald-500" placeholder="140" required>
+            </div>
+            <div>
+              <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Preço / Metro (R$)</label>
+              <input type="number" id="precoBobina" step="0.01" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm outline-none focus:border-emerald-500" placeholder="0.00" required>
+            </div>
+          </div>
+          <div>
+            <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Regra de Corte / Observação</label>
+            <input type="text" id="regraBobina" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm outline-none focus:border-emerald-500" placeholder="Ex: Sentido longitudinal obrigatório">
+          </div>
+          <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-lg text-sm transition cursor-pointer">Salvar Bobina</button>
+        </form>
+      </div>
+
+      <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 md:col-span-2">
+        <h2 class="text-base font-bold mb-4 text-slate-700 flex items-center space-x-2">
+          <i class="fa-solid fa-scroll text-emerald-600"></i>
+          <span>Bobinas Cadastradas</span>
+        </h2>
+        <div class="overflow-x-auto border rounded-lg max-h-96">
+          <table class="w-full text-left border-collapse text-sm">
+            <thead class="bg-slate-50 border-b text-xs text-slate-500 uppercase">
+              <tr>
+                <th class="p-3">Nome</th>
+                <th class="p-3">Largura</th>
+                <th class="p-3">Preço/Metro</th>
+                <th class="p-3">Regra</th>
+                <th class="p-3 text-center">Ação</th>
+              </tr>
+            </thead>
+            <tbody id="tabelaBobinas" class="divide-y divide-slate-100"></tbody>
+          </table>
         </div>
       </div>
     </section>
 
-    <!-- ABA 2: DESENHO E ESQUEMA DE CORTE -->
-    <section id="aba-desenho" class="hidden bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-6">
-      <div class="flex justify-between items-center border-b pb-4">
-        <div>
-          <h2 class="text-lg font-bold text-slate-700 flex items-center space-x-2">
-            <i class="fa-solid fa-compass-drafting text-indigo-600"></i>
-            <span>Gerador de Esquema e Desenho Técnico</span>
-          </h2>
-          <p class="text-xs text-slate-500">Visualização esquemática das peças informadas no orçamento</p>
-        </div>
-        <button onclick="gerarEsquemaVisual()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-xl text-xs font-bold transition cursor-pointer">
-          Atualizar Desenho
-        </button>
-      </div>
-      <div id="canvas-container" class="border-2 border-dashed border-slate-200 rounded-xl p-6 min-h-[350px] flex flex-col items-center justify-center bg-slate-50">
-        <p class="text-slate-400 text-sm text-center">Clique em "Atualizar Desenho" para renderizar o esquema visual com base nas peças adicionadas na aba de cálculo.</p>
-      </div>
-    </section>
-
-    <!-- ABA 3: CATÁLOGO DE PREÇOS -->
+    <!-- ABA 3: CATÁLOGO DE INSUMOS -->
     <section id="aba-catalogo" class="hidden grid grid-cols-1 md:grid-cols-3 gap-6">
       <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 md:col-span-1">
         <h2 class="text-base font-bold mb-4 text-slate-700 flex items-center space-x-2">
           <i class="fa-solid fa-square-plus text-emerald-600"></i>
-          <span>Novo Material</span>
+          <span>Cadastrar Material Avulso</span>
         </h2>
         <form id="formPreco" class="space-y-4">
           <div>
             <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Nome do Material</label>
-            <input type="text" id="nomePreco" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm outline-none focus:border-emerald-500" placeholder="Ex: Chapa PVC Cristal" required>
+            <input type="text" id="nomePreco" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm outline-none focus:border-emerald-500" placeholder="Ex: Ilhós / Cola" required>
           </div>
           <div class="grid grid-cols-2 gap-4">
             <div>
               <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Unidade</label>
               <select id="unidadePreco" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm outline-none focus:border-emerald-500">
-                <option value="m²">Metro Quadrado (m²)</option>
-                <option value="kg">Quilograma (kg)</option>
-                <option value="un">Unidade (un)</option>
+                <option value="un">un</option>
+                <option value="m²">m²</option>
+                <option value="kg">kg</option>
               </select>
             </div>
             <div>
               <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Valor Unitário (R$)</label>
-              <input type="number" id="valorPreco" step="0.01" min="0" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm outline-none focus:border-emerald-500" placeholder="0,00" required>
+              <input type="number" id="valorPreco" step="0.01" min="0" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm outline-none focus:border-emerald-500" required>
             </div>
           </div>
-          <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-lg text-sm transition cursor-pointer">
-            Cadastrar Material
-          </button>
+          <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-lg text-sm transition cursor-pointer">Cadastrar Insumo</button>
         </form>
       </div>
 
       <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 md:col-span-2">
         <h2 class="text-base font-bold mb-4 text-slate-700 flex items-center space-x-2">
           <i class="fa-solid fa-boxes-stacked text-emerald-600"></i>
-          <span>Catálogo Cadastrado</span>
+          <span>Gerenciar Insumos</span>
         </h2>
         <div class="overflow-x-auto border rounded-lg max-h-96">
           <table class="w-full text-left border-collapse text-sm">
@@ -261,23 +262,21 @@
               <tr>
                 <th class="p-3">Material</th>
                 <th class="p-3">Unidade</th>
-                <th class="p-3">Valor Unitário</th>
-                <th class="p-3 text-center">Ação</th>
+                <th class="p-3">Valor</th>
+                <th class="p-3 text-center">Ações</th>
               </tr>
             </thead>
-            <tbody id="tabelaPrecos" class="divide-y divide-slate-100">
-              <!-- Preenchido via script -->
-            </tbody>
+            <tbody id="tabelaPrecos" class="divide-y divide-slate-100"></tbody>
           </table>
         </div>
       </div>
     </section>
 
-    <!-- ABA 4: PROJETOS SALVOS -->
+    <!-- ABA 4: SALVOS -->
     <section id="aba-salvos" class="hidden bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4">
       <h2 class="text-lg font-bold text-slate-700 flex items-center space-x-2">
         <i class="fa-solid fa-folder-open text-emerald-600"></i>
-        <span>Projetos e Orçamentos Salvos</span>
+        <span>Orçamentos Salvos</span>
       </h2>
       <div class="overflow-x-auto border rounded-lg">
         <table class="w-full text-left border-collapse text-sm">
@@ -285,21 +284,19 @@
             <tr>
               <th class="p-3">Data</th>
               <th class="p-3">Cliente</th>
-              <th class="p-3">Produto</th>
+              <th class="p-3">Projeto</th>
               <th class="p-3">Total (R$)</th>
               <th class="p-3 text-center">Ações</th>
             </tr>
           </thead>
-          <tbody id="tabelaProjetosSalvos" class="divide-y divide-slate-100">
-            <!-- Preenchido via script -->
-          </tbody>
+          <tbody id="tabelaProjetosSalvos" class="divide-y divide-slate-100"></tbody>
         </table>
       </div>
     </section>
 
   </main>
 
-  <!-- FIREBASE E CONTROLE DE AUTENTICAÇÃO -->
+  <!-- FIREBASE AUTH -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
     import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js";
@@ -317,388 +314,366 @@
     const auth = getAuth(app);
     const provider = new GoogleAuthProvider();
 
-    window.loginComGoogle = function() {
-      signInWithPopup(auth, provider).catch((error) => {
-        mostrarErro("Erro no Google: " + error.message);
-      });
-    };
-
+    window.loginComGoogle = function() { signInWithPopup(auth, provider).catch(e => mostrarErro("Erro: " + e.message)); };
     window.tratarLoginEmail = function(e) {
       e.preventDefault();
-      const email = document.getElementById("emailInput").value;
-      const senha = document.getElementById("senhaInput").value;
-
-      signInWithEmailAndPassword(auth, email, senha)
-        .catch((error) => {
-          mostrarErro("Erro: E-mail ou senha inválidos.");
-        });
+      signInWithEmailAndPassword(auth, document.getElementById("emailInput").value, document.getElementById("senhaInput").value).catch(() => mostrarErro("E-mail ou senha inválidos."));
     };
-
     window.cadastrarComEmail = function() {
-      const email = document.getElementById("emailInput").value;
-      const senha = document.getElementById("senhaInput").value;
-
-      if(!email || !senha) {
-        mostrarErro("Preencha e-mail e senha para cadastrar.");
-        return;
-      }
-
-      createUserWithEmailAndPassword(auth, email, senha)
-        .catch((error) => {
-          if (error.code === 'auth/email-already-in-use') {
-            mostrarErro("E-mail já cadastrado! Clique em Entrar.");
-          } else {
-            mostrarErro("Erro no cadastro: " + error.message);
-          }
-        });
+      createUserWithEmailAndPassword(auth, document.getElementById("emailInput").value, document.getElementById("senhaInput").value).catch(e => mostrarErro("Erro: " + e.message));
     };
-
-    window.sairDaConta = function() {
-      signOut(auth);
-    };
-
-    function mostrarErro(msg) {
-      const el = document.getElementById("erro-auth");
-      el.textContent = msg;
-      el.classList.remove("hidden");
-    }
+    window.sairDaConta = function() { signOut(auth); };
+    function mostrarErro(msg) { const el = document.getElementById("erro-auth"); el.textContent = msg; el.classList.remove("hidden"); }
 
     onAuthStateChanged(auth, (user) => {
-      const headerPrincipal = document.getElementById("header-principal");
-      const appPrincipal = document.getElementById("app-principal");
-      const telaLogin = document.getElementById("tela-login");
-      const containerTopo = document.getElementById("auth-container-topo");
-      const containerTopoMobile = document.getElementById("auth-container-topo-mobile");
-
       if (user) {
-        telaLogin.classList.add("hidden");
-        headerPrincipal.classList.remove("hidden");
-        appPrincipal.classList.remove("hidden");
-
-        const nomeUser = user.displayName ? user.displayName.split(' ')[0] : user.email.split('@')[0];
-        
-        const botoesLogout = `
-          <div class="flex items-center space-x-3">
-            <span class="text-xs font-medium text-slate-300 hidden xl:inline">Olá, ${nomeUser}</span>
-            <button onclick="sairDaConta()" class="bg-red-500 hover:bg-red-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer">Sair / Trocar</button>
-          </div>
-        `;
-        containerTopo.innerHTML = botoesLogout;
-        containerTopoMobile.innerHTML = botoesLogout;
+        document.getElementById("tela-login").classList.add("hidden");
+        document.getElementById("header-principal").classList.remove("hidden");
+        document.getElementById("app-principal").classList.remove("hidden");
+        const userHtml = `<div class="flex items-center space-x-3"><span class="text-xs text-slate-300">Olá, ${user.displayName || user.email.split('@')[0]}</span><button onclick="sairDaConta()" class="bg-red-500 hover:bg-red-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold cursor-pointer">Sair</button></div>`;
+        document.getElementById("auth-container-topo").innerHTML = userHtml;
+        document.getElementById("auth-container-topo-mobile").innerHTML = userHtml;
       } else {
-        telaLogin.classList.remove("hidden");
-        headerPrincipal.classList.add("hidden");
-        appPrincipal.classList.add("hidden");
+        document.getElementById("tela-login").classList.remove("hidden");
+        document.getElementById("header-principal").classList.add("hidden");
+        document.getElementById("app-principal").classList.add("hidden");
       }
     });
   </script>
 
-  <!-- LÓGICA DE ABAS, CATÁLOGO, CÁLCULO E SALVAMENTO -->
+  <!-- LÓGICA INDUSTRIAL DE PAINEL DE CORTE COM RÉGUA PROPORCIONAL -->
   <script>
     function mudarAba(aba) {
-      ['calculo', 'desenho', 'catalogo', 'salvos'].forEach(a => {
-        const el = document.getElementById('aba-' + a);
-        const btn = document.getElementById('btn-aba-' + a);
-        if(el) el.classList.add('hidden');
-        if(btn) {
-          btn.className = "px-4 py-2 rounded-lg text-xs font-bold transition text-slate-300 hover:bg-slate-700 hover:text-white cursor-pointer";
-        }
+      ['calculo', 'bobinas', 'catalogo', 'salvos'].forEach(a => {
+        document.getElementById('aba-' + a).classList.add('hidden');
+        document.getElementById('btn-aba-' + a).className = "px-3.5 py-2 rounded-lg text-xs font-bold transition text-slate-300 hover:bg-slate-700 hover:text-white cursor-pointer";
       });
-
-      const abaAtiva = document.getElementById('aba-' + aba);
-      const btnAtivo = document.getElementById('btn-aba-' + aba);
-      if(abaAtiva) abaAtiva.classList.remove('hidden');
-      if(btnAtivo) {
-        btnAtivo.className = "px-4 py-2 rounded-lg text-xs font-bold transition bg-emerald-600 text-white shadow cursor-pointer";
-      }
-
+      document.getElementById('aba-' + aba).classList.remove('hidden');
+      document.getElementById('btn-aba-' + aba).className = "px-3.5 py-2 rounded-lg text-xs font-bold transition bg-emerald-600 text-white shadow cursor-pointer";
       if(aba === 'salvos') renderProjetosSalvos();
     }
 
-    let catalogo = JSON.parse(localStorage.getItem("catalogo_calculaja")) || [
-      { id: 1, nome: "Chapa PVC Cristal", unidade: "m²", valor: 25.00 },
-      { id: 2, nome: "Chapa ACM Branco", unidade: "m²", valor: 120.00 }
+    let catalogo = JSON.parse(localStorage.getItem("catalogo_v5")) || [
+      { id: 1, nome: "Ilhós NBR", unidade: "un", valor: 0.15 }
     ];
+    let bobinas = JSON.parse(localStorage.getItem("bobinas_v5")) || [
+      { id: 1, nome: "Bobina Vinil Cristal 1.40m", largura: 140, preco: 38.00, regra: "Sentido longitudinal" }
+    ];
+    let projetosSalvos = JSON.parse(localStorage.getItem("projetos_v5")) || [];
 
-    let projetosSalvos = JSON.parse(localStorage.getItem("projetos_calculaja")) || [];
-
-    function salvarCatalogoLocalStorage() {
-      localStorage.setItem("catalogo_calculaja", JSON.stringify(catalogo));
+    function salvarLocal() {
+      localStorage.setItem("catalogo_v5", JSON.stringify(catalogo));
+      localStorage.setItem("bobinas_v5", JSON.stringify(bobinas));
+      localStorage.setItem("projetos_v5", JSON.stringify(projetosSalvos));
     }
 
-    function renderTabelaPrecos() {
-      const tbody = document.getElementById("tabelaPrecos");
-      const tbodyResumo = document.getElementById("tabelaPrecosResumo");
-      if(!tbody) return;
-
-      tbody.innerHTML = "";
-      if(tbodyResumo) tbodyResumo.innerHTML = "";
-
-      catalogo.forEach((item, index) => {
-        tbody.innerHTML += `
-          <tr class="hover:bg-slate-50 transition">
-            <td class="p-3 font-semibold text-slate-700">${item.nome}</td>
-            <td class="p-3 text-slate-500 text-xs">${item.unidade}</td>
-            <td class="p-3 font-bold text-emerald-600">R$ ${item.valor.toFixed(2).replace(".",",")}</td>
-            <td class="p-3 text-center"><button onclick="removerPreco(${index})" class="text-red-500 hover:text-red-700 text-xs cursor-pointer"><i class="fa-solid fa-trash"></i></button></td>
+    function renderTudo() {
+      const tbC = document.getElementById("tabelaPrecos");
+      tbC.innerHTML = "";
+      catalogo.forEach((item, idx) => {
+        tbC.innerHTML += `
+          <tr class="hover:bg-slate-50">
+            <td class="p-3 font-medium"><input type="text" value="${item.nome}" onchange="editarMaterial(${idx}, 'nome', this.value)" class="border rounded px-2 py-1 text-sm w-full"></td>
+            <td class="p-3 text-xs text-slate-500">${item.unidade}</td>
+            <td class="p-3"><input type="number" step="0.01" value="${item.valor}" onchange="editarMaterial(${idx}, 'valor', this.value)" class="border rounded px-2 py-1 text-sm w-28 text-emerald-600 font-bold"></td>
+            <td class="p-3 text-center"><button onclick="removerMaterial(${idx})" class="text-red-500 hover:text-red-700 text-xs cursor-pointer"><i class="fa-solid fa-trash"></i></button></td>
           </tr>
         `;
-        if(tbodyResumo) {
-          tbodyResumo.innerHTML += `
-            <tr class="hover:bg-slate-50 transition">
-              <td class="p-2 font-medium text-slate-700">${item.nome}</td>
-              <td class="p-2 font-bold text-emerald-600 text-right">R$ ${item.valor.toFixed(2).replace(".",",")} /${item.unidade}</td>
-            </tr>
-          `;
-        }
       });
-      atualizaSelectsCatalogo();
+
+      const tbB = document.getElementById("tabelaBobinas");
+      tbB.innerHTML = "";
+      bobinas.forEach((b, idx) => {
+        tbB.innerHTML += `
+          <tr class="hover:bg-slate-50">
+            <td class="p-3 font-medium"><input type="text" value="${b.nome}" onchange="editarBobina(${idx}, 'nome', this.value)" class="border rounded px-2 py-1 text-sm w-full"></td>
+            <td class="p-3"><input type="number" value="${b.largura}" onchange="editarBobina(${idx}, 'largura', this.value)" class="border rounded px-2 py-1 text-sm w-20"> cm</td>
+            <td class="p-3"><input type="number" step="0.01" value="${b.preco}" onchange="editarBobina(${idx}, 'preco', this.value)" class="border rounded px-2 py-1 text-sm w-24 font-bold text-emerald-600"></td>
+            <td class="p-3"><input type="text" value="${b.regra}" onchange="editarBobina(${idx}, 'regra', this.value)" class="border rounded px-2 py-1 text-sm w-full text-slate-500"></td>
+            <td class="p-3 text-center"><button onclick="removerBobina(${idx})" class="text-red-500 hover:text-red-700 text-xs cursor-pointer"><i class="fa-solid fa-trash"></i></button></td>
+          </tr>
+        `;
+      });
+
+      const tbR = document.getElementById("tabelaResumoPrecosBobinas");
+      if(tbR) {
+        tbR.innerHTML = "";
+        bobinas.forEach(b => {
+          tbR.innerHTML += `<tr class="hover:bg-slate-50"><td class="p-2 font-medium text-slate-700"><i class="fa-solid fa-scroll text-emerald-500 mr-1"></i> ${b.nome}<br><span class="text-xs text-slate-400">Larg: ${b.largura}cm</span></td><td class="p-2 font-bold text-emerald-600 text-right align-middle">R$ ${b.preco.toFixed(2)}/m</td></tr>`;
+        });
+        catalogo.forEach(c => {
+          tbR.innerHTML += `<tr class="hover:bg-slate-50"><td class="p-2 font-medium text-slate-700"><i class="fa-solid fa-box text-blue-500 mr-1"></i> ${c.nome}</td><td class="p-2 font-bold text-blue-600 text-right align-middle">R$ ${c.valor.toFixed(2)}/${c.unidade}</td></tr>`;
+        });
+      }
+      atualizaSelectsPartes();
     }
 
     document.getElementById("formPreco").addEventListener("submit", function(e) {
       e.preventDefault();
-      const nome = document.getElementById("nomePreco").value.trim();
-      const unidade = document.getElementById("unidadePreco").value;
-      const valor = parseFloat(document.getElementById("valorPreco").value);
-
-      if(!nome || isNaN(valor)) return;
-
-      catalogo.push({ id: Date.now(), nome, unidade, valor });
-      salvarCatalogoLocalStorage();
-      renderTabelaPrecos();
-      this.reset();
+      catalogo.push({ id: Date.now(), nome: document.getElementById("nomePreco").value, unidade: document.getElementById("unidadePreco").value, valor: parseFloat(document.getElementById("valorPreco").value) });
+      salvarLocal(); renderTudo(); this.reset();
     });
 
-    function removerPreco(index) {
-      catalogo.splice(index, 1);
-      salvarCatalogoLocalStorage();
-      renderTabelaPrecos();
-    }
+    document.getElementById("formBobina").addEventListener("submit", function(e) {
+      e.preventDefault();
+      bobinas.push({ id: Date.now(), nome: document.getElementById("nomeBobina").value, largura: parseFloat(document.getElementById("larguraBobina").value), preco: parseFloat(document.getElementById("precoBobina").value), regra: document.getElementById("regraBobina").value || "Padrão" });
+      salvarLocal(); renderTudo(); this.reset();
+    });
 
-    function atualizaSelectsCatalogo() {
+    function editarMaterial(idx, campo, val) { catalogo[idx][campo] = campo === 'valor' ? parseFloat(val) : val; salvarLocal(); renderTudo(); }
+    function removerMaterial(idx) { catalogo.splice(idx, 1); salvarLocal(); renderTudo(); }
+    function editarBobina(idx, campo, val) { bobinas[idx][campo] = (campo === 'largura' || campo === 'preco') ? parseFloat(val) : val; salvarLocal(); renderTudo(); }
+    function removerBobina(idx) { bobinas.splice(idx, 1); salvarLocal(); renderTudo(); }
+
+    function atualizaSelectsPartes() {
       document.querySelectorAll(".materialParte").forEach(select => {
-        const valorAtual = select.value;
-        select.innerHTML = '<option value="">Selecione...</option>';
-        catalogo.forEach(item => {
+        const atual = select.value;
+        select.innerHTML = '<option value="">Selecione Bobina/Material...</option>';
+        bobinas.forEach(b => {
           const opt = document.createElement("option");
-          opt.value = item.nome;
-          opt.textContent = `${item.nome} (R$ ${item.valor.toFixed(2)})`;
-          if (item.nome === valorAtual) opt.selected = true;
+          opt.value = "Bobina: " + b.nome;
+          opt.textContent = `[Bobina] ${b.nome} (${b.largura}cm)`;
+          if(opt.value === atual) opt.selected = true;
+          select.appendChild(opt);
+        });
+        catalogo.forEach(c => {
+          const opt = document.createElement("option");
+          opt.value = "Insumo: " + c.nome;
+          opt.textContent = `[Insumo] ${c.nome}`;
+          if(opt.value === atual) opt.selected = true;
           select.appendChild(opt);
         });
       });
     }
 
-    function addParteVazia(nome="", material="", l1="", l2="", qtd=1, perda=0) {
+    function addParteVazia(nome="", mat="", l1="", l2="", q=1, p=0) {
       const tbody = document.getElementById("partes");
       const tr = document.createElement("tr");
       tr.innerHTML = `
-        <td class="p-2"><input class="nomeParte w-full border border-slate-300 rounded px-2 py-1 text-sm outline-none focus:border-blue-500" type="text" placeholder="Peça" value="${nome}"></td>
-        <td class="p-2"><select class="materialParte w-full border border-slate-300 rounded px-2 py-1 text-sm outline-none focus:border-blue-500"><option value="">Selecione...</option></select></td>
-        <td class="p-2"><input class="lado1 w-full border border-slate-300 rounded px-2 py-1 text-sm outline-none focus:border-blue-500" type="number" placeholder="0" value="${l1}"></td>
-        <td class="p-2"><input class="lado2 w-full border border-slate-300 rounded px-2 py-1 text-sm outline-none focus:border-blue-500" type="number" placeholder="0" value="${l2}"></td>
-        <td class="p-2"><input class="qtdParte w-full border border-slate-300 rounded px-2 py-1 text-sm outline-none focus:border-blue-500" type="number" placeholder="1" value="${qtd}"></td>
-        <td class="p-2"><input class="perdaParte w-full border border-slate-300 rounded px-2 py-1 text-sm outline-none focus:border-blue-500" type="number" placeholder="0" value="${perda}"></td>
-        <td class="p-2 text-center"><button class="bg-red-500 hover:bg-red-600 text-white p-1.5 rounded text-xs cursor-pointer" type="button" onclick="this.closest('tr').remove()"><i class="fa-solid fa-xmark"></i></button></td>
+        <td class="p-2"><input class="nomeParte w-full border rounded px-2 py-1 text-sm" type="text" placeholder="Ex: Lateral" value="${nome}"></td>
+        <td class="p-2"><select class="materialParte w-full border rounded px-2 py-1 text-sm"><option value="">Selecione...</option></select></td>
+        <td class="p-2"><input class="lado1 w-full border rounded px-2 py-1 text-sm" type="number" placeholder="cm" value="${l1}"></td>
+        <td class="p-2"><input class="lado2 w-full border rounded px-2 py-1 text-sm" type="number" placeholder="cm" value="${l2}"></td>
+        <td class="p-2"><input class="qtdParte w-full border rounded px-2 py-1 text-sm" type="number" placeholder="1" value="${q}"></td>
+        <td class="p-2"><input class="perdaParte w-full border rounded px-2 py-1 text-sm" type="number" placeholder="0" value="${p}"></td>
+        <td class="p-2 text-center"><button class="bg-red-500 text-white p-1.5 rounded text-xs cursor-pointer" type="button" onclick="this.closest('tr').remove()"><i class="fa-solid fa-xmark"></i></button></td>
       `;
       tbody.appendChild(tr);
-      atualizaSelectsCatalogo();
-      if(material) {
-        tr.querySelector(".materialParte").value = material;
-      }
+      atualizaSelectsPartes();
+      if(mat) tr.querySelector(".materialParte").value = mat;
     }
 
-    let ultimoCalculoCache = null;
+    let ultimoCache = null;
 
     function calcular() {
-      const maoObra = parseFloat(document.getElementById("mao").value) || 0;
-      const outrosCustos = parseFloat(document.getElementById("outros").value) || 0;
-      const margemLucro = parseFloat(document.getElementById("lucro").value) || 0;
-      const taxaImposto = parseFloat(document.getElementById("imposto").value) || 0;
+      const mao = parseFloat(document.getElementById("mao").value) || 0;
+      const outros = parseFloat(document.getElementById("outros").value) || 0;
+      const lucro = parseFloat(document.getElementById("lucro").value) || 0;
+      const imposto = parseFloat(document.getElementById("imposto").value) || 0;
       const cliente = document.getElementById("cliente").value || "Cliente Geral";
-      const produto = document.getElementById("produto").value || "Peças de Corte";
+      const produto = document.getElementById("produto").value || "Orçamento";
 
-      let totalMaterialCusto = 0;
-      let totalPecasMapeadas = 0;
-      let pecasDetalhes = [];
+      let custoMat = 0, totalPecas = 0, pecasArr = [];
+      let agrupadoPorBobina = {};
 
       document.querySelectorAll("#partes tr").forEach(tr => {
         const nomeP = tr.querySelector(".nomeParte").value || "Peça";
-        const matNome = tr.querySelector(".materialParte").value;
-        const lado1 = parseFloat(tr.querySelector(".lado1").value) || 0;
-        const lado2 = parseFloat(tr.querySelector(".lado2").value) || 0;
-        const qtd = parseInt(tr.querySelector(".qtdParte").value) || 0;
+        const matVal = tr.querySelector(".materialParte").value;
+        const l1 = parseFloat(tr.querySelector(".lado1").value) || 0;
+        const l2 = parseFloat(tr.querySelector(".lado2").value) || 0;
+        const q = parseInt(tr.querySelector(".qtdParte").value) || 0;
         const perda = parseFloat(tr.querySelector(".perdaParte").value) || 0;
 
-        if (lado1 > 0 && lado2 > 0 && qtd > 0) {
-          const itemCat = catalogo.find(i => i.nome === matNome);
-          const precoUnit = itemCat ? itemCat.valor : 0;
-          
-          const areaUnitaria = (lado1 * lado2) / 10000;
-          const areaTotalPecas = areaUnitaria * qtd * (1 + perda / 100);
-          const custoItem = areaTotalPecas * precoUnit;
+        if(l1 > 0 && l2 > 0 && q > 0 && matVal) {
+          if(matVal.startsWith("Bobina: ")) {
+            const bNome = matVal.replace("Bobina: ", "");
+            const bObj = bobinas.find(x => x.nome === bNome);
+            if(bObj) {
+              if(!agrupadoPorBobina[bNome]) {
+                agrupadoPorBobina[bNome] = { obj: bObj, pecas: [], totalMetrosLinear: 0 };
+              }
+              let larguraPeca = Math.min(l1, l2);
+              let comprimentoPeca = Math.max(l1, l2);
+              
+              if(larguraPeca > bObj.largura) {
+                alert(`Atenção: A peça "${nomeP}" (${larguraPeca}cm) é maior que a largura da bobina ${bObj.nome} (${bObj.largura}cm)!`);
+              }
 
-          totalMaterialCusto += custoItem;
-          totalPecasMapeadas += qtd;
+              const colunas = Math.max(1, Math.floor(bObj.largura / larguraPeca));
+              const linhasNecessarias = Math.ceil(q / colunas);
+              const comprimentoConsumido = (linhasNecessarias * comprimentoPeca / 100) * (1 + perda/100);
 
-          pecasDetalhes.push({ nome: nomeP, material: matNome, lado1, lado2, qtd, perda, custoItem });
+              agrupadoPorBobina[bNome].totalMetrosLinear += comprimentoConsumido;
+              custoMat += comprimentoConsumido * bObj.preco;
+
+              for(let i=0; i<q; i++) {
+                agrupadoPorBobina[bNome].pecas.push({ nome: nomeP, largura: larguraPeca, comprimento: comprimentoPeca });
+              }
+            }
+          } else {
+            const cNome = matVal.replace("Insumo: ", "");
+            const cObj = catalogo.find(x => x.nome === cNome);
+            if(cObj) {
+              let consumo = 0;
+              if(cObj.unidade === 'm²') {
+                consumo = ((l1 * l2) / 10000) * q * (1 + perda/100);
+              } else {
+                consumo = q * (1 + perda/100);
+              }
+              custoMat += consumo * cObj.valor;
+            }
+          }
+          totalPecas += q;
+          pecasArr.push({ nome: nomeP, material: matVal, l1, l2, q, perda });
         }
       });
 
-      const custoTotalPuro = totalMaterialCusto + maoObra + outrosCustos;
-      const fatorMultiplicador = 1 + (margemLucro + taxaImposto) / 100;
-      const precoFinal = custoTotalPuro * fatorMultiplicador;
+      const custoPuro = custoMat + mao + outros;
+      const precoFinal = custoPuro * (1 + (lucro + imposto)/100);
 
-      ultimoCalculoCache = {
-        id: Date.now(),
-        data: new Date().toLocaleDateString('pt-BR'),
-        cliente,
-        produto,
-        maoObra,
-        outrosCustos,
-        margemLucro,
-        taxaImposto,
-        totalMaterialCusto,
-        precoFinal,
-        totalPecasMapeadas,
-        pecas: pecasDetalhes
-      };
+      ultimoCache = { id: Date.now(), data: new Date().toLocaleDateString('pt-BR'), cliente, produto, mao, outros, lucro, imposto, custoMat, precoFinal, totalPecas, pecas: pecasArr };
 
-      const resultadoDiv = document.getElementById("resultado");
-      resultadoDiv.innerHTML = `
+      // Renderizar Painel Gráfico de Corte com Régua Proporcional Relativa
+      let htmlPaineis = '';
+      for(let bNome in agrupadoPorBobina) {
+        const dados = agrupadoPorBobina[bNome];
+        const larguraBobina = dados.obj.largura;
+        const comprimentoTotalCm = dados.totalMetrosLinear * 100;
+
+        htmlPaineis += `
+          <div class="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-4">
+            <div class="flex justify-between items-center border-b pb-2">
+              <div>
+                <h5 class="font-bold text-slate-800 text-sm"><i class="fa-solid fa-scroll text-emerald-600 mr-1"></i> ${bNome}</h5>
+                <p class="text-xs text-slate-500">Largura Física: <b>${larguraBobina} cm</b> | Comprimento Total do Rolo: <b>${dados.totalMetrosLinear.toFixed(2)} m</b></p>
+              </div>
+              <span class="text-xs font-bold bg-emerald-100 text-emerald-800 px-2.5 py-1 rounded-lg">R$ ${(dados.totalMetrosLinear * dados.obj.preco).toFixed(2)}</span>
+            </div>
+
+            <!-- PAINEL DE CORTE COM RÉGUA PROPORCIONAL -->
+            <div class="space-y-2">
+              <div class="flex justify-between items-center text-[11px] text-slate-500 font-bold uppercase">
+                <span>Painel Gráfico de Posicionamento (Escala Relativa ao Rolo)</span>
+                <span>Início 0m ➔ Fim ${dados.totalMetrosLinear.toFixed(2)}m</span>
+              </div>
+
+              <!-- Simulação Visual Proporcional do Rolo / Chapa -->
+              <div class="relative bg-slate-900 rounded-lg p-2 overflow-x-auto border-2 border-slate-700 shadow-inner">
+                <!-- Régua de Medida Superior -->
+                <div class="flex justify-between text-[9px] text-emerald-400 font-mono mb-1 border-b border-slate-800 pb-1">
+                  <span>| 0 cm (Início)</span>
+                  <span>| ${(comprimentoTotalCm / 2).toFixed(0)} cm (Meio)</span>
+                  <span>| ${comprimentoTotalCm.toFixed(0)} cm (Fim)</span>
+                </div>
+
+                <!-- Contêiner do Rolo Proporcional -->
+                <div class="relative bg-slate-800 rounded border border-slate-600 min-h-[90px] flex items-center p-2 gap-2 overflow-x-auto">
+        `;
+
+        dados.pecas.forEach((p, idx) => {
+          // Largura proporcional da peça baseada na largura da bobina (ex: se bobina é 140cm e peça 70cm, ocupa 50% visualmente)
+          let proporcaoLargura = Math.max(25, Math.min(100, (p.largura / larguraBobina) * 100));
+          
+          htmlPaineis += `
+            <div style="min-width: 90px; width: ${proporcaoLargura}%;" class="bg-emerald-600 hover:bg-emerald-500 text-white rounded p-2 flex flex-col justify-between shadow transition border border-emerald-400">
+              <div class="flex justify-between items-center text-[10px] font-bold">
+                <span class="truncate">#${idx+1} ${p.nome}</span>
+                <span class="bg-emerald-900 px-1 rounded text-[9px]">${p.largura}cm</span>
+              </div>
+              <div class="my-1 text-center font-mono text-xs font-bold bg-emerald-700/50 rounded py-1">
+                ${p.comprimento} cm
+              </div>
+              <div class="text-[9px] text-emerald-200 text-right">
+                Linha de Corte
+              </div>
+            </div>
+          `;
+        });
+
+        htmlPaineis += `
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+      }
+
+      document.getElementById("resultado").innerHTML = `
         <div class="space-y-4">
           <div class="flex justify-between items-center border-b pb-3">
-            <h4 class="font-bold text-slate-800 text-lg">Resumo do Orçamento</h4>
-            <span class="text-2xl font-black text-emerald-600">R$ ${precoFinal.toFixed(2).replace(".",",")}</span>
+            <h4 class="font-bold text-slate-800 text-lg">Total do Orçamento</h4>
+            <span class="text-2xl font-black text-emerald-600">R$ ${precoFinal.toFixed(2).replace('.',',')}</span>
           </div>
-          <div class="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
+          <div class="grid grid-cols-3 gap-3 text-sm">
             <div class="bg-slate-50 p-3 rounded-xl border">
-              <span class="block text-xs text-slate-400 font-bold uppercase">Custo de Materiais</span>
-              <span class="font-bold text-slate-700">R$ ${totalMaterialCusto.toFixed(2).replace(".",",")}</span>
+              <span class="block text-xs text-slate-400 font-bold uppercase">Custo Insumos</span>
+              <span class="font-bold text-slate-700">R$ ${custoMat.toFixed(2).replace('.',',')}</span>
             </div>
             <div class="bg-slate-50 p-3 rounded-xl border">
-              <span class="block text-xs text-slate-400 font-bold uppercase">Mão de Obra / Outros</span>
-              <span class="font-bold text-slate-700">R$ ${(maoObra + outrosCustos).toFixed(2).replace(".",",")}</span>
+              <span class="block text-xs text-slate-400 font-bold uppercase">Mão de Obra/Outros</span>
+              <span class="font-bold text-slate-700">R$ ${(mao+outros).toFixed(2).replace('.',',')}</span>
             </div>
-            <div class="bg-slate-50 p-3 rounded-xl border col-span-2 md:col-span-1">
-              <span class="block text-xs text-slate-400 font-bold uppercase">Peças Mapeadas</span>
-              <span class="font-bold text-slate-700">${totalPecasMapeadas} unidades</span>
+            <div class="bg-slate-50 p-3 rounded-xl border">
+              <span class="block text-xs text-slate-400 font-bold uppercase">Total Peças</span>
+              <span class="font-bold text-slate-700">${totalPecas} un</span>
             </div>
+          </div>
+          <div class="space-y-3 pt-2">
+            <h4 class="font-bold text-slate-700 text-sm">Painel de Corte e Régua Proporcional do Rolo</h4>
+            ${htmlPaineis || '<p class="text-xs text-slate-400">Nenhuma bobina selecionada.</p>'}
           </div>
         </div>
       `;
-      return ultimoCalculoCache;
+      return ultimoCache;
     }
 
     function salvarProjeto() {
       const res = calcular();
-      if(!res || res.pecas.length === 0) {
-        alert("Adicione pelo menos uma peça válida antes de salvar.");
-        return;
-      }
+      if(!res || res.pecas.length === 0) { alert("Adicione peças válidas antes de salvar."); return; }
       projetosSalvos.unshift(res);
-      localStorage.setItem("projetos_calculaja", JSON.stringify(projetosSalvos));
-      alert("Projeto salvo com sucesso!");
+      salvarLocal();
+      alert("Orçamento e painel de corte salvos com sucesso!");
       mudarAba('salvos');
     }
 
     function renderProjetosSalvos() {
-      const tbody = document.getElementById("tabelaProjetosSalvos");
-      if(!tbody) return;
-      tbody.innerHTML = "";
-
-      if(projetosSalvos.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-slate-400">Nenhum projeto salvo ainda.</td></tr>`;
-        return;
-      }
-
-      projetosSalvos.forEach((proj, idx) => {
-        tbody.innerHTML += `
-          <tr class="hover:bg-slate-50 transition">
-            <td class="p-3 text-slate-500 text-xs">${proj.data}</td>
-            <td class="p-3 font-semibold text-slate-700">${proj.cliente}</td>
-            <td class="p-3 text-slate-600">${proj.produto}</td>
-            <td class="p-3 font-bold text-emerald-600">R$ ${proj.precoFinal.toFixed(2).replace(".",",")}</td>
+      const tb = document.getElementById("tabelaProjetosSalvos");
+      tb.innerHTML = "";
+      if(projetosSalvos.length === 0) { tb.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-slate-400">Nenhum orçamento salvo.</td></tr>`; return; }
+      projetosSalvos.forEach((p, idx) => {
+        tb.innerHTML += `
+          <tr class="hover:bg-slate-50">
+            <td class="p-3 text-xs text-slate-500">${p.data}</td>
+            <td class="p-3 font-semibold">${p.cliente}</td>
+            <td class="p-3 text-slate-600">${p.produto}</td>
+            <td class="p-3 font-bold text-emerald-600">R$ ${p.precoFinal.toFixed(2).replace('.',',')}</td>
             <td class="p-3 text-center space-x-2">
-              <button onclick="carregarProjeto(${idx})" class="bg-blue-500 hover:bg-blue-600 text-white px-2.5 py-1 rounded text-xs cursor-pointer" title="Carregar"><i class="fa-solid fa-folder-open"></i></button>
-              <button onclick="removerProjeto(${idx})" class="bg-red-500 hover:bg-red-600 text-white px-2.5 py-1 rounded text-xs cursor-pointer" title="Excluir"><i class="fa-solid fa-trash"></i></button>
+              <button onclick="carregarProj(${idx})" class="bg-blue-500 text-white px-2.5 py-1 rounded text-xs cursor-pointer"><i class="fa-solid fa-folder-open"></i></button>
+              <button onclick="delProj(${idx})" class="bg-red-500 text-white px-2.5 py-1 rounded text-xs cursor-pointer"><i class="fa-solid fa-trash"></i></button>
             </td>
           </tr>
         `;
       });
     }
 
-    function carregarProjeto(idx) {
-      const proj = projetosSalvos[idx];
-      document.getElementById("cliente").value = proj.cliente;
-      document.getElementById("produto").value = proj.produto;
-      document.getElementById("mao").value = proj.maoObra;
-      document.getElementById("outros").value = proj.outrosCustos;
-      document.getElementById("lucro").value = proj.margemLucro;
-      document.getElementById("imposto").value = proj.taxaImposto;
-
+    function carregarProj(idx) {
+      const p = projetosSalvos[idx];
+      document.getElementById("cliente").value = p.cliente;
+      document.getElementById("produto").value = p.produto;
+      document.getElementById("mao").value = p.mao;
+      document.getElementById("outros").value = p.outros;
+      document.getElementById("lucro").value = p.lucro;
+      document.getElementById("imposto").value = p.imposto;
       document.getElementById("partes").innerHTML = "";
-      proj.pecas.forEach(p => {
-        addParteVazia(p.nome, p.material, p.lado1, p.lado2, p.qtd, p.perda);
-      });
-
-      mudarAba('calculo');
-      calcular();
+      p.pecas.forEach(x => addParteVazia(x.nome, x.material, x.l1, x.l2, x.q, x.perda));
+      mudarAba('calculo'); calcular();
     }
 
-    function removerProjeto(idx) {
-      projetosSalvos.splice(idx, 1);
-      localStorage.setItem("projetos_calculaja", JSON.stringify(projetosSalvos));
-      renderProjetosSalvos();
-    }
+    function delProj(idx) { projetosSalvos.splice(idx, 1); salvarLocal(); renderProjetosSalvos(); }
 
-    function gerarEsquemaVisual() {
-      const container = document.getElementById("canvas-container");
-      container.innerHTML = "";
-      
-      const rows = document.querySelectorAll("#partes tr");
-      if(rows.length === 0) {
-        container.innerHTML = `<p class="text-slate-400 text-sm text-center">Nenhuma peça cadastrada para desenhar.</p>`;
-        return;
-      }
-
-      const grid = document.createElement("div");
-      grid.className = "grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 w-full";
-
-      rows.forEach(tr => {
-        const nome = tr.querySelector(".nomeParte").value || "Peça";
-        const l1 = parseFloat(tr.querySelector(".lado1").value) || 0;
-        const l2 = parseFloat(tr.querySelector(".lado2").value) || 0;
-        const qtd = tr.querySelector(".qtdParte").value || 1;
-        const material = tr.querySelector(".materialParte").value || "Material";
-
-        if(l1 > 0 && l2 > 0) {
-          const card = document.createElement("div");
-          card.className = "bg-white border border-slate-200 rounded-xl p-4 shadow-sm flex flex-col items-center space-y-2";
-          card.innerHTML = `
-            <div class="text-xs font-bold text-slate-700">${nome} (${qtd}x)</div>
-            <div class="w-28 h-28 border-2 border-indigo-500 bg-indigo-50/50 rounded flex items-center justify-center relative shadow-inner">
-              <span class="absolute top-1 text-[10px] text-indigo-700 font-bold">${l1} cm</span>
-              <span class="absolute left-1 text-[10px] text-indigo-700 font-bold -rotate-90">${l2} cm</span>
-              <i class="fa-solid fa-shapes text-indigo-300 text-2xl"></i>
-            </div>
-            <div class="text-[11px] text-slate-500">${material}</div>
-          `;
-          grid.appendChild(card);
-        }
-      });
-
-      if(grid.children.length === 0) {
-        container.innerHTML = `<p class="text-slate-400 text-sm text-center">Preencha os lados das peças para gerar o desenho.</p>`;
-      } else {
-        container.appendChild(grid);
-      }
-    }
-
-    // Inicialização
-    renderTabelaPrecos();
+    renderTudo();
     if(document.querySelectorAll("#partes tr").length === 0) {
-      addParteVazia("Painel Frontal", "Chapa PVC Cristal", 50, 30, 1, 5);
+      addParteVazia("Painel Lateral", "Bobina: Bobina Vinil Cristal 1.40m", 120, 60, 2, 5);
     }
   </script>
 </body>
