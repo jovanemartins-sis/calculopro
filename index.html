@@ -3,233 +3,116 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Yuri Corretor - Sistema de Nesting & Orçamento Pro</title>
+  <title>Yuri Corretor - Nesting Visual Avançado (Plotter / Guillotine Shelf)</title>
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- FontAwesome Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <!-- html2canvas para exportação de layout -->
+  <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 </head>
-<body class="h-full bg-slate-100 font-sans text-slate-800 antialiased flex flex-col">
+<body class="h-full bg-slate-950 font-sans text-slate-100 antialiased flex flex-col">
 
   <!-- Header / Barra Superior -->
   <header class="bg-slate-900 border-b border-slate-800 text-white shadow-lg sticky top-0 z-50">
     <div class="max-w-7xl mx-auto px-4 py-3 flex flex-col sm:flex-row justify-between items-center gap-3">
       <div class="flex items-center space-x-3">
-        <div class="bg-emerald-500 text-slate-900 p-2.5 rounded-xl font-black shadow">
-          <i class="fa-solid fa-layer-group text-lg"></i>
+        <div class="bg-emerald-500 text-slate-950 p-2.5 rounded-xl font-black shadow">
+          <i class="fa-solid fa-scissors text-lg"></i>
         </div>
         <div>
           <h1 class="text-base font-bold tracking-tight flex items-center space-x-2">
-            <span>Sistema de Nesting & Orçamento</span>
-            <span class="bg-emerald-500/20 text-emerald-400 text-[10px] px-2 py-0.5 rounded-full uppercase font-mono">Pro v2.5</span>
+            <span>Nesting Inteligente de Bobina (Plotter Style)</span>
+            <span class="bg-emerald-500/20 text-emerald-400 text-[10px] px-2 py-0.5 rounded-full uppercase font-mono">Ponto de Restauração</span>
           </h1>
-          <p class="text-xs text-slate-400">Gestão de Bobinas, Corte Otimizado e Precificação Avançada</p>
+          <p class="text-xs text-slate-400">Encaixe automático de sobras lado a lado (Ex: Peça 130cm + Peça 10cm na bobina de 140cm)</p>
         </div>
       </div>
-      <!-- Navegação de Abas -->
-      <div class="flex items-center bg-slate-800 p-1 rounded-xl border border-slate-700 text-xs font-semibold">
-        <button onclick="mudarAba('calculadora')" id="tab-calculadora" class="px-4 py-2 rounded-lg bg-emerald-600 text-white transition cursor-pointer flex items-center space-x-2">
-          <i class="fa-solid fa-calculator"></i>
-          <span>Calculadora & Nesting</span>
-        </button>
-        <button onclick="mudarAba('materiais')" id="tab-materiais" class="px-4 py-2 rounded-lg text-slate-300 hover:text-white transition cursor-pointer flex items-center space-x-2">
-          <i class="fa-solid fa-boxes-stacked"></i>
-          <span>Bobinas & Catálogo</span>
-        </button>
-        <button onclick="mudarAba('salvos')" id="tab-salvos" class="px-4 py-2 rounded-lg text-slate-300 hover:text-white transition cursor-pointer flex items-center space-x-2">
-          <i class="fa-solid fa-bookmark"></i>
-          <span>Orçamentos Salvos</span>
+      <div class="flex items-center space-x-2">
+        <button onclick="calcularNestingVisual()" class="bg-emerald-600 hover:bg-emerald-500 text-slate-950 font-black px-4 py-2 rounded-xl text-xs transition cursor-pointer flex items-center space-x-2 shadow-lg">
+          <i class="fa-solid fa-wand-magic-sparkles"></i>
+          <span>Processar Encaixes</span>
         </button>
       </div>
     </div>
   </header>
 
   <!-- Container Principal -->
-  <main class="flex-1 max-w-7xl w-full mx-auto p-4 md:p-6 overflow-y-auto">
+  <main class="flex-1 max-w-7xl w-full mx-auto p-4 md:p-6 overflow-y-auto space-y-6">
 
-    <!-- ABA 1: CALCULADORA & NESTING -->
-    <div id="secao-calculadora" class="space-y-6">
+    <!-- Configuração da Bobina e Peças -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
       
-      <!-- Dados Iniciais do Projeto -->
-      <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div>
-          <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Nome do Cliente / Projeto</label>
-          <input type="text" id="cliente" value="Cliente Exemplo" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-emerald-500 font-medium">
-        </div>
-        <div>
-          <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Descrição do Produto / Serviço</label>
-          <input type="text" id="produto" value="Painel Decorativo / Revestimento" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-emerald-500 font-medium">
-        </div>
-        <div class="flex items-end">
-          <button onclick="calcularTudo()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 px-4 rounded-lg shadow transition flex items-center justify-center space-x-2 cursor-pointer">
-            <i class="fa-solid fa-wand-magic-sparkles"></i>
-            <span>Processar Nesting & Orçamento</span>
-          </button>
-        </div>
-      </div>
-
-      <!-- Tabela de Peças / Cortes -->
-      <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-        <div class="p-4 bg-slate-50 border-b border-slate-200 flex flex-col sm:flex-row justify-between items-center gap-3">
-          <div>
-            <h3 class="font-bold text-slate-800 text-sm flex items-center space-x-2">
-              <i class="fa-solid fa-puzzle-piece text-emerald-600"></i>
-              <span>Peças a Cortar / Produzir (Grid de Nesting)</span>
-            </h3>
-            <p class="text-xs text-slate-500">Adicione as medidas das peças e selecione em qual bobina ou insumo elas serão alocadas.</p>
-          </div>
-          <div class="flex items-center space-x-2">
-            <button onclick="addParteVazia()" class="bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold px-3 py-2 rounded-lg transition cursor-pointer flex items-center space-x-1.5">
-              <i class="fa-solid fa-plus"></i>
-              <span>Adicionar Peça</span>
-            </button>
-          </div>
-        </div>
-
-        <div class="overflow-x-auto">
-          <table class="w-full text-left border-collapse">
-            <thead>
-              <tr class="bg-slate-100 text-[11px] font-bold text-slate-600 uppercase border-b border-slate-200">
-                <th class="p-3">Nome da Peça</th>
-                <th class="p-3">Material / Bobina Alocada</th>
-                <th class="p-3 w-28">Largura (cm)</th>
-                <th class="p-3 w-28">Comprimento (cm)</th>
-                <th class="p-3 w-24">Qtd</th>
-                <th class="p-3 w-28">Margem Extra (%)</th>
-                <th class="p-3 w-16 text-center">Ações</th>
-              </tr>
-            </thead>
-            <tbody id="partes" class="divide-y divide-slate-100 text-sm">
-              <!-- Inserido dinamicamente via JS -->
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      <!-- Custos Adicionais & Margens -->
-      <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
-          <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Mão de Obra (R$)</label>
-          <input type="number" id="mao" value="50.00" step="0.01" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-emerald-500 font-bold text-slate-700">
-        </div>
-        <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
-          <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Outros Custos / Acabamento (R$)</label>
-          <input type="number" id="outros" value="0.00" step="0.01" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-emerald-500 font-bold text-slate-700">
-        </div>
-        <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
-          <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Margem de Lucro Desejada (%)</label>
-          <input type="number" id="lucro" value="40" step="1" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-emerald-500 font-bold text-emerald-600">
-        </div>
-        <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
-          <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Impostos / Taxas Plataforma (%)</label>
-          <input type="number" id="imposto" value="6" step="0.5" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-emerald-500 font-bold text-blue-600">
-        </div>
-      </div>
-
-      <!-- Botões de Ação do Resultado -->
-      <div class="flex flex-wrap items-center justify-between gap-3 pt-2">
-        <button onclick="calcularTudo()" class="bg-slate-900 hover:bg-slate-800 text-white font-bold py-3 px-6 rounded-xl shadow transition cursor-pointer flex items-center space-x-2">
-          <i class="fa-solid fa-calculator"></i>
-          <span>Recalcular Custos & Layout</span>
-        </button>
-        <div class="flex items-center space-x-3">
-          <button onclick="salvarProjeto()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-xl shadow transition cursor-pointer flex items-center space-x-2">
-            <i class="fa-solid fa-bookmark"></i>
-            <span>Salvar Orçamento</span>
-          </button>
-          <button onclick="exportarPDFOrcamento()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-6 rounded-xl shadow transition cursor-pointer flex items-center space-x-2">
-            <i class="fa-solid fa-file-pdf"></i>
-            <span>Exportar Relatório PDF / Imagem</span>
-          </button>
-        </div>
-      </div>
-
-      <!-- Área de Resultados e RIP Visual -->
-      <div id="resultado" class="space-y-6">
-        <!-- Renderizado dinamicamente -->
-      </div>
-
-    </div>
-
-    <!-- ABA 2: BOBINAS & CATÁLOGO -->
-    <div id="secao-materiais" class="space-y-6 hidden">
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <!-- Coluna Esquerda: Configurações & Lista de Peças -->
+      <div class="lg:col-span-1 space-y-4">
         
-        <!-- Cadastro de Bobinas -->
-        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-4">
-          <div class="flex justify-between items-center border-b border-slate-100 pb-3">
-            <h3 class="font-bold text-slate-800 text-sm flex items-center space-x-2">
-              <i class="fa-solid fa-scroll text-emerald-600"></i>
-              <span>Gerenciar Bobinas (Largura & Preço por Metro)</span>
-            </h3>
-          </div>
-          <div class="space-y-3">
-            <div class="grid grid-cols-3 gap-2">
-              <div class="col-span-1">
-                <label class="block text-[11px] font-bold uppercase text-slate-500 mb-1">Nome da Bobina</label>
-                <input type="text" id="nova-b-nome" placeholder="Ex: Lona 1.20m" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-emerald-500">
-              </div>
-              <div class="col-span-1">
-                <label class="block text-[11px] font-bold uppercase text-slate-500 mb-1">Largura Útil (cm)</label>
-                <input type="number" id="nova-b-largura" placeholder="120" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-emerald-500">
-              </div>
-              <div class="col-span-1">
-                <label class="block text-[11px] font-bold uppercase text-slate-500 mb-1">Preço / Metro (R$)</label>
-                <input type="number" id="nova-b-preco" placeholder="15.00" step="0.01" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-emerald-500">
-              </div>
-            </div>
-            <button onclick="adicionarBobina()" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-2 rounded-lg text-xs transition cursor-pointer">Adicionar Nova Bobina</button>
-          </div>
-          <div class="overflow-x-auto">
-            <table class="w-full text-left border-collapse text-xs">
-              <thead>
-                <tr class="bg-slate-50 font-bold text-slate-600 border-b border-slate-200">
-                  <th class="p-2">Nome</th>
-                  <th class="p-2">Largura (cm)</th>
-                  <th class="p-2">Preço/Metro</th>
-                  <th class="p-2 text-center">Ações</th>
-                </tr>
-              </thead>
-              <tbody id="tabela-bobinas" class="divide-y divide-slate-100">
-                <!-- Preenchido via JS -->
-              </tbody>
-            </table>
+        <!-- Bloco Bobina -->
+        <div class="bg-slate-900 p-4 rounded-2xl border border-slate-800 space-y-3 shadow-md">
+          <h3 class="font-bold text-xs uppercase tracking-wider text-emerald-400 flex items-center space-x-2">
+            <i class="fa-solid fa-scroll"></i>
+            <span>Parâmetros da Bobina</span>
+          </h3>
+          <div>
+            <label class="block text-[11px] font-bold uppercase text-slate-400 mb-1">Largura Total da Bobina (cm)</label>
+            <input type="number" id="largura-bobina" value="140" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-emerald-500 font-bold text-white">
+            <p class="text-[10px] text-slate-500 mt-1">Ex: 140cm. Se colocar uma peça de 130cm, sobrará espaço livre de 10cm na mesma linha.</p>
           </div>
         </div>
 
-        <!-- Cadastro de Insumos Avulsos / Acessórios -->
-        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-4">
-          <div class="flex justify-between items-center border-b border-slate-100 pb-3">
-            <h3 class="font-bold text-slate-800 text-sm flex items-center space-x-2">
-              <i class="fa-solid fa-box text-emerald-600"></i>
-              <span>Catálogo de Insumos / Peças Avulsas (Unitário)</span>
+        <!-- Bloco Adicionar Peça -->
+        <div class="bg-slate-900 p-4 rounded-2xl border border-slate-800 space-y-3 shadow-md">
+          <div class="flex justify-between items-center">
+            <h3 class="font-bold text-xs uppercase tracking-wider text-emerald-400 flex items-center space-x-2">
+              <i class="fa-solid fa-puzzle-piece"></i>
+              <span>Adicionar Peça ao Corte</span>
             </h3>
           </div>
-          <div class="space-y-3">
+          
+          <div class="space-y-2">
+            <div>
+              <label class="block text-[10px] uppercase font-bold text-slate-400 mb-0.5">Nome da Peça</label>
+              <input type="text" id="peca-nome" value="Faixa Lateral" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white">
+            </div>
             <div class="grid grid-cols-2 gap-2">
               <div>
-                <label class="block text-[11px] font-bold uppercase text-slate-500 mb-1">Nome do Insumo</label>
-                <input type="text" id="novo-c-nome" placeholder="Ex: Ilhós / Conector" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-emerald-500">
+                <label class="block text-[10px] uppercase font-bold text-slate-400 mb-0.5">Largura (cm)</label>
+                <input type="number" id="peca-largura" value="130" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white font-bold">
               </div>
               <div>
-                <label class="block text-[11px] font-bold uppercase text-slate-500 mb-1">Valor Unitário (R$)</label>
-                <input type="number" id="novo-c-valor" placeholder="0.50" step="0.01" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-emerald-500">
+                <label class="block text-[10px] uppercase font-bold text-slate-400 mb-0.5">Comprimento (cm)</label>
+                <input type="number" id="peca-comprimento" value="50" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white font-bold">
               </div>
             </div>
-            <button onclick="adicionarInsumoCatalogo()" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-2 rounded-lg text-xs transition cursor-pointer">Adicionar ao Catálogo</button>
+            <div class="grid grid-cols-2 gap-2">
+              <div>
+                <label class="block text-[10px] uppercase font-bold text-slate-400 mb-0.5">Quantidade</label>
+                <input type="number" id="peca-qtd" value="1" min="1" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white">
+              </div>
+              <div class="flex items-end">
+                <button onclick="adicionarPecaManual()" class="w-full bg-slate-800 hover:bg-slate-700 text-white font-bold py-2 rounded-lg text-xs transition cursor-pointer border border-slate-700">Adicionar</button>
+              </div>
+            </div>
           </div>
-          <div class="overflow-x-auto">
-            <table class="w-full text-left border-collapse text-xs">
+        </div>
+
+        <!-- Tabela de Peças Cadastradas -->
+        <div class="bg-slate-900 p-4 rounded-2xl border border-slate-800 space-y-3 shadow-md">
+          <div class="flex justify-between items-center">
+            <h3 class="font-bold text-xs uppercase tracking-wider text-slate-300">Fila de Produção</h3>
+            <button onclick="carregarExemploSobras()" class="text-[10px] text-emerald-400 hover:underline cursor-pointer font-bold">Carregar Exemplo 130cm + 10cm</button>
+          </div>
+          <div class="overflow-x-auto max-h-[300px] overflow-y-auto">
+            <table class="w-full text-left text-xs border-collapse">
               <thead>
-                <tr class="bg-slate-50 font-bold text-slate-600 border-b border-slate-200">
-                  <th class="p-2">Nome do Insumo</th>
-                  <th class="p-2">Valor Unitário</th>
+                <tr class="bg-slate-950 text-slate-400 border-b border-slate-800">
+                  <th class="p-2">Peça</th>
+                  <th class="p-2">L x C</th>
+                  <th class="p-2">Qtd</th>
                   <th class="p-2 text-center">Ações</th>
                 </tr>
               </thead>
-              <tbody id="tabela-catalogo" class="divide-y divide-slate-100">
+              <tbody id="tabela-pecas-input" class="divide-y divide-slate-800/50">
                 <!-- Preenchido via JS -->
               </tbody>
             </table>
@@ -237,207 +120,104 @@
         </div>
 
       </div>
-    </div>
 
-    <!-- ABA 3: ORÇAMENTOS SALVOS -->
-    <div id="secao-salvos" class="space-y-6 hidden">
-      <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden p-5">
-        <h3 class="font-bold text-slate-800 text-sm mb-3 flex items-center space-x-2">
-          <i class="fa-solid fa-bookmark text-emerald-600"></i>
-          <span>Histórico de Orçamentos Salvos</span>
-        </h3>
-        <div class="overflow-x-auto">
-          <table class="w-full text-left border-collapse text-sm">
-            <thead>
-              <tr class="bg-slate-50 font-bold text-slate-600 border-b border-slate-200 text-xs uppercase">
-                <th class="p-3">Data</th>
-                <th class="p-3">Cliente</th>
-                <th class="p-3">Produto</th>
-                <th class="p-3">Valor Final</th>
-                <th class="p-3 text-center">Ações</th>
-              </tr>
-            </thead>
-            <tbody id="tabelaProjetosSalvos" class="divide-y divide-slate-100">
-              <!-- Preenchido via JS -->
-            </tbody>
-          </table>
+      <!-- Coluna Direita: Tela Visual (Plotter / RIP) -->
+      <div class="lg:col-span-2 space-y-4">
+        <div class="bg-slate-900 p-5 rounded-2xl border border-slate-800 space-y-4 shadow-xl">
+          <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 border-b border-slate-800 pb-3">
+            <div>
+              <h3 class="font-bold text-sm text-white flex items-center space-x-2">
+                <i class="fa-solid fa-desktop text-emerald-400"></i>
+                <span>Simulação Visual de Encaixe na Bobina (Plotter RIP)</span>
+              </h3>
+              <p class="text-xs text-slate-400">As peças entram lado a lado na mesma faixa horizontal se couberem na sobra.</p>
+            </div>
+            <div class="flex items-center space-x-2">
+              <button onclick="ajustarZoom(-0.2)" class="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 rounded text-xs text-white font-bold cursor-pointer border border-slate-700">- Zoom</button>
+              <button onclick="ajustarZoom(0.2)" class="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 rounded text-xs text-white font-bold cursor-pointer border border-slate-700">+ Zoom</button>
+            </div>
+          </div>
+
+          <!-- Palco / Canvas Gráfico com Réguas -->
+          <div class="overflow-auto max-h-[600px] border border-slate-800 rounded-xl bg-slate-950 p-6 relative shadow-inner">
+            <div id="container-plotter-canvas" class="relative transition-transform duration-200" style="min-width: 500px; min-height: 400px;">
+              <!-- Renderizado dinamicamente -->
+            </div>
+          </div>
+
+          <!-- Resumo de Consumo -->
+          <div id="resumo-metricas" class="grid grid-cols-2 sm:grid-cols-3 gap-3 pt-2">
+            <!-- Preenchido via JS -->
+          </div>
         </div>
       </div>
+
     </div>
 
   </main>
 
-  <!-- Script Principal de Lógica, Nesting & Corel Style RIP -->
+  <!-- Script Principal de Nesting Otimizado (Bin Packing / Guillotine Shelf com reaproveitamento de sobras horizontais) -->
   <script>
-    // Estado Inicial / LocalStorage
-    let bobinas = JSON.parse(localStorage.getItem("yuri_bobinas")) || [
-      { nome: "Bobina Vinil / Adesivo 1.00m", largura: 100, preco: 22.00 },
-      { nome: "Bobina Plástico / Tecido 1.40m", largura: 140, preco: 28.50 },
-      { nome: "Bobina Banner / Lona 1.50m", largura: 150, preco: 18.00 }
+    let pecasFila = [
+      { nome: "Peça Principal (Grande)", largura: 130, comprimento: 80, qtd: 1 },
+      { nome: "Tirinha de Acabamento", largura: 10, comprimento: 80, qtd: 1 },
+      { nome: "Etiqueta / Detalhe", largura: 50, comprimento: 30, qtd: 2 }
     ];
-
-    let catalogo = JSON.parse(localStorage.getItem("yuri_catalogo")) || [
-      { nome: "Ilhós Metálico (Unidade)", valor: 0.15 },
-      { nome: "Bastão de Madeira c/ Ponteira", valor: 3.50 }
-    ];
-
-    let projetosSalvos = JSON.parse(localStorage.getItem("yuri_projetos")) || [];
-    let ultimoCache = null;
     let zoomAtual = 1;
 
-    function salvarLocal() {
-      localStorage.setItem("yuri_bobinas", JSON.stringify(bobinas));
-      localStorage.setItem("yuri_catalogo", JSON.stringify(catalogo));
-      localStorage.setItem("yuri_projetos", JSON.stringify(projetosSalvos));
+    function carregarExemploSobras() {
+      pecasFila = [
+        { nome: "Painel Principal", largura: 130, comprimento: 100, qtd: 1 },
+        { nome: "Filete de Sombra", largura: 10, comprimento: 100, qtd: 1 },
+        { nome: "Adesivo Lateral", largura: 70, comprimento: 40, qtd: 2 },
+        { nome: "Sobra Utilizada (Canto)", largura: 60, comprimento: 40, qtd: 1 }
+      ];
+      renderTabelaPecas();
+      calcularNestingVisual();
     }
 
-    function mudarAba(aba) {
-      document.getElementById("secao-calculadora").classList.add("hidden");
-      document.getElementById("secao-materiais").classList.add("hidden");
-      document.getElementById("secao-salvos").classList.add("hidden");
+    function adicionarPecaManual() {
+      const nome = document.getElementById("peca-nome").value.trim() || "Peça";
+      const largura = parseFloat(document.getElementById("peca-largura").value);
+      const comprimento = parseFloat(document.getElementById("peca-comprimento").value);
+      const qtd = parseInt(document.getElementById("peca-qtd").value) || 1;
 
-      document.getElementById("tab-calculadora").className = "px-4 py-2 rounded-lg text-slate-300 hover:text-white transition cursor-pointer flex items-center space-x-2";
-      document.getElementById("tab-materiais").className = "px-4 py-2 rounded-lg text-slate-300 hover:text-white transition cursor-pointer flex items-center space-x-2";
-      document.getElementById("tab-salvos").className = "px-4 py-2 rounded-lg text-slate-300 hover:text-white transition cursor-pointer flex items-center space-x-2";
-
-      if(aba === 'calculadora') {
-        document.getElementById("secao-calculadora").classList.remove("hidden");
-        document.getElementById("tab-calculadora").className = "px-4 py-2 rounded-lg bg-emerald-600 text-white transition cursor-pointer flex items-center space-x-2";
-      } else if(aba === 'materiais') {
-        document.getElementById("secao-materiais").classList.remove("hidden");
-        document.getElementById("tab-materiais").className = "px-4 py-2 rounded-lg bg-emerald-600 text-white transition cursor-pointer flex items-center space-x-2";
-        renderTabelasAdmin();
-      } else if(aba === 'salvos') {
-        document.getElementById("secao-salvos").classList.remove("hidden");
-        document.getElementById("tab-salvos").className = "px-4 py-2 rounded-lg bg-emerald-600 text-white transition cursor-pointer flex items-center space-x-2";
-        renderProjetosSalvos();
+      if(isNaN(largura) || isNaN(comprimento) || largura <= 0 || comprimento <= 0) {
+        alert("Informe larguras e comprimentos válidos maiores que zero.");
+        return;
       }
-    }
 
-    function renderTudo() {
-      renderSelectsBobinasNasPartes();
-      renderTabelasAdmin();
-      calcularTudo();
-    }
-
-    function renderSelectsBobinasNasPartes() {
-      // Atualiza os selects de bobina/insumo nas linhas existentes
-      const linhas = document.querySelectorAll(".select-material-linha");
-      linhas.forEach(select => {
-        let valAtual = select.value;
-        let optionsHtml = `<optgroup label="Bobinas (Nesting em Metro)">`;
-        bobinas.forEach(b => {
-          optionsHtml += `<option value="Bobina: ${b.nome}">Bobina: ${b.nome} (${b.largura}cm)</option>`;
-        });
-        optionsHtml += `</optgroup><optgroup label="Insumos / Avulsos (Unitário)">`;
-        catalogo.forEach(c => {
-          optionsHtml += `<option value="Insumo: ${c.nome}">Insumo: ${c.nome}</option>`;
-        });
-        optionsHtml += `</optgroup>`;
-        select.innerHTML = optionsHtml;
-        if(valAtual) select.value = valAtual;
-      });
-    }
-
-    function addParteVazia(nome = "Nova Peça", material = "", largura = 30, comprimento = 30, qtd = 1, margem = 0) {
-      const tbody = document.getElementById("partes");
-      if(!material && bobinas.length > 0) material = "Bobina: " + bobinas[0].nome;
-
-      let optionsHtml = `<optgroup label="Bobinas (Nesting em Metro)">`;
-      bobinas.forEach(b => {
-        optionsHtml += `<option value="Bobina: ${b.nome}">Bobina: ${b.nome} (${b.largura}cm)</option>`;
-      });
-      optionsHtml += `</optgroup><optgroup label="Insumos / Avulsos (Unitário)">`;
-      catalogo.forEach(c => {
-        optionsHtml += `<option value="Insumo: ${c.nome}">Insumo: ${c.nome}</option>`;
-      });
-      optionsHtml += `</optgroup>`;
-
-      const tr = document.createElement("tr");
-      tr.className = "hover:bg-slate-50 transition border-b border-slate-100 parte-row";
-      tr.innerHTML = `
-        <td class="p-2.5"><input type="text" value="${nome}" class="w-full bg-slate-50 border border-slate-200 rounded px-2.5 py-1.5 text-xs font-medium input-nome"></td>
-        <td class="p-2.5">
-          <select class="w-full bg-slate-50 border border-slate-200 rounded px-2 py-1.5 text-xs select-material-linha font-medium">
-            ${optionsHtml}
-          </select>
-        </td>
-        <td class="p-2.5"><input type="number" value="${largura}" class="w-full bg-slate-50 border border-slate-200 rounded px-2 py-1.5 text-xs input-largura"></td>
-        <td class="p-2.5"><input type="number" value="${comprimento}" class="w-full bg-slate-50 border border-slate-200 rounded px-2 py-1.5 text-xs input-comprimento"></td>
-        <td class="p-2.5"><input type="number" value="${qtd}" min="1" class="w-full bg-slate-50 border border-slate-200 rounded px-2 py-1.5 text-xs input-qtd"></td>
-        <td class="p-2.5"><input type="number" value="${margem}" min="0" class="w-full bg-slate-50 border border-slate-200 rounded px-2 py-1.5 text-xs input-margem"></td>
-        <td class="p-2.5 text-center">
-          <button onclick="this.closest('tr').remove(); calcularTudo();" class="text-red-400 hover:text-red-600 p-1.5 cursor-pointer"><i class="fa-solid fa-trash"></i></button>
-        </td>
-      `;
-      if(material) {
-        tr.querySelector(".select-material-linha").value = material;
+      const larguraBobina = parseFloat(document.getElementById("largura-bobina").value) || 140;
+      if(largura > larguraBobina) {
+        alert(`Atenção: A peça "${nome}" tem ${largura}cm de largura, mas a bobina tem apenas ${larguraBobina}cm. Ela não caberá na horizontal.`);
       }
-      tbody.appendChild(tr);
-      calcularTudo();
+
+      pecasFila.push({ nome, largura, comprimento, qtd });
+      renderTabelaPecas();
+      calcularNestingVisual();
     }
 
-    function adicionarBobina() {
-      const nome = document.getElementById("nova-b-nome").value.trim();
-      const largura = parseFloat(document.getElementById("nova-b-largura").value);
-      const preco = parseFloat(document.getElementById("nova-b-preco").value);
-      if(!nome || isNaN(largura) || isNaN(preco)) { alert("Preencha todos os campos da bobina corretamente."); return; }
-      bobinas.push({ nome, largura, preco });
-      document.getElementById("nova-b-nome").value = "";
-      document.getElementById("nova-b-largura").value = "";
-      document.getElementById("nova-b-preco").value = "";
-      salvarLocal();
-      renderTudo();
+    function removerPecaFila(idx) {
+      pecasFila.splice(idx, 1);
+      renderTabelaPecas();
+      calcularNestingVisual();
     }
 
-    function removerBobina(idx) {
-      bobinas.splice(idx, 1);
-      salvarLocal();
-      renderTudo();
-    }
-
-    function adicionarInsumoCatalogo() {
-      const nome = document.getElementById("novo-c-nome").value.trim();
-      const valor = parseFloat(document.getElementById("novo-c-valor").value);
-      if(!nome || isNaN(valor)) { alert("Preencha todos os campos do insumo corretamente."); return; }
-      catalogo.push({ nome, valor });
-      document.getElementById("novo-c-nome").value = "";
-      document.getElementById("novo-c-valor").value = "";
-      salvarLocal();
-      renderTudo();
-    }
-
-    function removerInsumoCatalogo(idx) {
-      catalogo.splice(idx, 1);
-      salvarLocal();
-      renderTudo();
-    }
-
-    function renderTabelasAdmin() {
-      const tbB = document.getElementById("tabela-bobinas");
-      tbB.innerHTML = "";
-      bobinas.forEach((b, idx) => {
-        tbB.innerHTML += `
-          <tr class="hover:bg-slate-50">
-            <td class="p-2 font-bold text-slate-700">${b.nome}</td>
-            <td class="p-2">${b.largura} cm</td>
-            <td class="p-2 text-emerald-600 font-bold">R$ ${b.preco.toFixed(2)} /m</td>
+    function renderTabelaPecas() {
+      const tbody = document.getElementById("tabela-pecas-input");
+      tbody.innerHTML = "";
+      if(pecasFila.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-slate-500 text-xs">Nenhuma peça na fila.</td></tr>`;
+        return;
+      }
+      pecasFila.forEach((p, idx) => {
+        tbody.innerHTML += `
+          <tr class="hover:bg-slate-950/50">
+            <td class="p-2 font-bold text-white">${p.nome}</td>
+            <td class="p-2 text-slate-300 font-mono">${p.largura}x${p.comprimento}cm</td>
+            <td class="p-2 text-slate-300">${p.qtd}x</td>
             <td class="p-2 text-center">
-              <button onclick="removerBobina(${idx})" class="text-red-500 hover:text-red-700 cursor-pointer"><i class="fa-solid fa-trash"></i></button>
-            </td>
-          </tr>
-        `;
-      });
-
-      const tbC = document.getElementById("tabela-catalogo");
-      tbC.innerHTML = "";
-      catalogo.forEach((c, idx) => {
-        tbC.innerHTML += `
-          <tr class="hover:bg-slate-50">
-            <td class="p-2 font-bold text-slate-700">${c.nome}</td>
-            <td class="p-2 text-emerald-600 font-bold">R$ ${c.valor.toFixed(2)}</td>
-            <td class="p-2 text-center">
-              <button onclick="removerInsumoCatalogo(${idx})" class="text-red-500 hover:text-red-700 cursor-pointer"><i class="fa-solid fa-trash"></i></button>
+              <button onclick="removerPecaFila(${idx})" class="text-red-400 hover:text-red-200 cursor-pointer p-1"><i class="fa-solid fa-trash"></i></button>
             </td>
           </tr>
         `;
@@ -446,323 +226,142 @@
 
     function ajustarZoom(delta) {
       zoomAtual = Math.max(0.6, Math.min(2.0, zoomAtual + delta));
-      const containers = document.querySelectorAll('[id^="container-rip-visual"]');
-      containers.forEach(el => {
+      const el = document.getElementById("plotter-inner-stage");
+      if(el) {
         el.style.transform = `scale(${zoomAtual})`;
         el.style.transformOrigin = 'top left';
-      });
+      }
     }
 
-    function exportarPDFOrcamento() {
-      const elemento = document.getElementById("bloco-exportavel-rip");
-      if(!elemento) { alert("Processe o orçamento antes de exportar."); return; }
-      
-      // Feedback visual
-      const btnOriginal = event.currentTarget.innerHTML;
-      event.currentTarget.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-1"></i> Gerando Imagem...`;
-      
-      html2canvas(elemento, { scale: 2, backgroundColor: "#ffffff" }).then(canvas => {
-        const link = document.createElement('a');
-        link.download = `Orcamento_${document.getElementById('cliente').value.replace(/\s+/g, '_')}.png`;
-        link.href = canvas.toDataURL('image/png');
-        link.click();
-        event.currentTarget.innerHTML = btnOriginal;
-      }).catch(err => {
-        console.error(err);
-        alert("Erro ao exportar imagem.");
-        event.currentTarget.innerHTML = btnOriginal;
-      });
-    }
+    // Algoritmo de Nesting / Shelf Packing com preenchimento lateral inteligente de sobras
+    function calcularNestingVisual() {
+      const larguraBobina = parseFloat(document.getElementById("largura-bobina").value) || 140;
+      let listaExpandida = [];
 
-    // Algoritmo Principal de Cálculo e Nesting (Strip Packing / Guillotine Shelf)
-    function calcularTudo() {
-      const cliente = document.getElementById("cliente").value || "Cliente";
-      const produto = document.getElementById("produto").value || "Produto";
-      const mao = parseFloat(document.getElementById("mao").value) || 0;
-      const outros = parseFloat(document.getElementById("outros").value) || 0;
-      const lucro = parseFloat(document.getElementById("lucro").value) || 0;
-      const imposto = parseFloat(document.getElementById("imposto").value) || 0;
-
-      const rows = document.querySelectorAll(".parte-row");
-      let agrupadoPorBobina = {};
-      let custoMat = 0;
-      let totalPecas = 0;
-
-      // Inicializar estruturas para cada bobina existente
-      bobinas.forEach(b => {
-        agrupadoPorBobina[b.nome] = { obj: b, pecas: [] };
-      });
-
-      rows.forEach(r => {
-        const nomeP = r.querySelector(".input-nome").value || "Peça";
-        const matVal = r.querySelector(".select-material-linha").value;
-        let w = parseFloat(r.querySelector(".input-largura").value) || 0;
-        let h = parseFloat(r.querySelector(".input-comprimento").value) || 0;
-        let q = parseInt(r.querySelector(".input-qtd").value) || 1;
-        let margem = parseFloat(r.querySelector(".input-margem").value) || 0;
-
-        // Aplicar margem extra de segurança (%)
-        if(margem > 0) {
-          w += w * (margem / 100);
-          h += h * (margem / 100);
-        }
-
-        if(matVal.startsWith("Bobina: ")) {
-          const bNome = matVal.replace("Bobina: ", "");
-          if(agrupadoPorBobina[bNome]) {
-            for(let i=0; i<q; i++) {
-              agrupadoPorBobina[bNome].pecas.push({ nome: nomeP, largura: w, comprimento: h });
-            }
-            totalPecas += q;
-          }
-        } else if(matVal.startsWith("Insumo: ")) {
-          const cNome = matVal.replace("Insumo: ", "");
-          const cObj = catalogo.find(x => x.nome === cNome);
-          if(cObj) {
-            custoMat += (cObj.valor * q);
-            totalPecas += q;
-          }
+      pecasFila.forEach(p => {
+        for(let i = 0; i < p.qtd; i++) {
+          listaExpandida.push({ nome: p.nome, largura: p.largura, comprimento: p.comprimento });
         }
       });
 
-      let blocosRipHtml = "";
+      // Ordenar por comprimento decrescente (Shelf Packing clássico)
+      listaExpandida.sort((a, b) => b.comprimento - a.comprimento);
 
-      // Algoritmo de Nesting & Empacotamento em Linhas / Blocos (Strip Packing) com Réguas Corel (cm)
-      for(let bNome in agrupadoPorBobina) {
-        const grupo = agrupadoPorBobina[bNome];
-        if(!grupo || grupo.pecas.length === 0) continue;
+      let linhas = [];
+      let linhaAtual = { y: 0, alturaMax: 0, xCursor: 0, itens: [] };
+      linhas.push(linhaAtual);
 
-        const larguraBobinaCm = grupo.obj.largura;
-        const precoMetro = grupo.obj.preco;
-        const listaPecas = grupo.pecas;
+      listaExpandida.forEach(peca => {
+        let pL = peca.largura;
+        let pC = peca.comprimento;
 
-        // Ordenar peças por altura decrescente para otimizar Nesting (Guillotine Shelf / Strip Packing)
-        listaPecas.sort((a, b) => b.comprimento - a.comprimento);
+        // Verificar se cabe na largura restante da linha atual (aproveitamento de sobras horizontais)
+        if(linhaAtual.xCursor + pL > larguraBobina) {
+          // Quebra para a próxima linha vertical na bobina
+          linhaAtual = { y: linhaAtual.y + linhaAtual.alturaMax, alturaMax: 0, xCursor: 0, itens: [] };
+          linhas.push(linhaAtual);
+        }
 
-        let linhas = [];
-        let linhaAtual = { y: 0, alturaMax: 0, xCursor: 0, itens: [] };
-        linhas.push(linhaAtual);
-
-        listaPecas.forEach(peca => {
-          let pLarg = Math.min(peca.largura, larguraBobinaCm);
-          let pComp = peca.comprimento;
-
-          if(linhaAtual.xCursor + pLarg > larguraBobinaCm) {
-            linhaAtual = { y: linhaAtual.y + linhaAtual.alturaMax, alturaMax: 0, xCursor: 0, itens: [] };
-            linhas.push(linhaAtual);
-          }
-
-          linhaAtual.itens.push({
-            nome: peca.nome,
-            x: linhaAtual.xCursor,
-            y: linhaAtual.y,
-            w: pLarg,
-            h: pComp
-          });
-
-          linhaAtual.xCursor += pLarg;
-          if(pComp > linhaAtual.alturaMax) {
-            linhaAtual.alturaMax = pComp;
-          }
+        linhaAtual.itens.push({
+          nome: peca.nome,
+          x: linhaAtual.xCursor,
+          y: linhaAtual.y,
+          w: pL,
+          h: pC
         });
 
-        let alturaTotalCm = linhas.reduce((acc, l) => acc + l.alturaMax, 0);
-        let metrosLineares = alturaTotalCm / 100;
-        let custoBobinaParcial = metrosLineares * precoMetro;
-        custoMat += custoBobinaParcial;
-
-        // Visual estilo CorelDRAW (Réguas em cm nos eixos X e Y)
-        const pxPorCm = 3.2;
-        let containerW = larguraBobinaCm * pxPorCm;
-        let containerH = Math.max(150, alturaTotalCm * pxPorCm);
-
-        let reguasXHtml = '';
-        for(let c = 0; c <= larguraBobinaCm; c += 5) {
-          let leftPx = c * pxPorCm;
-          let isPrincipal = c % 10 === 0;
-          reguasXHtml += `
-            <div class="absolute top-0 text-[9px] text-slate-400 font-mono select-none" style="left: ${leftPx}px; transform: translateX(-50%);">
-              ${isPrincipal ? c : ''}
-              <div class="w-[1px] ${isPrincipal ? 'h-3 bg-slate-500' : 'h-1.5 bg-slate-600'} mx-auto"></div>
-            </div>
-          `;
+        linhaAtual.xCursor += pL;
+        if(pC > linhaAtual.alturaMax) {
+          linhaAtual.alturaMax = pC;
         }
+      });
 
-        let reguasYHtml = '';
-        for(let c = 0; c <= alturaTotalCm; c += 5) {
-          let topPx = c * pxPorCm;
-          let isPrincipal = c % 10 === 0;
-          reguasYHtml += `
-            <div class="absolute left-0 text-[9px] text-slate-400 font-mono select-none flex items-center" style="top: ${topPx}px; transform: translateY(-50%);">
-              ${isPrincipal ? '<span class="mr-1">' + c + '</span>' : ''}
-              <div class="${isPrincipal ? 'w-3 bg-slate-500' : 'w-1.5 bg-slate-600'} h-[1px]"></div>
-            </div>
-          `;
-        }
+      let alturaTotalBobinaCm = linhas.reduce((acc, l) => acc + l.alturaMax, 0);
+      let metrosLineares = alturaTotalBobinaCm / 100;
+      let areaTotalM2 = (larguraBobina * alturaTotalBobinaCm) / 10000;
 
-        let pecasVisualHtml = '';
-        linhas.forEach(linha => {
-          linha.itens.forEach(item => {
-            let lPx = item.x * pxPorCm;
-            let tPx = item.y * pxPorCm;
-            let wPx = item.w * pxPorCm;
-            let hPx = item.h * pxPorCm;
-            pecasVisualHtml += `
-              <div class="absolute bg-white border-2 border-slate-900 rounded-sm flex flex-col items-center justify-center p-1 shadow-sm overflow-hidden text-slate-900 font-mono transition hover:bg-slate-50"
-                   style="left: ${lPx}px; top: ${tPx}px; width: ${wPx}px; height: ${hPx}px;">
-                <span class="text-[10px] font-bold leading-tight truncate w-full text-center">${item.nome}</span>
-                <span class="text-[9px] text-slate-600 leading-tight">${item.w.toFixed(0)}x${item.h.toFixed(0)}cm</span>
-              </div>
-            `;
-          });
-        });
+      // Renderização Visual Plotter Style com Réguas em cm
+      const pxPorCm = 3.2;
+      let stageW = larguraBobina * pxPorCm;
+      let stageH = Math.max(200, alturaTotalBobinaCm * pxPorCm);
 
-        blocosRipHtml += `
-          <div class="bg-slate-900 border border-slate-700 rounded-xl p-4 space-y-3">
-            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-2 border-b border-slate-800 pb-3">
-              <div>
-                <h4 class="text-sm font-bold text-white flex items-center space-x-2">
-                  <i class="fa-solid fa-scroll text-emerald-400"></i>
-                  <span>RIP Bobina: ${bNome}</span>
-                </h4>
-                <p class="text-xs text-slate-400">Largura útil: <b>${larguraBobinaCm} cm</b> | Consumo linear: <b>${metrosLineares.toFixed(2)} m</b> (${alturaTotalCm.toFixed(1)} cm)</p>
-              </div>
-              <div class="text-right">
-                <span class="text-xs text-emerald-400 font-bold">Custo Material: R$ ${custoBobinaParcial.toFixed(2)}</span>
-              </div>
-            </div>
-
-            <!-- Controles de Visualização Corel Style -->
-            <div class="flex items-center justify-between bg-slate-800 px-3 py-1.5 rounded-lg text-xs text-slate-300">
-              <span>Réguas em cm (Divisões de 5 em 5 cm)</span>
-              <div class="flex items-center space-x-2">
-                <button onclick="ajustarZoom(-0.2)" class="px-2 py-1 bg-slate-700 hover:bg-slate-600 rounded text-white font-bold cursor-pointer">- Zoom</button>
-                <button onclick="ajustarZoom(0.2)" class="px-2 py-1 bg-slate-700 hover:bg-slate-600 rounded text-white font-bold cursor-pointer">+ Zoom</button>
-              </div>
-            </div>
-
-            <!-- Palco / Canvas RIP estilo CorelDRAW -->
-            <div class="overflow-auto max-h-[500px] border border-slate-700 rounded-lg bg-slate-950 p-6 relative">
-              <div id="container-rip-visual-${bNome.replace(/\s+/g, '_')}" class="relative transition-transform duration-200" style="width: ${containerW + 40}px; height: ${containerH + 40}px;">
-                <div class="absolute top-0 left-8 right-0 h-6 border-b border-slate-700 bg-slate-900/90">${reguasXHtml}</div>
-                <div class="absolute top-6 left-0 w-8 bottom-0 border-r border-slate-700 bg-slate-900/90">${reguasYHtml}</div>
-                <div class="absolute top-6 left-8 bg-slate-900 border border-slate-600 shadow-inner" style="width: ${containerW}px; height: ${containerH}px;">
-                  ${pecasVisualHtml}
-                </div>
-              </div>
-            </div>
+      let reguasX = '';
+      for(let c = 0; c <= larguraBobina; c += 10) {
+        let lPx = c * pxPorCm;
+        reguasX += `
+          <div class="absolute top-0 text-[9px] text-slate-400 font-mono select-none" style="left: ${lPx}px; transform: translateX(-50%);">
+            ${c}
+            <div class="w-[1px] h-2.5 bg-slate-600 mx-auto mt-0.5"></div>
           </div>
         `;
       }
 
-      // Cálculo Financeiro Completo
-      let subtotal = custoMat + mao + outros;
-      let divisorLucro = 1 - (lucro / 100) - (imposto / 100);
-      if(divisorLucro <= 0) divisorLucro = 0.1;
-      let precoFinal = subtotal / divisorLucro;
-      let valorLucroReais = precoFinal * (lucro / 100);
-
-      ultimoCache = {
-        data: new Date().toLocaleDateString('pt-BR'),
-        cliente,
-        produto,
-        totalPecas,
-        custoMat,
-        mao,
-        outros,
-        lucro,
-        imposto,
-        precoFinal
-      };
-
-      const resDiv = document.getElementById("resultado");
-      resDiv.innerHTML = `
-        <div id="bloco-exportavel-rip" class="space-y-6 bg-slate-100 p-2">
-          <!-- Cabeçalho do Orçamento -->
-          <div class="bg-slate-900 text-white p-6 rounded-2xl shadow-md flex flex-col md:flex-row justify-between items-center gap-4">
-            <div>
-              <span class="text-xs text-emerald-400 font-bold uppercase tracking-wider">Relatório de Nesting & Orçamento</span>
-              <h3 class="text-xl font-bold">${cliente} - ${produto}</h3>
-              <p class="text-xs text-slate-400 mt-1">Total de Peças Encaixadas: <b>${totalPecas} unidades</b></p>
-            </div>
-            <div class="text-right bg-slate-800 p-4 rounded-xl border border-slate-700">
-              <span class="text-xs text-slate-400 uppercase font-bold block">Valor Final Sugerido</span>
-              <span class="text-2xl font-black text-emerald-400">R$ ${precoFinal.toFixed(2)}</span>
-            </div>
+      let reguasY = '';
+      for(let c = 0; c <= alturaTotalBobinaCm; c += 10) {
+        let tPx = c * pxPorCm;
+        reguasY += `
+          <div class="absolute left-0 text-[9px] text-slate-400 font-mono select-none flex items-center" style="top: ${tPx}px; transform: translateY(-50%);">
+            <span class="mr-1">${c}</span>
+            <div class="w-2.5 h-[1px] bg-slate-600"></div>
           </div>
+        `;
+      }
 
-          <!-- Detalhamento de Custos & Margens -->
-          <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm text-center">
-              <span class="text-xs text-slate-400 uppercase font-bold">Custo Materiais</span>
-              <p class="text-lg font-bold text-slate-800 mt-1">R$ ${custoMat.toFixed(2)}</p>
+      let pecasHtml = '';
+      linhas.forEach(linha => {
+        linha.itens.forEach(item => {
+          let lPx = item.x * pxPorCm;
+          let tPx = item.y * pxPorCm;
+          let wPx = item.w * pxPorCm;
+          let hPx = item.h * pxPorCm;
+          
+          pecasHtml += `
+            <div class="absolute bg-slate-900/90 border-2 border-emerald-500/80 rounded flex flex-col items-center justify-center p-1 shadow-md hover:bg-emerald-950 transition group overflow-hidden"
+                 style="left: ${lPx}px; top: ${tPx}px; width: ${wPx}px; height: ${hPx}px;"
+                 title="${item.nome} (${item.w}x${item.h}cm)">
+              <span class="text-[10px] font-bold text-emerald-300 leading-tight truncate w-full text-center">${item.nome}</span>
+              <span class="text-[9px] text-slate-300 font-mono leading-tight">${item.w}x${item.h}cm</span>
             </div>
-            <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm text-center">
-              <span class="text-xs text-slate-400 uppercase font-bold">Mão de Obra / Outros</span>
-              <p class="text-lg font-bold text-slate-800 mt-1">R$ ${(mao + outros).toFixed(2)}</p>
-            </div>
-            <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm text-center">
-              <span class="text-xs text-slate-400 uppercase font-bold">Lucro (${lucro}%)</span>
-              <p class="text-lg font-bold text-emerald-600 mt-1">R$ ${valorLucroReais.toFixed(2)}</p>
-            </div>
-            <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm text-center">
-              <span class="text-xs text-slate-400 uppercase font-bold">Impostos (${imposto}%)</span>
-              <p class="text-lg font-bold text-blue-600 mt-1">R$ ${(precoFinal * (imposto/100)).toFixed(2)}</p>
-            </div>
-          </div>
+          `;
+        });
+      });
 
-          <!-- Layouts de RIP gerados -->
-          <div class="space-y-4">
-            <h4 class="text-base font-bold text-slate-700">Simulação de Corte & Nesting (Réguas CorelDRAW em cm)</h4>
-            ${blocosRipHtml || '<div class="text-slate-500 text-xs p-4 bg-white rounded-xl border">Nenhuma bobina selecionada nas peças.</div>'}
+      const container = document.getElementById("container-plotter-canvas");
+      container.innerHTML = `
+        <div id="plotter-inner-stage" class="relative transition-transform duration-200" style="width: ${stageW + 40}px; height: ${stageH + 40}px; transform: scale(${zoomAtual}); transform-origin: top left;">
+          <!-- Régua Superior X -->
+          <div class="absolute top-0 left-8 right-0 h-6 border-b border-slate-800 bg-slate-900/90">${reguasX}</div>
+          <!-- Régua Lateral Y -->
+          <div class="absolute top-6 left-0 w-8 bottom-0 border-r border-slate-800 bg-slate-900/90">${reguasY}</div>
+          
+          <!-- Palco da Bobina (Fundo quadriculado simulando plotter) -->
+          <div class="absolute top-6 left-8 bg-slate-900 border-2 border-emerald-500/40 shadow-2xl overflow-hidden" style="width: ${stageW}px; height: ${stageH}px; background-image: radial-gradient(#334155 1px, transparent 1px); background-size: 20px 20px;">
+            ${pecasHtml}
           </div>
+        </div>
+      `;
+
+      // Atualizar Métricas
+      const resumo = document.getElementById("resumo-metricas");
+      resumo.innerHTML = `
+        <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 text-center">
+          <span class="text-[10px] uppercase font-bold text-slate-500">Consumo Linear</span>
+          <p class="text-base font-bold text-emerald-400 mt-0.5">${metrosLineares.toFixed(2)} metros</p>
+        </div>
+        <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 text-center">
+          <span class="text-[10px] uppercase font-bold text-slate-500">Área Ocupada</span>
+          <p class="text-base font-bold text-slate-200 mt-0.5">${areaTotalM2.toFixed(2)} m²</p>
+        </div>
+        <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 text-center col-span-2 sm:col-span-1">
+          <span class="text-[10px] uppercase font-bold text-slate-500">Total Peças Encaixadas</span>
+          <p class="text-base font-bold text-blue-400 mt-0.5">${listaExpandida.length} un</p>
         </div>
       `;
     }
 
-    function salvarProjeto() {
-      if(!ultimoCache) { alert("Processe um cálculo antes de salvar."); return; }
-      projetosSalvos.unshift(ultimoCache);
-      salvarLocal();
-      alert("Orçamento salvo com sucesso!");
-      mudarAba('salvos');
-    }
-
-    function renderProjetosSalvos() {
-      const tbS = document.getElementById("tabelaProjetosSalvos");
-      tbS.innerHTML = "";
-      if(projetosSalvos.length === 0) {
-        tbS.innerHTML = `<tr><td colspan="5" class="p-6 text-center text-slate-400 text-sm">Nenhum orçamento salvo no momento.</td></tr>`;
-        return;
-      }
-      projetosSalvos.forEach((p, idx) => {
-        tbS.innerHTML += `
-          <tr class="hover:bg-slate-50">
-            <td class="p-3 text-xs text-slate-500">${p.data}</td>
-            <td class="p-3 font-bold text-slate-700">${p.cliente}</td>
-            <td class="p-3 text-slate-600">${p.produto}</td>
-            <td class="p-3 font-bold text-emerald-600">R$ ${p.precoFinal.toFixed(2)}</td>
-            <td class="p-3 text-center">
-              <button onclick="removerProjeto(${idx})" class="text-red-500 hover:text-red-700 text-xs cursor-pointer"><i class="fa-solid fa-trash"></i></button>
-            </td>
-          </tr>
-        `;
-      });
-    }
-
-    function removerProjeto(idx) {
-      projetosSalvos.splice(idx, 1);
-      salvarLocal();
-      renderProjetosSalvos();
-    }
-
-    // Inicialização ao carregar a página
     window.addEventListener("DOMContentLoaded", () => {
-      renderTudo();
-      const tbody = document.getElementById("partes");
-      if(tbody && tbody.children.length === 0) {
-        addParteVazia("Painel Plástico", "Bobina: Bobina Plástico / Tecido 1.40m", 40, 60, 4, 0);
-      }
+      renderTabelaPecas();
+      calcularNestingVisual();
     });
   </script>
 </body>
