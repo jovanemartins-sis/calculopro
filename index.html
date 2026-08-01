@@ -9,24 +9,25 @@
 </head>
 <body class="bg-slate-100 min-h-screen text-slate-800 flex flex-col">
 
-  <!-- TOPO / HEADER -->
-  <header class="bg-slate-900 text-white shadow-md p-4 flex justify-between items-center">
+  <!-- TOPO / HEADER (SÓ APARECE DEPOIS DE LOGADO) -->
+  <header id="header-principal" class="hidden bg-slate-900 text-white shadow-md p-4 flex justify-between items-center">
     <div class="flex items-center space-x-3">
       <i class="fa-solid fa-calculator text-2xl text-emerald-400"></i>
       <h1 class="text-xl font-bold tracking-wide">CalculaJá <span class="text-emerald-400">Pro</span></h1>
     </div>
-    <div id="auth-container">
-      <!-- Preenchido via script de autenticação -->
+    <div id="auth-container-topo">
+      <!-- Botão de Sair/Trocar Conta no topo -->
     </div>
   </header>
 
-  <!-- TELA DE LOGIN / CADASTRO (EXIBIDA QUANDO DESLOGADO) -->
+  <!-- TELA INICIAL: RETÂNGULO CENTRAL (LOGIN / CADASTRO ANTES DE ENTRAR NO APP) -->
   <div id="tela-login" class="flex-grow flex flex-col items-center justify-center p-6">
     <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-200 max-w-md w-full space-y-6">
+      
       <div class="text-center space-y-2">
         <i class="fa-solid fa-calculator text-3xl text-emerald-600"></i>
-        <h2 class="text-xl font-bold text-slate-800">Acesse sua Conta</h2>
-        <p class="text-xs text-slate-500">Entre com seu e-mail e senha ou use sua conta Google</p>
+        <h2 class="text-xl font-bold text-slate-800">CalculaJá Pro</h2>
+        <p class="text-xs text-slate-500">Entre com sua conta para acessar o sistema</p>
       </div>
 
       <!-- BOTÃO GOOGLE -->
@@ -35,33 +36,43 @@
         <span>Continuar com Google</span>
       </button>
 
-      <div class="flex items-center my-4">
+      <div class="flex items-center my-2">
         <div class="flex-grow border-t border-slate-200"></div>
         <span class="px-3 text-xs text-slate-400 uppercase font-bold">ou e-mail</span>
         <div class="flex-grow border-t border-slate-200"></div>
       </div>
 
-      <!-- FORMULÁRIO DE EMAIL E SENHA (LOGIN / CADASTRO) -->
-      <form id="formEmailSenha" class="space-y-4" onsubmit="tratarEmailSenha(event)">
+      <!-- FORMULÁRIO DE EMAIL E SENHA (LOGIN / CADASTRO FUNCIONAL) -->
+      <form id="formEmailSenha" class="space-y-4" onsubmit="tratarLoginEmail(event)">
         <div>
           <label class="block text-xs font-bold uppercase text-slate-500 mb-1">E-mail</label>
-          <input type="email5" id="emailInput" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm outline-none focus:border-emerald-500" placeholder="seu@email.com" required>
+          <input type="email" id="emailInput" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm outline-none focus:border-emerald-500" placeholder="seu@email.com" required>
         </div>
         <div>
           <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Senha</label>
           <input type="password" id="senhaInput" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm outline-none focus:border-emerald-500" placeholder="Sua senha" required>
         </div>
+        
         <div id="erro-auth" class="text-xs text-red-500 text-center font-medium hidden"></div>
 
         <div class="grid grid-cols-2 gap-2 pt-2">
-          <button type="submit" id="btnEntrarEmail" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-2.5 rounded-xl text-xs transition">
+          <button type="submit" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-2.5 rounded-xl text-xs transition">
             Entrar
           </button>
           <button type="button" onclick="cadastrarComEmail()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-xl text-xs transition">
-            Criar Conta
+            Cadastrar
           </button>
         </div>
       </form>
+
+      <!-- ÁREA PARA QUEM JÁ LOGOU MAS QUER TROCAR DE CONTA NA TELA INICIAL -->
+      <div id="info-conta-atual" class="hidden pt-4 border-t text-center space-y-2">
+        <p class="text-xs text-slate-600">Conectado como: <b id-email-logado class="text-slate-800"></b></p>
+        <button onclick="sairDaConta()" class="text-xs text-red-500 hover:text-red-700 font-bold underline">
+          Desconectar / Trocar Conta
+        </button>
+      </div>
+
     </div>
   </div>
 
@@ -203,7 +214,7 @@
       projectId: "SEU_PROJECT_ID",
       storageBucket: "SEU_STORAGE_BUCKET.appspot.com",
       messagingSenderId: "SEU_MESSAGING_SENDER_ID",
-      appId: "SEU_APP_ID"
+      appId: "SUA_APP_ID"
     };
 
     const app = initializeApp(firebaseConfig);
@@ -212,18 +223,18 @@
 
     window.loginComGoogle = function() {
       signInWithPopup(auth, provider).catch((error) => {
-        mostrarErro(error.message);
+        mostrarErro("Erro no Google: " + error.message);
       });
     };
 
-    window.tratarEmailSenha = function(e) {
+    window.tratarLoginEmail = function(e) {
       e.preventDefault();
       const email = document.getElementById("emailInput").value;
       const senha = document.getElementById("senhaInput").value;
 
       signInWithEmailAndPassword(auth, email, senha)
         .catch((error) => {
-          mostrarErro("Erro ao entrar: Verifique e-mail e senha.");
+          mostrarErro("Erro: E-mail ou senha inválidos.");
         });
     };
 
@@ -232,21 +243,21 @@
       const senha = document.getElementById("senhaInput").value;
 
       if(!email || !senha) {
-        mostrarErro("Preencha e-mail e senha para criar a conta.");
+        mostrarErro("Preencha e-mail e senha para cadastrar.");
         return;
       }
 
       createUserWithEmailAndPassword(auth, email, senha)
         .catch((error) => {
           if (error.code === 'auth/email-already-in-use') {
-            mostrarErro("Este e-mail já está cadastrado! Use o botão 'Entrar'.");
+            mostrarErro("E-mail já cadastrado! Clique em Entrar.");
           } else {
             mostrarErro("Erro no cadastro: " + error.message);
           }
         });
     };
 
-    window.logoutGoogle = function() {
+    window.sairDaConta = function() {
       signOut(auth);
     };
 
@@ -257,25 +268,33 @@
     }
 
     onAuthStateChanged(auth, (user) => {
-      const container = document.getElementById("auth-container");
+      const headerPrincipal = document.getElementById("header-principal");
       const appPrincipal = document.getElementById("app-principal");
       const telaLogin = document.getElementById("tela-login");
+      const containerTopo = document.getElementById("auth-container-topo");
+      const infoConta = document.getElementById("info-conta-atual");
 
       if (user) {
-        appPrincipal.classList.remove("hidden");
+        // Logado: esconde a tela de login inicial, mostra o header e o app principal
         telaLogin.classList.add("hidden");
+        headerPrincipal.classList.remove("hidden");
+        appPrincipal.classList.remove("hidden");
 
-        const nomeUsuario = user.displayName ? user.displayName.split(' ')[0] : user.email.split('@')[0];
-        container.innerHTML = `
+        const nomeUser = user.displayName ? user.displayName.split(' ')[0] : user.email.split('@')[0];
+        
+        // Botão de sair/trocar conta no topo do sistema
+        containerTopo.innerHTML = `
           <div class="flex items-center space-x-3">
-            <span class="text-sm font-medium">Olá, ${nomeUsuario}</span>
-            <button onclick="logoutGoogle()" class="bg-red-500 hover:bg-red-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold transition">Sair</button>
+            <span class="text-sm font-medium">Olá, ${nomeUser}</span>
+            <button onclick="sairDaConta()" class="bg-red-500 hover:bg-red-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold transition">Sair / Trocar Conta</button>
           </div>
         `;
       } else {
-        appPrincipal.classList.add("hidden");
+        // Deslogado: mostra apenas o retângulo central de login/cadastro
         telaLogin.classList.remove("hidden");
-        container.innerHTML = `<span class="text-xs text-slate-400">Faça login para começar</span>`;
+        headerPrincipal.classList.add("hidden");
+        appPrincipal.classList.add("hidden");
+        infoConta.classList.add("hidden");
       }
     });
   </script>
