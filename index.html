@@ -1,72 +1,390 @@
-<!-- Navegação Superior / Abas -->
-<header class="flex justify-between items-center bg-slate-900 px-6 py-3 border-b border-slate-800 text-white">
-  <h1 class="text-sm font-bold text-cyan-400"><i class="fa-solid fa-cubes mr-2"></i> CalculaJá Pro - Sistema Integrado</h1>
-  <nav class="flex space-x-2">
-    <button onclick="mudarAba('dados')" id="btnAbaDados" class="px-3 py-1.5 rounded text-xs font-medium bg-cyan-600 text-white transition cursor-pointer">
-      <i class="fa-solid fa-list-check mr-1"></i> Dados & Orçamento
-    </button>
-    <button onclick="mudarAba('desenho')" id="btnAbaDesenho" class="px-3 py-1.5 rounded text-xs font-medium bg-slate-800 text-slate-300 hover:bg-slate-700 transition cursor-pointer">
-      <i class="fa-solid fa-network-wired mr-1"></i> Formação de Desenho (RIP)
-    </button>
-  </nav>
-</header>
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CalculaJá Pro - Sistema Integrado</title>
+  <!-- Tailwind CSS via CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-slate-100 text-slate-800 font-sans antialiased min-h-screen">
 
-<main class="p-4 max-w-7xl mx-auto">
-  
-  <!-- ABA 1: DADOS, PEÇAS E CUSTOS -->
-  <section id="abaDados" class="space-y-4">
-    <!-- Seus inputs de cliente, produto, custos e tabela de peças continuam aqui -->
-    <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200">
-      <h2 class="text-xs font-bold text-slate-700 mb-3 uppercase tracking-wider">Parâmetros e Peças</h2>
-      <!-- Tabela e inputs preexistentes -->
-    </div>
-    
-    <div class="flex justify-end">
-      <button type="button" onclick="processarECalcular()" class="bg-cyan-600 hover:bg-cyan-700 text-white px-5 py-2 rounded-lg text-xs font-bold transition shadow cursor-pointer">
-        Calcular e Gerar Desenho <i class="fa-solid fa-arrow-right ml-1"></i>
+  <!-- Navegação por Abas / Páginas -->
+  <header class="flex justify-between items-center bg-slate-900 px-6 py-3 border-b border-slate-800 text-white shadow-md">
+    <h1 class="text-sm font-bold text-cyan-400"><i class="fa-solid fa-cubes mr-2"></i> CalculaJá Pro <span class="text-xs text-slate-400 font-normal">v1.9.3</span></h1>
+    <nav class="flex space-x-2">
+      <button onclick="mudarAba('dados')" id="btnAbaDados" class="px-3 py-1.5 rounded text-xs font-medium bg-cyan-600 text-white transition cursor-pointer shadow">
+        <i class="fa-solid fa-list-check mr-1"></i> Dados & Orçamento
       </button>
-    </div>
-  </section>
+      <button onclick="mudarAba('desenho')" id="btnAbaDesenho" class="px-3 py-1.5 rounded text-xs font-medium bg-slate-800 text-slate-300 hover:bg-slate-700 transition cursor-pointer">
+        <i class="fa-solid fa-network-wired mr-1"></i> Formação de Desenho (RIP)
+      </button>
+    </nav>
+  </header>
 
-  <!-- ABA 2: NOVA PÁGINA DE FORMAÇÃO DE DESENHO -->
-  <section id="abaDesenho" class="hidden space-y-4">
-    <div class="bg-slate-900 text-white p-5 rounded-xl shadow-inner space-y-3">
-      <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+  <main class="p-4 max-w-7xl mx-auto space-y-4">
+    
+    <!-- ABA 1: PARÂMETROS, CADASTROS E PEÇAS -->
+    <section id="abaDados" class="space-y-4">
+      
+      <!-- Bloco de Informações Iniciais -->
+      <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 grid grid-cols-1 md:grid-cols-3 gap-3">
         <div>
-          <h3 class="text-xs font-bold text-cyan-400"><i class="fa-solid fa-network-wired mr-1"></i> Simulação RIP HP Latex (Nesting Contínuo)</h3>
-          <p id="infoClienteDesenho" class="text-[10px] text-slate-400">Aguardando processamento de dados...</p>
+          <label class="block text-[11px] font-bold text-slate-600 mb-1">Cliente</label>
+          <input type="text" id="cliente" placeholder="Nome do Cliente" class="w-full bg-slate-50 border border-slate-300 rounded px-3 py-1.5 text-xs text-slate-900 outline-none focus:border-cyan-500">
         </div>
-        <div class="text-right">
-          <span id="valorFinalDesenho" class="text-sm font-bold text-emerald-400">R$ 0.00</span>
-          <p id="custoTotalDesenho" class="text-[9px] text-slate-400">Custo: R$ 0.00</p>
+        <div>
+          <label class="block text-[11px] font-bold text-slate-600 mb-1">Produto / Projeto</label>
+          <input type="text" id="produto" placeholder="Ex: Fachada / Adesivos" class="w-full bg-slate-50 border border-slate-300 rounded px-3 py-1.5 text-xs text-slate-900 outline-none focus:border-cyan-500">
         </div>
-      </div>
-
-      <!-- Régua de Escala até 200cm -->
-      <div class="bg-slate-800 p-2 rounded text-[10px] text-slate-300 flex justify-between items-center border border-slate-700">
-        <span>Escala de Referência (Régua Térmica / CAD):</span>
-        <div class="flex space-x-4 font-mono text-cyan-300">
-          <span>0 cm</span>
-          <span>50 cm</span>
-          <span>100 cm</span>
-          <span>150 cm</span>
-          <span>200 cm+</span>
-        </div>
-      </div>
-
-      <!-- Área de Plotagem Gráfica isolada na nova página -->
-      <div class="overflow-x-auto bg-slate-950 p-4 rounded-lg border border-slate-800 min-h-[220px] flex items-center">
-        <div id="containerPlotagem" class="relative border-l-2 border-dashed border-cyan-500 pl-2 flex gap-1 items-center">
-          <div class="text-slate-500 text-xs py-6 w-full text-center">Nenhuma peça processada. Vá para a aba "Dados & Orçamento" e clique em calcular.</div>
+        <div class="grid grid-cols-3 gap-2">
+          <div>
+            <label class="block text-[10px] font-bold text-slate-600 mb-1">Mão de Obra (R$)</label>
+            <input type="number" id="mao" value="0" class="w-full bg-slate-50 border border-slate-300 rounded px-2 py-1.5 text-xs text-slate-900 outline-none focus:border-cyan-500">
+          </div>
+          <div>
+            <label class="block text-[10px] font-bold text-slate-600 mb-1">Lucro (%)</label>
+            <input type="number" id="lucro" value="30" class="w-full bg-slate-50 border border-slate-300 rounded px-2 py-1.5 text-xs text-slate-900 outline-none focus:border-cyan-500">
+          </div>
+          <div>
+            <label class="block text-[10px] font-bold text-slate-600 mb-1">Imposto (%)</label>
+            <input type="number" id="imposto" value="0" class="w-full bg-slate-50 border border-slate-300 rounded px-2 py-1.5 text-xs text-slate-900 outline-none focus:border-cyan-500">
+          </div>
         </div>
       </div>
 
-      <div class="flex justify-start pt-2">
-        <button type="button" onclick="mudarAba('dados')" class="bg-slate-800 hover:bg-slate-700 text-slate-300 px-4 py-1.5 rounded text-xs transition cursor-pointer">
-          <i class="fa-solid fa-arrow-left mr-1"></i> Voltar para Edição
+      <!-- Tabela de Peças e Insumos -->
+      <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 space-y-3">
+        <div class="flex justify-between items-center">
+          <h2 class="text-xs font-bold text-slate-700 uppercase tracking-wider"><i class="fa-solid fa-scissors mr-1 text-cyan-600"></i> Peças e Cortes do Projeto</h2>
+          <button type="button" onclick="addParteVazia()" class="bg-slate-800 hover:bg-slate-700 text-white px-3 py-1 rounded text-xs font-bold transition cursor-pointer">
+            <i class="fa-solid fa-plus mr-1"></i> Adicionar Peça
+          </button>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse text-xs">
+            <thead>
+              <tr class="bg-slate-100 text-slate-600 border-b border-slate-200">
+                <th class="p-2">Nome da Peça</th>
+                <th class="p-2">Material / Bobina</th>
+                <th class="p-2">Largura (cm)</th>
+                <th class="p-2">Comprimento (cm)</th>
+                <th class="p-2">Qtd</th>
+                <th class="p-2">Perda (%)</th>
+                <th class="p-2 text-center">Ações</th>
+              </tr>
+            </thead>
+            <tbody id="partes" class="divide-y divide-slate-100">
+              <!-- Inserido dinamicamente via JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Botão de Processar e Ir para o Desenho -->
+      <div class="flex justify-end pt-2">
+        <button type="button" onclick="processarECalcular()" class="bg-cyan-600 hover:bg-cyan-700 text-white px-6 py-2.5 rounded-lg text-xs font-bold transition shadow cursor-pointer flex items-center">
+          Calcular e Gerar Desenho RIP <i class="fa-solid fa-arrow-right ml-2"></i>
         </button>
       </div>
-    </div>
-  </section>
 
-</main>
+      <!-- Campo Oculto de Custos Outros caso necessário -->
+      <input type="hidden" id="outros" value="0">
+    </section>
+
+    <!-- ABA 2: NOVA PÁGINA DE FORMAÇÃO DE DESENHO (RIP HP LATEX) -->
+    <section id="abaDesenho" class="hidden space-y-4">
+      <div class="bg-slate-900 text-white p-5 rounded-xl shadow-inner space-y-4">
+        
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-slate-800 pb-3 gap-2">
+          <div>
+            <h3 class="text-xs font-bold text-cyan-400 uppercase tracking-widest"><i class="fa-solid fa-network-wired mr-1"></i> Simulação RIP HP Latex (Nesting Contínuo)</h3>
+            <p id="infoClienteDesenho" class="text-[11px] text-slate-400">Aguardando processamento de dados...</p>
+          </div>
+          <div class="text-left md:text-right bg-slate-950 px-4 py-2 rounded-lg border border-slate-800 w-full md:w-auto">
+            <span id="valorFinalDesenho" class="text-sm font-bold text-emerald-400">R$ 0.00</span>
+            <p id="custoTotalDesenho" class="text-[10px] text-slate-400">Custo Total: R$ 0.00</p>
+          </div>
+        </div>
+
+        <!-- Régua de Escala até 200cm -->
+        <div class="bg-slate-800 p-2 rounded text-[10px] text-slate-300 flex justify-between items-center border border-slate-700">
+          <span class="font-semibold">Escala de Referência (Régua Térmica / CAD):</span>
+          <div class="flex space-x-6 font-mono text-cyan-300">
+            <span>0 cm</span>
+            <span>50 cm</span>
+            <span>100 cm</span>
+            <span>150 cm</span>
+            <span>200 cm+</span>
+          </div>
+        </div>
+
+        <!-- Área de Plotagem Gráfica (Isolada na Nova Página) -->
+        <div class="overflow-x-auto bg-slate-950 p-4 rounded-lg border border-slate-800 min-h-[250px] flex items-center shadow-inner">
+          <div id="containerPlotagem" class="relative border-l-2 border-dashed border-cyan-500 pl-3 flex gap-1 items-center">
+            <div class="text-slate-500 text-xs py-8 w-full text-center">Nenhuma peça processada. Vá para a aba "Dados & Orçamento" e clique em calcular.</div>
+          </div>
+        </div>
+
+        <div class="flex justify-between pt-2">
+          <button type="button" onclick="mudarAba('dados')" class="bg-slate-800 hover:bg-slate-700 text-slate-300 px-4 py-2 rounded text-xs transition cursor-pointer flex items-center">
+            <i class="fa-solid fa-arrow-left mr-2"></i> Voltar para Edição
+          </button>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Script JavaScript Integrado -->
+  <script>
+    // Bases de dados simuladas para testes e funcionamento dos selects
+    const bobinas = [
+      { nome: "Bobina Adesivo Vinil Brilho 1.00m", largura: 100, preco: 15.00 },
+      { nome: "Bobina Lona Frontlight 1.40m", largura: 140, preco: 18.50 },
+      { nome: "Bobina Tecido Canvas 1.20m", largura: 120, preco: 35.00 }
+    ];
+
+    const catalogo = [
+      { nome: "Ilhós Metálico (Unidade)", valor: 0.15 },
+      { nome: "Bastão de Madeira 1m", valor: 2.50 }
+    ];
+
+    // Inicialização ao carregar a página
+    window.onload = function() {
+      addParteVazia("Adesivo Vitrine", "Bobina: Bobina Adesivo Vinil Brilho 1.00m", "50", "80", 2, 5);
+    };
+
+    // Função para alternar entre as abas sem perder o estado dos inputs
+    function mudarAba(aba) {
+      const secDados = document.getElementById("abaDados");
+      const secDesenho = document.getElementById("abaDesenho");
+      const btnDados = document.getElementById("btnAbaDados");
+      const btnDesenho = document.getElementById("btnAbaDesenho");
+
+      if (aba === 'dados') {
+        secDados.classList.remove("hidden");
+        secDesenho.classList.add("hidden");
+        
+        btnDados.className = "px-3 py-1.5 rounded text-xs font-medium bg-cyan-600 text-white transition cursor-pointer shadow";
+        btnDesenho.className = "px-3 py-1.5 rounded text-xs font-medium bg-slate-800 text-slate-300 hover:bg-slate-700 transition cursor-pointer";
+      } else {
+        secDados.classList.add("hidden");
+        secDesenho.classList.remove("hidden");
+        
+        btnDesenho.className = "px-3 py-1.5 rounded text-xs font-medium bg-cyan-600 text-white transition cursor-pointer shadow";
+        btnDados.className = "px-3 py-1.5 rounded text-xs font-medium bg-slate-800 text-slate-300 hover:bg-slate-700 transition cursor-pointer";
+      }
+    }
+
+    // Aciona o cálculo original e direciona automaticamente para a aba de desenho
+    function processarECalcular() {
+      calcular();
+      mudarAba('desenho');
+    }
+
+    // Preenche os selects de materiais nas linhas da tabela
+    function atualizaSelectsPartes() {
+      const selects = document.querySelectorAll(".materialParte");
+      selects.forEach(select => {
+        const valorAtual = select.value;
+        select.innerHTML = '<option value="">Selecione Material...</option>';
+        
+        const grupoBobinas = document.createElement("optgroup");
+        grupoBobinas.label = "Bobinas de Impressão";
+        bobinas.forEach(b => {
+          const opt = document.createElement("option");
+          opt.value = `Bobina: ${b.nome}`;
+          opt.textContent = `${b.nome} (${b.largura}cm)`;
+          grupoBobinas.appendChild(opt);
+        });
+        select.appendChild(grupoBobinas);
+
+        const grupoInsumos = document.createElement("optgroup");
+        grupoInsumos.label = "Insumos e Acabamentos";
+        catalogo.forEach(c => {
+          const opt = document.createElement("option");
+          opt.value = `Insumo: ${c.nome}`;
+          opt.textContent = c.nome;
+          grupoInsumos.appendChild(opt);
+        });
+        select.appendChild(grupoInsumos);
+
+        if(valorAtual) select.value = valorAtual;
+      });
+    }
+
+    // Altera quantidade de peças via botões + / -
+    function alterarQtd(btn, delta) {
+      const input = btn.parentElement.querySelector('.qtdParte');
+      let val = parseInt(input.value) || 1;
+      val += delta;
+      if (val < 1) val = 1;
+      input.value = val;
+    }
+
+    // Bloquear ou editar linha da tabela
+    function editarLinhaPeca(btn) {
+      const tr = btn.closest('tr');
+      const inputs = tr.querySelectorAll('input, select');
+      const isReadonly = inputs[0].hasAttribute('readonly');
+
+      inputs.forEach(input => {
+        if(isReadonly) {
+          input.removeAttribute('readonly');
+          input.removeAttribute('disabled');
+          input.classList.remove('bg-slate-50', 'border-transparent');
+          input.classList.add('border-slate-300', 'bg-white', 'text-slate-900');
+        } else {
+          input.setAttribute('readonly', true);
+          if(input.tagName === 'SELECT') input.setAttribute('disabled', true);
+          input.classList.remove('border-slate-300', 'bg-white', 'text-slate-900');
+          input.classList.add('bg-slate-50', 'border-transparent');
+        }
+      });
+
+      const icon = btn.querySelector('i');
+      if(isReadonly) {
+        icon.className = "fa-solid fa-check text-emerald-600";
+        btn.title = "Salvar linha";
+      } else {
+        icon.className = "fa-solid fa-pen text-slate-400 hover:text-slate-600";
+        btn.title = "Editar linha";
+      }
+    }
+
+    // Adiciona uma linha vazia de peça na tabela
+    function addParteVazia(nome = "", material = "", largura = "", comprimento = "", qtd = 1, perda = 0) {
+      const tbody = document.getElementById("partes");
+      const tr = document.createElement("tr");
+      tr.className = "hover:bg-slate-50 transition border-b border-slate-100";
+      tr.innerHTML = `
+        <td class="p-2">
+          <input type="text" value="${nome}" placeholder="Ex: Adesivo Logo" class="nomeParte w-full bg-white border border-slate-300 rounded px-2 py-1 text-xs text-slate-900 outline-none focus:border-cyan-500">
+        </td>
+        <td class="p-2">
+          <select class="materialParte w-full bg-white border border-slate-300 rounded px-2 py-1 text-xs text-slate-900 outline-none focus:border-cyan-500">
+            <option value="">Selecione Material...</option>
+          </select>
+        </td>
+        <td class="p-2">
+          <input type="number" step="0.1" value="${largura}" placeholder="0.0" class="larguraParte w-24 bg-white border border-slate-300 rounded px-2 py-1 text-xs text-slate-900 outline-none focus:border-cyan-500">
+        </td>
+        <td class="p-2">
+          <input type="number" step="0.1" value="${comprimento}" placeholder="0.0" class="comprimentoParte w-24 bg-white border border-slate-300 rounded px-2 py-1 text-xs text-slate-900 outline-none focus:border-cyan-500">
+        </td>
+        <td class="p-2">
+          <div class="flex items-center space-x-1">
+            <button type="button" onclick="alterarQtd(this, -1)" class="bg-slate-200 hover:bg-slate-300 text-slate-700 w-5 h-5 rounded text-xs font-bold flex items-center justify-center cursor-pointer">-</button>
+            <input type="number" value="${qtd}" class="qtdParte w-12 text-center bg-white border border-slate-300 rounded px-1 py-1 text-xs text-slate-900 outline-none">
+            <button type="button" onclick="alterarQtd(this, 1)" class="bg-slate-200 hover:bg-slate-300 text-slate-700 w-5 h-5 rounded text-xs font-bold flex items-center justify-center cursor-pointer">+</button>
+          </div>
+        </td>
+        <td class="p-2">
+          <input type="number" step="1" value="${perda}" class="perdaParte w-16 bg-white border border-slate-300 rounded px-2 py-1 text-xs text-slate-900 outline-none focus:border-cyan-500">
+        </td>
+        <td class="p-2 text-center space-x-1 whitespace-nowrap">
+          <button type="button" onclick="editarLinhaPeca(this)" class="p-1.5 text-slate-400 hover:text-slate-600 cursor-pointer" title="Bloquear/Editar"><i class="fa-solid fa-pen"></i></button>
+          <button type="button" onclick="this.closest('tr').remove()" class="p-1.5 text-red-500 hover:text-red-700 cursor-pointer" title="Remover"><i class="fa-solid fa-trash"></i></button>
+        </td>
+      `;
+      tbody.appendChild(tr);
+      atualizaSelectsPartes();
+      if(material) {
+        tr.querySelector('.materialParte').value = material;
+      }
+    }
+
+    // Motor de Cálculo e Renderização do RIP HP Latex
+    function calcular() {
+      const cliente = document.getElementById("cliente").value.trim() || "Cliente Padrão";
+      const produto = document.getElementById("produto").value.trim() || "Impressão Digital / Corte";
+      const maoDeObra = parseFloat(document.getElementById("mao").value) || 0;
+      const outrosCustos = parseFloat(document.getElementById("outros").value) || 0;
+      const margemLucro = parseFloat(document.getElementById("lucro").value) || 0;
+      const taxaImposto = parseFloat(document.getElementById("imposto").value) || 0;
+
+      const linhas = document.querySelectorAll("#partes tr");
+      if (linhas.length === 0) {
+        alert("Adicione pelo menos uma peça para calcular o orçamento e o layout de impressão.");
+        return;
+      }
+
+      let pecasParaProcessar = [];
+      let custoTotalMateriais = 0;
+
+      linhas.forEach((tr, index) => {
+        const nome = tr.querySelector(".nomeParte").value || `Peça ${index + 1}`;
+        const materialStr = tr.querySelector(".materialParte").value;
+        const largura = parseFloat(tr.querySelector(".larguraParte").value) || 0;
+        const comprimento = parseFloat(tr.querySelector(".comprimentoParte").value) || 0;
+        const qtd = parseInt(tr.querySelector(".qtdParte").value) || 1;
+        const perdaPercentual = parseFloat(tr.querySelector(".perdaParte").value) || 0;
+
+        if (!materialStr || largura <= 0 || comprimento <= 0) return;
+
+        if (materialStr.startsWith("Bobina:")) {
+          const nomeBobina = materialStr.replace("Bobina: ", "").trim();
+          const bobinaObj = bobinas.find(b => b.nome === nomeBobina);
+          
+          if (bobinaObj) {
+            const comprimentoComPerda = comprimento * (1 + perdaPercentual / 100);
+            const metrosLineares = (comprimentoComPerda * qtd) / 100;
+            const custoItem = metrosLineares * bobinaObj.preco;
+            custoTotalMateriais += custoItem;
+
+            for (let i = 0; i < qtd; i++) {
+              pecasParaProcessar.push({
+                nome: nome,
+                largura: largura,
+                comprimento: comprimentoComPerda,
+                bobinaLargura: bobinaObj.largura,
+                bobinaNome: bobinaObj.nome,
+                cor: `#${Math.floor(Math.abs(Math.sin(index + i + 1) * 16777215)).toString(16).padStart(6, '0')}`
+              });
+            }
+          }
+        } else if (materialStr.startsWith("Insumo:")) {
+          const nomeInsumo = materialStr.replace("Insumo: ", "").trim();
+          const insumoObj = catalogo.find(c => c.nome === nomeInsumo);
+          if (insumoObj) {
+            const custoItem = insumoObj.valor * qtd;
+            custoTotalMateriais += custoItem;
+          }
+        }
+      });
+
+      const custoDiretoTotal = custoTotalMateriais + maoDeObra + outrosCustos;
+      const fatorDivisor = 1 - ((margemLucro + taxaImposto) / 100);
+      const precoFinalVenda = fatorDivisor > 0 ? custoDiretoTotal / fatorDivisor : custoDiretoTotal * 1.5;
+
+      // Atualiza os dados na nova página de desenho
+      document.getElementById("infoClienteDesenho").innerText = `Cliente: ${cliente} | Projeto: ${produto}`;
+      document.getElementById("valorFinalDesenho").innerText = `R$ ${precoFinalVenda.toFixed(2)}`;
+      document.getElementById("custoTotalDesenho").innerText = `Custo Total: R$ ${custoDiretoTotal.toFixed(2)}`;
+
+      const containerPlotagem = document.getElementById("containerPlotagem");
+      let visualizadorHtml = "";
+
+      if (pecasParaProcessar.length > 0) {
+        pecasParaProcessar.forEach(p => {
+          visualizadorHtml += `
+            <div style="width: ${Math.max(40, p.largura * 1.2)}px; height: ${Math.max(50, p.comprimento * 0.8)}px; background-color: ${p.cor};" 
+                 class="rounded border border-white/20 p-1 flex flex-col justify-between text-[10px] text-white shadow font-bold overflow-hidden">
+              <span class="truncate bg-black/50 px-1 rounded">${p.nome}</span>
+              <span class="text-[9px] opacity-90">${p.largura}x${p.comprimento}cm</span>
+            </div>
+          `;
+        });
+      } else {
+        visualizadorHtml = `<div class="text-slate-500 text-xs py-8 w-full text-center">Nenhuma peça vinculada a bobinas para simulação gráfica.</div>`;
+      }
+
+      containerPlotagem.innerHTML = visualizadorHtml;
+    }
+  </script>
+</body>
+</html>
