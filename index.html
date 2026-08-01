@@ -195,7 +195,7 @@
         </div>
       </section>
 
-      <!-- ABA 3: DESENHO (RIP HP LATEX / NESTING) COM MALHA DE RÉGUAS COMPLETA -->
+      <!-- ABA 3: DESENHO (RIP HP LATEX / NESTING) COM MALHA DE RÉGUAS VISÍVEL -->
       <section id="abaDesenho" class="hidden space-y-4">
         <div class="bg-slate-900 text-white p-5 rounded-xl shadow-inner space-y-4">
           <div class="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-slate-800 pb-3 gap-2">
@@ -218,12 +218,12 @@
             </div>
           </div>
 
-          <!-- ÁREA DO VISUALIZADOR COM MALHA DE RÉGUAS CRUZADA (SUPERIOR + LATERAL + GRID DE LINHAS DE CORTE) -->
+          <!-- ÁREA DO VISUALIZADOR COM MALHA DE RÉGUAS TÉCNICA EM GRADE (GRID VISÍVEL) -->
           <div class="relative bg-white rounded-lg border border-slate-700 overflow-hidden shadow-inner text-slate-800">
             
             <!-- Régua Superior (Eixo X) -->
-            <div class="h-6 bg-slate-100 border-b border-slate-300 flex items-end font-mono text-[9px] text-slate-600 select-none overflow-x-hidden relative" id="reguaSuperior">
-              <div class="absolute left-0 w-8 h-full bg-slate-200 border-r border-slate-300 flex items-center justify-center font-bold text-[8px] z-10">cm</div>
+            <div class="h-6 bg-slate-100 border-b border-slate-300 flex items-end font-mono text-[9px] text-slate-600 select-none overflow-x-hidden relative z-20" id="reguaSuperior">
+              <div class="absolute left-0 w-8 h-full bg-slate-200 border-r border-slate-300 flex items-center justify-center font-bold text-[8px] z-30">cm</div>
               <div id="tracosReguaSuperior" class="flex pl-8 relative w-full">
                 <!-- Preenchido dinamicamente via JS -->
               </div>
@@ -231,16 +231,16 @@
 
             <div class="flex">
               <!-- Régua Lateral (Eixo Y) -->
-              <div class="w-8 bg-slate-100 border-r border-slate-300 flex flex-col font-mono text-[9px] text-slate-600 select-none overflow-y-hidden relative shrink-0" id="reguaLateral" style="height: 320px;">
+              <div class="w-8 bg-slate-100 border-r border-slate-300 flex flex-col font-mono text-[9px] text-slate-600 select-none overflow-y-hidden relative shrink-0 z-20" id="reguaLateral" style="height: 320px;">
                 <div id="tracosReguaLateral" class="relative w-full">
                   <!-- Preenchido dinamicamente via JS -->
                 </div>
               </div>
 
-              <!-- Canvas / Área de Plotagem com Malha Quadriculada (Grid Técnico) -->
+              <!-- Canvas / Área de Plotagem com Malha Grid Visível -->
               <div class="flex-grow bg-slate-50 overflow-auto h-[320px] p-2 relative" id="viewportPlotagem">
-                <!-- Malha de Fundo em Grid Cruzado -->
-                <div id="malhaGridFundo" class="absolute inset-0 pointer-events-none opacity-40"></div>
+                <!-- Malha de Fundo em Grid Cruzado (Altamente Visível) -->
+                <div id="malhaGridFundo" class="absolute inset-0 pointer-events-none z-0"></div>
                 
                 <div id="containerPlotagem" class="relative flex flex-row flex-wrap items-start gap-1 transition-transform duration-200 origin-top-left z-10" style="transform: scale(0.6);">
                   <div class="text-slate-400 text-xs py-16 w-full text-center">Nenhuma peça processada. Vá para a aba "Orçamento" e clique em calcular.</div>
@@ -311,9 +311,9 @@
       for(let i = 0; i <= larguraMaximaAtualRegua; i += 5) {
         const isDez = i % 10 === 0;
         htmlSup += `<div class="absolute flex flex-col items-center" style="left: ${i * escalaPx}px;">
-          <div class="w-[1px] bg-slate-400 ${isDez ? 'h-3' : 'h-1.5'}"></div>`;
+          <div class="w-[1px] bg-slate-500 ${isDez ? 'h-3' : 'h-1.5'}"></div>`;
         if(isDez) {
-          htmlSup += `<span class="text-[7px] mt-0.5">${i}</span>`;
+          htmlSup += `<span class="text-[7px] mt-0.5 font-bold text-slate-700">${i}</span>`;
         }
         htmlSup += `</div>`;
       }
@@ -325,24 +325,30 @@
       for(let i = 0; i <= 200; i += 5) {
         const isDez = i % 10 === 0;
         htmlLat += `<div class="absolute flex items-center" style="top: ${i * escalaPx}px;">
-          <div class="h-[1px] bg-slate-400 ${isDez ? 'w-3' : 'w-1.5'}"></div>`;
+          <div class="h-[1px] bg-slate-500 ${isDez ? 'w-3' : 'w-1.5'}"></div>`;
         if(isDez) {
-          htmlLat += `<span class="text-[7px] ml-0.5">${i}</span>`;
+          htmlLat += `<span class="text-[7px] ml-0.5 font-bold text-slate-700">${i}</span>`;
         }
         htmlLat += `</div>`;
       }
       lat.innerHTML = htmlLat;
 
-      // Malha de Fundo Cruzada (Grid Técnico no viewport)
+      // Malha de Fundo Cruzada (Grid Técnico Altamente Visível com marcações a cada 5cm e 10cm)
       const malhaGrid = document.getElementById("malhaGridFundo");
       let htmlMalha = "";
-      // Linhas verticais da malha a cada 10cm
-      for(let x = 0; x <= larguraMaximaAtualRegua; x += 10) {
-        htmlMalha += `<div class="absolute top-0 bottom-0 border-l border-slate-300" style="left: ${x * escalaPx}px;"></div>`;
+      
+      // Linhas verticais da malha
+      for(let x = 0; x <= larguraMaximaAtualRegua; x += 5) {
+        const isDez = x % 10 === 0;
+        const corLinha = isDez ? 'border-slate-300' : 'border-slate-200 border-dashed';
+        htmlMalha += `<div class="absolute top-0 bottom-0 border-l ${corLinha}" style="left: ${x * escalaPx}px; height: 2000px;"></div>`;
       }
-      // Linhas horizontais da malha a cada 10cm
-      for(let y = 0; y <= 200; y += 10) {
-        htmlMalha += `<div class="absolute left-0 right-0 border-t border-slate-300" style="top: ${y * escalaPx}px;"></div>`;
+      
+      // Linhas horizontais da malha
+      for(let y = 0; y <= 200; y += 5) {
+        const isDez = y % 10 === 0;
+        const corLinha = isDez ? 'border-slate-300' : 'border-slate-200 border-dashed';
+        htmlMalha += `<div class="absolute left-0 right-0 border-t ${corLinha}" style="top: ${y * escalaPx}px; width: 3000px;"></div>`;
       }
       malhaGrid.innerHTML = htmlMalha;
     }
