@@ -10,13 +10,34 @@
 <body class="bg-slate-100 min-h-screen text-slate-800 flex flex-col">
 
   <!-- TOPO / HEADER (SÓ APARECE DEPOIS DE LOGADO) -->
-  <header id="header-principal" class="hidden bg-slate-900 text-white shadow-md p-4 flex justify-between items-center">
-    <div class="flex items-center space-x-3">
-      <i class="fa-solid fa-calculator text-2xl text-emerald-400"></i>
-      <h1 class="text-xl font-bold tracking-wide">CalculaJá <span class="text-emerald-400">Pro</span></h1>
+  <header id="header-principal" class="hidden bg-slate-900 text-white shadow-md p-4 flex flex-col md:flex-row justify-between items-center gap-4">
+    <div class="flex items-center space-x-3 w-full md:w-auto justify-between md:justify-start">
+      <div class="flex items-center space-x-2">
+        <i class="fa-solid fa-calculator text-2xl text-emerald-400"></i>
+        <h1 class="text-xl font-bold tracking-wide">CalculaJá <span class="text-emerald-400">Pro</span></h1>
+      </div>
+      <!-- Botão Sair mobile -->
+      <div id="auth-container-topo-mobile" class="md:hidden"></div>
     </div>
-    <div id="auth-container-topo">
-      <!-- Botão de Sair/Trocar Conta no topo -->
+
+    <!-- ABAS DE NAVEGAÇÃO ENTRE AS PÁGINAS DO APP -->
+    <nav class="flex flex-wrap justify-center gap-2 bg-slate-800 p-1.5 rounded-xl border border-slate-700">
+      <button onclick="mudarAba('calculo')" id="btn-aba-calculo" class="px-4 py-2 rounded-lg text-xs font-bold transition bg-emerald-600 text-white shadow">
+        <i class="fa-solid fa-ruler-combined mr-1"></i> Cálculo & Orçamento
+      </button>
+      <button onclick="mudarAba('desenho')" id="btn-aba-desenho" class="px-4 py-2 rounded-lg text-xs font-bold transition text-slate-300 hover:bg-slate-700 hover:text-white">
+        <i class="fa-solid fa-compass-drafting mr-1"></i> Desenho & Corte
+      </button>
+      <button onclick="mudarAba('catalogo')" id="btn-aba-catalogo" class="px-4 py-2 rounded-lg text-xs font-bold transition text-slate-300 hover:bg-slate-700 hover:text-white">
+        <i class="fa-solid fa-boxes-stacked mr-1"></i> Catálogo
+      </button>
+      <button onclick="mudarAba('salvos')" id="btn-aba-salvos" class="px-4 py-2 rounded-lg text-xs font-bold transition text-slate-300 hover:bg-slate-700 hover:text-white">
+        <i class="fa-solid fa-folder-open mr-1"></i> Projetos Salvos
+      </button>
+    </nav>
+
+    <div id="auth-container-topo" class="hidden md:block">
+      <!-- Botão de Sair/Trocar Conta no topo (Desktop) -->
     </div>
   </header>
 
@@ -27,7 +48,7 @@
       <div class="text-center space-y-2">
         <i class="fa-solid fa-calculator text-3xl text-emerald-600"></i>
         <h2 class="text-xl font-bold text-slate-800">CalculaJá Pro</h2>
-        <p class="text-xs text-slate-500">Entre com sua conta para acessar o sistema</p>
+        <p class="text-xs text-slate-500">Sistema Industrial Completo para Orçamentos e Cortes</p>
       </div>
 
       <!-- BOTÃO GOOGLE -->
@@ -69,43 +90,182 @@
   </div>
 
   <!-- APLICAÇÃO PRINCIPAL (OCULTADA ATÉ O LOGIN) -->
-  <main id="app-principal" class="hidden flex-grow container mx-auto p-4 max-w-7xl grid grid-cols-1 lg:grid-cols-3 gap-6">
+  <main id="app-principal" class="hidden flex-grow container mx-auto p-4 max-w-7xl">
     
-    <!-- COLUNA 1: CATÁLOGO DE PREÇOS -->
-    <section class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 lg:col-span-1">
-      <h2 class="text-lg font-bold mb-4 text-slate-700 flex items-center space-x-2">
-        <i class="fa-solid fa-boxes-stacked text-emerald-600"></i>
-        <span>Cadastro de Preços e Catálogo</span>
-      </h2>
-      <form id="formPreco" class="space-y-4">
-        <div>
-          <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Nome do Material</label>
-          <input type="text" id="nomePreco" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm outline-none focus:border-emerald-500" placeholder="Ex: Chapa PVC Cristal" required>
+    <!-- ABA 1: CÁLCULO E ORÇAMENTO -->
+    <section id="aba-calculo" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      
+      <!-- Coluna lateral: Atalho Catálogo Rápido -->
+      <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 lg:col-span-1 space-y-4">
+        <h2 class="text-base font-bold text-slate-700 flex items-center space-x-2">
+          <i class="fa-solid fa-boxes-stacked text-emerald-600"></i>
+          <span>Materiais Disponíveis</span>
+        </h2>
+        <div class="overflow-x-auto max-h-96 border rounded-lg">
+          <table class="w-full text-left border-collapse text-sm">
+            <tbody id="tabelaPrecosResumo" class="divide-y divide-slate-100">
+              <!-- Preenchido via script -->
+            </tbody>
+          </table>
         </div>
-        <div class="grid grid-cols-2 gap-4">
-          <div>
-            <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Unidade</label>
-            <select id="unidadePreco" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm outline-none focus:border-emerald-500">
-              <option value="m²">Metro Quadrado (m²)</option>
-              <option value="kg">Quilograma (kg)</option>
-              <option value="un">Unidade (un)</option>
-            </select>
-          </div>
-          <div>
-            <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Valor Unitário (R$)</label>
-            <input type="number" id="valorPreco" step="0.01" min="0" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm outline-none focus:border-emerald-500" placeholder="0,00" required>
-          </div>
-        </div>
-        <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-lg text-sm transition cursor-pointer">
-          Cadastrar no Catálogo
+        <button onclick="mudarAba('catalogo')" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2 rounded-lg text-xs transition cursor-pointer">
+          Gerenciar Catálogo Completo
         </button>
-      </form>
+      </div>
 
-      <div class="mt-6">
-        <h3 class="text-sm font-bold text-slate-600 mb-2">Tabela Ativa</h3>
-        <div class="overflow-x-auto max-h-64 border rounded-lg">
-          <table class="w-full text-left border-collapse">
-            <tbody id="tabelaPrecos" class="divide-y divide-slate-100 text-sm">
+      <!-- Coluna Principal: Orçamento -->
+      <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 lg:col-span-2 flex flex-col justify-between space-y-6">
+        <div>
+          <h2 class="text-lg font-bold mb-4 text-slate-700 flex items-center space-x-2">
+            <i class="fa-solid fa-ruler-combined text-blue-600"></i>
+            <span>Painel de Orçamento e Peças</span>
+          </h2>
+          
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            <div>
+              <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Cliente / Projeto</label>
+              <input type="text" id="cliente" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-500" placeholder="Nome do Cliente">
+            </div>
+            <div>
+              <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Produto / Serviço</label>
+              <input type="text" id="produto" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-500" placeholder="Ex: Caixa de Acrílico Sob Medida">
+            </div>
+          </div>
+
+          <!-- TABELA DE PARTES -->
+          <div class="mb-4">
+            <div class="flex justify-between items-center mb-2">
+              <h3 class="text-sm font-bold text-slate-600">Partes / Peças do Projeto</h3>
+              <button onclick="addParteVazia()" class="bg-slate-800 hover:bg-slate-900 text-white px-3 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer">
+                <i class="fa-solid fa-plus mr-1"></i> Adicionar Peça
+              </button>
+            </div>
+            <div class="overflow-x-auto border rounded-lg max-h-56">
+              <table class="w-full text-left border-collapse text-sm">
+                <thead class="bg-slate-50 border-b text-xs text-slate-500 uppercase">
+                  <tr>
+                    <th class="p-2">Nome</th>
+                    <th class="p-2">Material</th>
+                    <th class="p-2">Lado 1 (cm)</th>
+                    <th class="p-2">Lado 2 (cm)</th>
+                    <th class="p-2">Qtd</th>
+                    <th class="p-2">Perda (%)</th>
+                    <th class="p-2 text-center">Ação</th>
+                  </tr>
+                </thead>
+                <tbody id="partes" class="divide-y divide-slate-100">
+                  <!-- Linhas inseridas dinamicamente -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- CUSTOS EXTRAS E MARGENS -->
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+            <div>
+              <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Mão de Obra (R$)</label>
+              <input type="number" id="mao" step="0.01" value="0" class="w-full border border-slate-300 rounded-lg px-2 py-1.5 text-sm">
+            </div>
+            <div>
+              <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Outros Custos (R$)</label>
+              <input type="number" id="outros" step="0.01" value="0" class="w-full border border-slate-300 rounded-lg px-2 py-1.5 text-sm">
+            </div>
+            <div>
+              <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Lucro (%)</label>
+              <input type="number" id="lucro" step="1" value="30" class="w-full border border-slate-300 rounded-lg px-2 py-1.5 text-sm">
+            </div>
+            <div>
+              <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Imposto (%)</label>
+              <input type="number" id="imposto" step="1" value="0" class="w-full border border-slate-300 rounded-lg px-2 py-1.5 text-sm">
+            </div>
+          </div>
+
+          <div class="flex gap-2">
+            <button onclick="calcular()" class="flex-grow bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl text-sm shadow-md transition cursor-pointer">
+              Calcular Orçamento Completo
+            </button>
+            <button onclick="salvarProjeto()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-5 py-3 rounded-xl text-sm shadow-md transition cursor-pointer" title="Salvar Projeto">
+              <i class="fa-solid fa-floppy-disk mr-1"></i> Salvar
+            </button>
+          </div>
+        </div>
+
+        <!-- RESULTADO DO CÁLCULO -->
+        <div id="resultado" class="border-t pt-4">
+          <div class="text-center py-4 text-slate-400 text-sm">
+            <p>Adicione as peças, preencha os custos e clique em <b>Calcular Orçamento Completo</b>.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ABA 2: DESENHO E ESQUEMA DE CORTE -->
+    <section id="aba-desenho" class="hidden bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-6">
+      <div class="flex justify-between items-center border-b pb-4">
+        <div>
+          <h2 class="text-lg font-bold text-slate-700 flex items-center space-x-2">
+            <i class="fa-solid fa-compass-drafting text-indigo-600"></i>
+            <span>Gerador de Esquema e Desenho Técnico</span>
+          </h2>
+          <p class="text-xs text-slate-500">Visualização esquemática das peças informadas no orçamento</p>
+        </div>
+        <button onclick="gerarEsquemaVisual()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-xl text-xs font-bold transition cursor-pointer">
+          Atualizar Desenho
+        </button>
+      </div>
+      <div id="canvas-container" class="border-2 border-dashed border-slate-200 rounded-xl p-6 min-h-[350px] flex flex-col items-center justify-center bg-slate-50">
+        <p class="text-slate-400 text-sm text-center">Clique em "Atualizar Desenho" para renderizar o esquema visual com base nas peças adicionadas na aba de cálculo.</p>
+      </div>
+    </section>
+
+    <!-- ABA 3: CATÁLOGO DE PREÇOS -->
+    <section id="aba-catalogo" class="hidden grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 md:col-span-1">
+        <h2 class="text-base font-bold mb-4 text-slate-700 flex items-center space-x-2">
+          <i class="fa-solid fa-square-plus text-emerald-600"></i>
+          <span>Novo Material</span>
+        </h2>
+        <form id="formPreco" class="space-y-4">
+          <div>
+            <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Nome do Material</label>
+            <input type="text" id="nomePreco" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm outline-none focus:border-emerald-500" placeholder="Ex: Chapa PVC Cristal" required>
+          </div>
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Unidade</label>
+              <select id="unidadePreco" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm outline-none focus:border-emerald-500">
+                <option value="m²">Metro Quadrado (m²)</option>
+                <option value="kg">Quilograma (kg)</option>
+                <option value="un">Unidade (un)</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Valor Unitário (R$)</label>
+              <input type="number" id="valorPreco" step="0.01" min="0" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm outline-none focus:border-emerald-500" placeholder="0,00" required>
+            </div>
+          </div>
+          <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-lg text-sm transition cursor-pointer">
+            Cadastrar Material
+          </button>
+        </form>
+      </div>
+
+      <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 md:col-span-2">
+        <h2 class="text-base font-bold mb-4 text-slate-700 flex items-center space-x-2">
+          <i class="fa-solid fa-boxes-stacked text-emerald-600"></i>
+          <span>Catálogo Cadastrado</span>
+        </h2>
+        <div class="overflow-x-auto border rounded-lg max-h-96">
+          <table class="w-full text-left border-collapse text-sm">
+            <thead class="bg-slate-50 border-b text-xs text-slate-500 uppercase">
+              <tr>
+                <th class="p-3">Material</th>
+                <th class="p-3">Unidade</th>
+                <th class="p-3">Valor Unitário</th>
+                <th class="p-3 text-center">Ação</th>
+              </tr>
+            </thead>
+            <tbody id="tabelaPrecos" class="divide-y divide-slate-100">
               <!-- Preenchido via script -->
             </tbody>
           </table>
@@ -113,83 +273,27 @@
       </div>
     </section>
 
-    <!-- COLUNA 2 e 3: PAINEL DE PARTES E CÁLCULO DE ORÇAMENTO -->
-    <section class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 lg:col-span-2 flex flex-col justify-between">
-      <div>
-        <h2 class="text-lg font-bold mb-4 text-slate-700 flex items-center space-x-2">
-          <i class="fa-solid fa-ruler-combined text-blue-600"></i>
-          <span>Painel de Cálculo</span>
-        </h2>
-        
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-          <div>
-            <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Cliente / Projeto</label>
-            <input type="text" id="cliente" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-500" placeholder="Nome do Cliente">
-          </div>
-          <div>
-            <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Produto</label>
-            <input type="text" id="produto" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-500" placeholder="Descrição do Produto">
-          </div>
-        </div>
-
-        <!-- TABELA DE PARTES DO PROJETO -->
-        <div class="mb-4">
-          <div class="flex justify-between items-center mb-2">
-            <h3 class="text-sm font-bold text-slate-600">Partes / Peças do Corte</h3>
-            <button onclick="addParteVazia()" class="bg-slate-800 hover:bg-slate-900 text-white px-3 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer">
-              <i class="fa-solid fa-plus mr-1"></i> Adicionar Peça
-            </button>
-          </div>
-          <div class="overflow-x-auto border rounded-lg max-h-48">
-            <table class="w-full text-left border-collapse text-sm">
-              <thead class="bg-slate-50 border-b text-xs text-slate-500 uppercase">
-                <tr>
-                  <th class="p-2">Nome</th>
-                  <th class="p-2">Material</th>
-                  <th class="p-2">Lado 1 (cm)</th>
-                  <th class="p-2">Lado 2 (cm)</th>
-                  <th class="p-2">Qtd</th>
-                  <th class="p-2">Perda (%)</th>
-                  <th class="p-2 text-center">Ação</th>
-                </tr>
-              </thead>
-              <tbody id="partes" class="divide-y divide-slate-100">
-                <!-- Linhas inseridas dinamicamente -->
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        <!-- CUSTOS EXTRAS E MARGENS -->
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
-          <div>
-            <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Mão de Obra (R$)</label>
-            <input type="number" id="mao" step="0.01" value="0" class="w-full border border-slate-300 rounded-lg px-2 py-1.5 text-sm">
-          </div>
-          <div>
-            <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Outros Custos (R$)</label>
-            <input type="number" id="outros" step="0.01" value="0" class="w-full border border-slate-300 rounded-lg px-2 py-1.5 text-sm">
-          </div>
-          <div>
-            <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Lucro (%)</label>
-            <input type="number" id="lucro" step="1" value="30" class="w-full border border-slate-300 rounded-lg px-2 py-1.5 text-sm">
-          </div>
-          <div>
-            <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Imposto (%)</label>
-            <input type="number" id="imposto" step="1" value="0" class="w-full border border-slate-300 rounded-lg px-2 py-1.5 text-sm">
-          </div>
-        </div>
-
-        <button onclick="calcular()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl text-sm shadow-md transition cursor-pointer">
-          Calcular Orçamento Completo
-        </button>
-      </div>
-
-      <!-- RESULTADO DO CÁLCULO -->
-      <div id="resultado" class="mt-6 border-t pt-4">
-        <div class="text-center py-4 text-slate-400 text-sm">
-          <p>Adicione as peças, preencha os custos e clique em <b>Calcular Orçamento Completo</b>.</p>
-        </div>
+    <!-- ABA 4: PROJETOS SALVOS -->
+    <section id="aba-salvos" class="hidden bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4">
+      <h2 class="text-lg font-bold text-slate-700 flex items-center space-x-2">
+        <i class="fa-solid fa-folder-open text-emerald-600"></i>
+        <span>Projetos e Orçamentos Salvos</span>
+      </h2>
+      <div class="overflow-x-auto border rounded-lg">
+        <table class="w-full text-left border-collapse text-sm">
+          <thead class="bg-slate-50 border-b text-xs text-slate-500 uppercase">
+            <tr>
+              <th class="p-3">Data</th>
+              <th class="p-3">Cliente</th>
+              <th class="p-3">Produto</th>
+              <th class="p-3">Total (R$)</th>
+              <th class="p-3 text-center">Ações</th>
+            </tr>
+          </thead>
+          <tbody id="tabelaProjetosSalvos" class="divide-y divide-slate-100">
+            <!-- Preenchido via script -->
+          </tbody>
+        </table>
       </div>
     </section>
 
@@ -264,6 +368,7 @@
       const appPrincipal = document.getElementById("app-principal");
       const telaLogin = document.getElementById("tela-login");
       const containerTopo = document.getElementById("auth-container-topo");
+      const containerTopoMobile = document.getElementById("auth-container-topo-mobile");
 
       if (user) {
         telaLogin.classList.add("hidden");
@@ -272,12 +377,14 @@
 
         const nomeUser = user.displayName ? user.displayName.split(' ')[0] : user.email.split('@')[0];
         
-        containerTopo.innerHTML = `
+        const botoesLogout = `
           <div class="flex items-center space-x-3">
-            <span class="text-sm font-medium">Olá, ${nomeUser}</span>
-            <button onclick="sairDaConta()" class="bg-red-500 hover:bg-red-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer">Sair / Trocar Conta</button>
+            <span class="text-xs font-medium text-slate-300 hidden xl:inline">Olá, ${nomeUser}</span>
+            <button onclick="sairDaConta()" class="bg-red-500 hover:bg-red-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer">Sair / Trocar</button>
           </div>
         `;
+        containerTopo.innerHTML = botoesLogout;
+        containerTopoMobile.innerHTML = botoesLogout;
       } else {
         telaLogin.classList.remove("hidden");
         headerPrincipal.classList.add("hidden");
@@ -286,11 +393,34 @@
     });
   </script>
 
-  <!-- LÓGICA DE CATÁLOGO E CÁLCULO -->
+  <!-- LÓGICA DE ABAS, CATÁLOGO, CÁLCULO E SALVAMENTO -->
   <script>
+    function mudarAba(aba) {
+      ['calculo', 'desenho', 'catalogo', 'salvos'].forEach(a => {
+        const el = document.getElementById('aba-' + a);
+        const btn = document.getElementById('btn-aba-' + a);
+        if(el) el.classList.add('hidden');
+        if(btn) {
+          btn.className = "px-4 py-2 rounded-lg text-xs font-bold transition text-slate-300 hover:bg-slate-700 hover:text-white cursor-pointer";
+        }
+      });
+
+      const abaAtiva = document.getElementById('aba-' + aba);
+      const btnAtivo = document.getElementById('btn-aba-' + aba);
+      if(abaAtiva) abaAtiva.classList.remove('hidden');
+      if(btnAtivo) {
+        btnAtivo.className = "px-4 py-2 rounded-lg text-xs font-bold transition bg-emerald-600 text-white shadow cursor-pointer";
+      }
+
+      if(aba === 'salvos') renderProjetosSalvos();
+    }
+
     let catalogo = JSON.parse(localStorage.getItem("catalogo_calculaja")) || [
-      { id: 1, nome: "Chapa PVC Cristal", unidade: "m²", valor: 25.00 }
+      { id: 1, nome: "Chapa PVC Cristal", unidade: "m²", valor: 25.00 },
+      { id: 2, nome: "Chapa ACM Branco", unidade: "m²", valor: 120.00 }
     ];
+
+    let projetosSalvos = JSON.parse(localStorage.getItem("projetos_calculaja")) || [];
 
     function salvarCatalogoLocalStorage() {
       localStorage.setItem("catalogo_calculaja", JSON.stringify(catalogo));
@@ -298,18 +428,29 @@
 
     function renderTabelaPrecos() {
       const tbody = document.getElementById("tabelaPrecos");
+      const tbodyResumo = document.getElementById("tabelaPrecosResumo");
       if(!tbody) return;
+
       tbody.innerHTML = "";
+      if(tbodyResumo) tbodyResumo.innerHTML = "";
+
       catalogo.forEach((item, index) => {
-        const tr = document.createElement("tr");
-        tr.className = "hover:bg-slate-50 transition";
-        tr.innerHTML = `
-          <td class="p-2 font-semibold text-slate-700">${item.nome}</td>
-          <td class="p-2 text-slate-500 text-xs">${item.unidade}</td>
-          <td class="p-2 font-bold text-emerald-600">R$ ${item.valor.toFixed(2).replace(".",",")}</td>
-          <td class="p-2 text-center"><button onclick="removerPreco(${index})" class="text-red-500 hover:text-red-700 text-xs cursor-pointer"><i class="fa-solid fa-trash"></i></button></td>
+        tbody.innerHTML += `
+          <tr class="hover:bg-slate-50 transition">
+            <td class="p-3 font-semibold text-slate-700">${item.nome}</td>
+            <td class="p-3 text-slate-500 text-xs">${item.unidade}</td>
+            <td class="p-3 font-bold text-emerald-600">R$ ${item.valor.toFixed(2).replace(".",",")}</td>
+            <td class="p-3 text-center"><button onclick="removerPreco(${index})" class="text-red-500 hover:text-red-700 text-xs cursor-pointer"><i class="fa-solid fa-trash"></i></button></td>
+          </tr>
         `;
-        tbody.appendChild(tr);
+        if(tbodyResumo) {
+          tbodyResumo.innerHTML += `
+            <tr class="hover:bg-slate-50 transition">
+              <td class="p-2 font-medium text-slate-700">${item.nome}</td>
+              <td class="p-2 font-bold text-emerald-600 text-right">R$ ${item.valor.toFixed(2).replace(".",",")} /${item.unidade}</td>
+            </tr>
+          `;
+        }
       });
       atualizaSelectsCatalogo();
     }
@@ -341,39 +482,48 @@
         catalogo.forEach(item => {
           const opt = document.createElement("option");
           opt.value = item.nome;
-          opt.textContent = item.nome;
+          opt.textContent = `${item.nome} (R$ ${item.valor.toFixed(2)})`;
           if (item.nome === valorAtual) opt.selected = true;
           select.appendChild(opt);
         });
       });
     }
 
-    function addParteVazia() {
+    function addParteVazia(nome="", material="", l1="", l2="", qtd=1, perda=0) {
       const tbody = document.getElementById("partes");
       const tr = document.createElement("tr");
       tr.innerHTML = `
-        <td class="p-2"><input class="nomeParte w-full border border-slate-300 rounded px-2 py-1 text-sm outline-none focus:border-blue-500" type="text" placeholder="Peça"></td>
+        <td class="p-2"><input class="nomeParte w-full border border-slate-300 rounded px-2 py-1 text-sm outline-none focus:border-blue-500" type="text" placeholder="Peça" value="${nome}"></td>
         <td class="p-2"><select class="materialParte w-full border border-slate-300 rounded px-2 py-1 text-sm outline-none focus:border-blue-500"><option value="">Selecione...</option></select></td>
-        <td class="p-2"><input class="lado1 w-full border border-slate-300 rounded px-2 py-1 text-sm outline-none focus:border-blue-500" type="number" placeholder="0"></td>
-        <td class="p-2"><input class="lado2 w-full border border-slate-300 rounded px-2 py-1 text-sm outline-none focus:border-blue-500" type="number" placeholder="0"></td>
-        <td class="p-2"><input class="qtdParte w-full border border-slate-300 rounded px-2 py-1 text-sm outline-none focus:border-blue-500" type="number" placeholder="1" value="1"></td>
-        <td class="p-2"><input class="perdaParte w-full border border-slate-300 rounded px-2 py-1 text-sm outline-none focus:border-blue-500" type="number" placeholder="0" value="0"></td>
+        <td class="p-2"><input class="lado1 w-full border border-slate-300 rounded px-2 py-1 text-sm outline-none focus:border-blue-500" type="number" placeholder="0" value="${l1}"></td>
+        <td class="p-2"><input class="lado2 w-full border border-slate-300 rounded px-2 py-1 text-sm outline-none focus:border-blue-500" type="number" placeholder="0" value="${l2}"></td>
+        <td class="p-2"><input class="qtdParte w-full border border-slate-300 rounded px-2 py-1 text-sm outline-none focus:border-blue-500" type="number" placeholder="1" value="${qtd}"></td>
+        <td class="p-2"><input class="perdaParte w-full border border-slate-300 rounded px-2 py-1 text-sm outline-none focus:border-blue-500" type="number" placeholder="0" value="${perda}"></td>
         <td class="p-2 text-center"><button class="bg-red-500 hover:bg-red-600 text-white p-1.5 rounded text-xs cursor-pointer" type="button" onclick="this.closest('tr').remove()"><i class="fa-solid fa-xmark"></i></button></td>
       `;
       tbody.appendChild(tr);
       atualizaSelectsCatalogo();
+      if(material) {
+        tr.querySelector(".materialParte").value = material;
+      }
     }
+
+    let ultimoCalculoCache = null;
 
     function calcular() {
       const maoObra = parseFloat(document.getElementById("mao").value) || 0;
       const outrosCustos = parseFloat(document.getElementById("outros").value) || 0;
       const margemLucro = parseFloat(document.getElementById("lucro").value) || 0;
       const taxaImposto = parseFloat(document.getElementById("imposto").value) || 0;
+      const cliente = document.getElementById("cliente").value || "Cliente Geral";
+      const produto = document.getElementById("produto").value || "Peças de Corte";
 
       let totalMaterialCusto = 0;
       let totalPecasMapeadas = 0;
+      let pecasDetalhes = [];
 
       document.querySelectorAll("#partes tr").forEach(tr => {
+        const nomeP = tr.querySelector(".nomeParte").value || "Peça";
         const matNome = tr.querySelector(".materialParte").value;
         const lado1 = parseFloat(tr.querySelector(".lado1").value) || 0;
         const lado2 = parseFloat(tr.querySelector(".lado2").value) || 0;
@@ -386,14 +536,33 @@
           
           const areaUnitaria = (lado1 * lado2) / 10000;
           const areaTotalPecas = areaUnitaria * qtd * (1 + perda / 100);
-          totalMaterialCusto += areaTotalPecas * precoUnit;
+          const custoItem = areaTotalPecas * precoUnit;
+
+          totalMaterialCusto += custoItem;
           totalPecasMapeadas += qtd;
+
+          pecasDetalhes.push({ nome: nomeP, material: matNome, lado1, lado2, qtd, perda, custoItem });
         }
       });
 
       const custoTotalPuro = totalMaterialCusto + maoObra + outrosCustos;
       const fatorMultiplicador = 1 + (margemLucro + taxaImposto) / 100;
       const precoFinal = custoTotalPuro * fatorMultiplicador;
+
+      ultimoCalculoCache = {
+        id: Date.now(),
+        data: new Date().toLocaleDateString('pt-BR'),
+        cliente,
+        produto,
+        maoObra,
+        outrosCustos,
+        margemLucro,
+        taxaImposto,
+        totalMaterialCusto,
+        precoFinal,
+        totalPecasMapeadas,
+        pecas: pecasDetalhes
+      };
 
       const resultadoDiv = document.getElementById("resultado");
       resultadoDiv.innerHTML = `
@@ -418,9 +587,119 @@
           </div>
         </div>
       `;
+      return ultimoCalculoCache;
     }
 
+    function salvarProjeto() {
+      const res = calcular();
+      if(!res || res.pecas.length === 0) {
+        alert("Adicione pelo menos uma peça válida antes de salvar.");
+        return;
+      }
+      projetosSalvos.unshift(res);
+      localStorage.setItem("projetos_calculaja", JSON.stringify(projetosSalvos));
+      alert("Projeto salvo com sucesso!");
+      mudarAba('salvos');
+    }
+
+    function renderProjetosSalvos() {
+      const tbody = document.getElementById("tabelaProjetosSalvos");
+      if(!tbody) return;
+      tbody.innerHTML = "";
+
+      if(projetosSalvos.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-slate-400">Nenhum projeto salvo ainda.</td></tr>`;
+        return;
+      }
+
+      projetosSalvos.forEach((proj, idx) => {
+        tbody.innerHTML += `
+          <tr class="hover:bg-slate-50 transition">
+            <td class="p-3 text-slate-500 text-xs">${proj.data}</td>
+            <td class="p-3 font-semibold text-slate-700">${proj.cliente}</td>
+            <td class="p-3 text-slate-600">${proj.produto}</td>
+            <td class="p-3 font-bold text-emerald-600">R$ ${proj.precoFinal.toFixed(2).replace(".",",")}</td>
+            <td class="p-3 text-center space-x-2">
+              <button onclick="carregarProjeto(${idx})" class="bg-blue-500 hover:bg-blue-600 text-white px-2.5 py-1 rounded text-xs cursor-pointer" title="Carregar"><i class="fa-solid fa-folder-open"></i></button>
+              <button onclick="removerProjeto(${idx})" class="bg-red-500 hover:bg-red-600 text-white px-2.5 py-1 rounded text-xs cursor-pointer" title="Excluir"><i class="fa-solid fa-trash"></i></button>
+            </td>
+          </tr>
+        `;
+      });
+    }
+
+    function carregarProjeto(idx) {
+      const proj = projetosSalvos[idx];
+      document.getElementById("cliente").value = proj.cliente;
+      document.getElementById("produto").value = proj.produto;
+      document.getElementById("mao").value = proj.maoObra;
+      document.getElementById("outros").value = proj.outrosCustos;
+      document.getElementById("lucro").value = proj.margemLucro;
+      document.getElementById("imposto").value = proj.taxaImposto;
+
+      document.getElementById("partes").innerHTML = "";
+      proj.pecas.forEach(p => {
+        addParteVazia(p.nome, p.material, p.lado1, p.lado2, p.qtd, p.perda);
+      });
+
+      mudarAba('calculo');
+      calcular();
+    }
+
+    function removerProjeto(idx) {
+      projetosSalvos.splice(idx, 1);
+      localStorage.setItem("projetos_calculaja", JSON.stringify(projetosSalvos));
+      renderProjetosSalvos();
+    }
+
+    function gerarEsquemaVisual() {
+      const container = document.getElementById("canvas-container");
+      container.innerHTML = "";
+      
+      const rows = document.querySelectorAll("#partes tr");
+      if(rows.length === 0) {
+        container.innerHTML = `<p class="text-slate-400 text-sm text-center">Nenhuma peça cadastrada para desenhar.</p>`;
+        return;
+      }
+
+      const grid = document.createElement("div");
+      grid.className = "grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 w-full";
+
+      rows.forEach(tr => {
+        const nome = tr.querySelector(".nomeParte").value || "Peça";
+        const l1 = parseFloat(tr.querySelector(".lado1").value) || 0;
+        const l2 = parseFloat(tr.querySelector(".lado2").value) || 0;
+        const qtd = tr.querySelector(".qtdParte").value || 1;
+        const material = tr.querySelector(".materialParte").value || "Material";
+
+        if(l1 > 0 && l2 > 0) {
+          const card = document.createElement("div");
+          card.className = "bg-white border border-slate-200 rounded-xl p-4 shadow-sm flex flex-col items-center space-y-2";
+          card.innerHTML = `
+            <div class="text-xs font-bold text-slate-700">${nome} (${qtd}x)</div>
+            <div class="w-28 h-28 border-2 border-indigo-500 bg-indigo-50/50 rounded flex items-center justify-center relative shadow-inner">
+              <span class="absolute top-1 text-[10px] text-indigo-700 font-bold">${l1} cm</span>
+              <span class="absolute left-1 text-[10px] text-indigo-700 font-bold -rotate-90">${l2} cm</span>
+              <i class="fa-solid fa-shapes text-indigo-300 text-2xl"></i>
+            </div>
+            <div class="text-[11px] text-slate-500">${material}</div>
+          `;
+          grid.appendChild(card);
+        }
+      });
+
+      if(grid.children.length === 0) {
+        container.innerHTML = `<p class="text-slate-400 text-sm text-center">Preencha os lados das peças para gerar o desenho.</p>`;
+      } else {
+        container.appendChild(grid);
+      }
+    }
+
+    // Inicialização
     renderTabelaPrecos();
+    if(document.querySelectorAll("#partes tr").length === 0) {
+      addParteVazia("Painel Frontal", "Chapa PVC Cristal", 50, 30, 1, 5);
+    }
   </script>
 </body>
 </html>
