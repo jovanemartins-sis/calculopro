@@ -33,7 +33,7 @@
             flex-direction: column;
         }
 
-        /* --- LOGIN OVERLAY --- */
+        /* --- TELA DE LOGIN RESTAURADA --- */
         #login-screen {
             position: fixed;
             inset: 0;
@@ -97,7 +97,7 @@
             background: var(--accent-hover);
         }
 
-        /* --- MAIN APP LAYOUT --- */
+        /* --- APP MAIN --- */
         #app {
             display: none;
             flex-direction: column;
@@ -164,7 +164,7 @@
             display: block;
         }
 
-        /* --- DASHBOARD --- */
+        /* --- DASHBOARD & CORTE --- */
         .grid-cards {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
@@ -191,7 +191,6 @@
             color: var(--text-main);
         }
 
-        /* --- SIMULADOR DE CORTE --- */
         .controls-panel {
             background: var(--panel-bg);
             border: 1px solid var(--border-color);
@@ -218,7 +217,7 @@
             border: 1px solid var(--border-color);
             margin-top: 40px;
             margin-left: 50px;
-            width: 1400px; /* 140cm x 10px/cm */
+            width: 1400px;
             height: 300px;
         }
 
@@ -282,7 +281,6 @@
             border-bottom: 1px dashed #ccc;
         }
 
-        /* --- TABELAS --- */
         table {
             width: 100%;
             border-collapse: collapse;
@@ -307,7 +305,7 @@
 </head>
 <body>
 
-    <!-- TELA DE LOGIN -->
+    <!-- TELA DE LOGIN RESTAURADA -->
     <div id="login-screen">
         <div class="login-card">
             <h2>ProCut — System</h2>
@@ -345,7 +343,6 @@
         </header>
 
         <main>
-            <!-- ABA: DASHBOARD -->
             <section id="tab-dashboard" class="tab-content active">
                 <div class="grid-cards">
                     <div class="card">
@@ -363,7 +360,6 @@
                 </div>
             </section>
 
-            <!-- ABA: TELA DE CORTE -->
             <section id="tab-corte" class="tab-content">
                 <div class="controls-panel">
                     <div class="form-group" style="margin: 0; width: 150px;">
@@ -386,7 +382,6 @@
                 </div>
             </section>
 
-            <!-- ABA: BOBINAS -->
             <section id="tab-bobinas" class="tab-content">
                 <table>
                     <thead>
@@ -417,7 +412,6 @@
                 </table>
             </section>
 
-            <!-- ABA: ORDENS DE SERVIÇO -->
             <section id="tab-ordens" class="tab-content">
                 <table>
                     <thead>
@@ -453,7 +447,6 @@
         let currentX = 0;
         let pieceCount = 0;
 
-        // Login System
         document.getElementById('login-form').addEventListener('submit', (e) => {
             e.preventDefault();
             const user = document.getElementById('username').value;
@@ -473,7 +466,6 @@
             document.getElementById('app').style.display = 'none';
         }
 
-        // Tab System
         function switchTab(tabId) {
             document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
             document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
@@ -482,7 +474,6 @@
             document.getElementById(`tab-${tabId}`).classList.add('active');
         }
 
-        // Init Réguas com precisão
         function initRulers() {
             const rulerTop = document.getElementById('rulerTop');
             const rulerLeft = document.getElementById('rulerLeft');
@@ -506,13 +497,12 @@
             }
         }
 
-        // Adicionar Peça dinamicamente no Canvas
         function adicionarPeca() {
             const w = parseFloat(document.getElementById('piece-w').value);
             const h = parseFloat(document.getElementById('piece-h').value);
 
             if (currentX + w > BOBINA_LARGURA_CM) {
-                alert(`A peça de ${w}cm excede o limite disponível de ${BOBINA_LARGURA_CM - currentX}cm nesta linha da bobina!`);
+                alert(`A peça de ${w}cm excede o limite disponível de ${BOBINA_LARGURA_CM - currentX}cm nesta linha!`);
                 return;
             }
 
