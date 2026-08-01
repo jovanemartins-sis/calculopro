@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ProCut Pro — Gestão de Corte, Estoque & Custos</title>
+    <title>ProCut Pro — Gestão de Corte, Estoque & Feedback</title>
     <style>
         :root {
             --bg-body: #f1f5f9;
@@ -17,7 +17,7 @@
             --text-main: #0f172a;
             --text-muted: #64748b;
             
-            /* CORES DE STATUS E ALERTAS */
+            /* STATUS E BADGES */
             --success: #16a34a;
             --success-bg: #dcfce7;
             --warning: #d97706;
@@ -33,17 +33,17 @@
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; }
         body { background-color: var(--bg-body); color: var(--text-main); display: flex; height: 100vh; overflow: hidden; }
 
-        /* TELA DE LOGIN OVERLAY */
+        /* TELA DE LOGIN */
         #login-screen { position: fixed; inset: 0; background: #cbd5e1; display: flex; align-items: center; justify-content: center; z-index: 9999; }
         .login-card { background: var(--panel-bg); padding: 40px; border-radius: 12px; width: 100%; max-width: 420px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); border: 1px solid var(--border); text-align: center; }
         .login-card h2 { color: var(--primary-dark); font-size: 1.8rem; margin-bottom: 5px; }
         .login-card p { color: var(--text-muted); font-size: 0.85rem; margin-bottom: 25px; }
 
-        /* LAYOUT PRINCIPAL: SIDEBAR + CONTEÚDO */
+        /* LAYOUT PRINCIPAL */
         #app { display: none; width: 100vw; height: 100vh; }
         .layout { display: flex; width: 100%; height: 100%; }
 
-        /* SIDEBAR (NAVEGAÇÃO COMPLETA) */
+        /* SIDEBAR */
         aside { width: 260px; background: #ffffff; border-right: 1px solid var(--border); display: flex; flex-direction: column; justify-content: space-between; }
         .brand { padding: 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 10px; }
         .brand-logo { width: 32px; height: 32px; background: var(--primary); border-radius: 8px; color: white; display: flex; align-items: center; justify-content: center; font-weight: bold; }
@@ -57,7 +57,7 @@
 
         .user-panel { padding: 15px 20px; border-top: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
 
-        /* CONTEÚDO E HEADER DA TELA */
+        /* CONTEÚDO PRINCIPAL */
         main { flex: 1; display: flex; flex-direction: column; overflow-y: auto; background: var(--bg-body); }
         header { background: #ffffff; padding: 15px 30px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
         .page-title h2 { font-size: 1.3rem; font-weight: 700; }
@@ -67,14 +67,14 @@
         .tab-content { display: none; }
         .tab-content.active { display: block; }
 
-        /* CARDS DE MÉTRICAS (DASHBOARD) */
+        /* CARDS & METRICAS */
         .metrics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; margin-bottom: 25px; }
         .metric-card { background: white; padding: 20px; border-radius: 10px; border: 1px solid var(--border); box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
         .metric-card .title { font-size: 0.8rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase; }
         .metric-card .value { font-size: 1.6rem; font-weight: 700; margin: 8px 0; color: var(--text-main); }
         .metric-card .sub { font-size: 0.75rem; font-weight: 600; }
 
-        /* SIMULADOR DE CORTE E DESENHO */
+        /* TELA SIMULADOR & CANVAS */
         .controls-panel { background: white; padding: 18px; border-radius: 10px; border: 1px solid var(--border); margin-bottom: 20px; display: flex; gap: 15px; align-items: flex-end; flex-wrap: wrap; }
         .grid-simulador { display: grid; grid-template-columns: 2.2fr 1fr; gap: 20px; }
         
@@ -86,21 +86,18 @@
         .ruler-left { position: absolute; top: 0; left: -45px; width: 40px; height: 220px; background: #e2e8f0; border-right: 1px solid var(--border); }
         .ruler-left-mark { position: absolute; font-size: 10px; color: var(--text-muted); transform: translateY(-50%); right: 5px; }
 
-        /* PEÇAS DESENHADAS */
         .piece { position: absolute; background: var(--primary-light); border: 2px solid var(--primary); color: var(--primary-dark); border-radius: 4px; padding: 4px; font-size: 10px; font-weight: bold; display: flex; flex-direction: column; justify-content: space-between; }
 
-        /* PAINÉIS DE CUSTO & DETALHES */
         .card-details { background: white; border: 1px solid var(--border); border-radius: 10px; padding: 20px; }
         .row-detail { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #f1f5f9; font-size: 0.9rem; }
         .row-detail.total { border-bottom: none; font-size: 1.1rem; font-weight: bold; color: var(--primary-dark); background: var(--primary-light); padding: 12px; border-radius: 8px; margin-top: 10px; }
 
-        /* TABELAS COLORIDAS */
-        .table-card { background: white; border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+        /* TABELAS */
+        .table-card { background: white; border: 1px solid var(--border); border-radius: 10px; overflow: hidden; margin-bottom: 25px; }
         table { width: 100%; border-collapse: collapse; text-align: left; }
         th { background: #f8fafc; padding: 14px 18px; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); border-bottom: 1px solid var(--border); }
         td { padding: 14px 18px; border-bottom: 1px solid #f1f5f9; font-size: 0.88rem; }
         
-        /* BADGES COLORIDOS DE STATUS */
         .badge { padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; display: inline-block; }
         .badge-success { background: var(--success-bg); color: var(--success); }
         .badge-warning { background: var(--warning-bg); color: var(--warning); }
@@ -111,8 +108,8 @@
         /* FORMULÁRIOS & BOTÕES */
         .form-group { display: flex; flex-direction: column; gap: 5px; }
         .form-group label { font-size: 0.78rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; }
-        .form-group input, .form-group select { padding: 9px 12px; border: 1px solid var(--border); border-radius: 6px; font-size: 0.9rem; outline: none; background: #f8fafc; }
-        .form-group input:focus { border-color: var(--primary); background: white; }
+        .form-group input, .form-group select, .form-group textarea { padding: 9px 12px; border: 1px solid var(--border); border-radius: 6px; font-size: 0.9rem; outline: none; background: #f8fafc; }
+        .form-group input:focus, .form-group textarea:focus { border-color: var(--primary); background: white; }
 
         button { background: var(--primary); color: white; border: none; padding: 10px 18px; border-radius: 6px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
         button:hover { background: var(--primary-dark); }
@@ -120,15 +117,23 @@
         .btn-danger:hover { background: #b91c1c; }
         .btn-success { background: var(--success); }
         .btn-success:hover { background: #15803d; }
+
+        /* ESTILO DOS CARDS DE ELOGIO / FEEDBACK */
+        .feedback-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-top: 20px; }
+        .feedback-card { background: white; padding: 20px; border-radius: 10px; border: 1px solid var(--border); border-left: 4px solid var(--purple); }
+        .feedback-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .feedback-author { font-weight: bold; font-size: 0.95rem; color: var(--text-main); }
+        .feedback-stars { color: #f59e0b; font-size: 0.9rem; }
+        .feedback-text { font-size: 0.88rem; color: var(--text-muted); line-height: 1.4; }
     </style>
 </head>
 <body>
 
-    <!-- 1. LOGIN DE ACESSO -->
+    <!-- 1. TELA DE LOGIN -->
     <div id="login-screen">
         <div class="login-card">
             <h2>ProCut System</h2>
-            <p>Sistemas de Corte, Bobinas e Orçamentos</p>
+            <p>Sistemas de Corte, Bobinas & Avaliação</p>
             <form id="form-login">
                 <div class="form-group" style="margin-bottom: 15px;">
                     <label>E-mail Corporativo</label>
@@ -146,10 +151,10 @@
         </div>
     </div>
 
-    <!-- 2. APLICAÇÃO MULTITELAS -->
+    <!-- 2. APLICAÇÃO -->
     <div id="app">
         <div class="layout">
-            <!-- SIDEBAR BARRA LATERAL -->
+            <!-- SIDEBAR -->
             <aside>
                 <div>
                     <div class="brand">
@@ -162,19 +167,19 @@
 
                     <ul class="menu-list">
                         <li class="menu-item active" onclick="nav('dash', this)">
-                            <span>📊</span> Dashboard Geral
+                            <span>📊</span> Dashboard
                         </li>
                         <li class="menu-item" onclick="nav('simulador', this)">
-                            <span>✂️</span> Simulador & Corte
+                            <span>✂️</span> Simulador de Corte
                         </li>
                         <li class="menu-item" onclick="nav('bobinas', this)">
-                            <span>🌀</span> Rolo / Bobinas
+                            <span>🌀</span> Cadastro Rolo/Bobinas
                         </li>
                         <li class="menu-item" onclick="nav('planos', this)">
                             <span>📁</span> Planos & Versões
                         </li>
-                        <li class="menu-item" onclick="nav('orcamentos', this)">
-                            <span>💵</span> Orçamentos / Custos
+                        <li class="menu-item" onclick="nav('elogios', this)">
+                            <span>⭐</span> Elogios & Feedbacks
                         </li>
                     </ul>
                 </div>
@@ -188,7 +193,7 @@
                 </div>
             </aside>
 
-            <!-- ÁREA CENTRAL DE CONTEÚDO -->
+            <!-- CONTEÚDO PRINCIPAL -->
             <main>
                 <header>
                     <div class="page-title">
@@ -221,9 +226,9 @@
                                 <div class="sub" style="color: var(--danger);">↓ Baixo desperdício</div>
                             </div>
                             <div class="metric-card">
-                                <div class="title">Planos Salvos</div>
-                                <div class="value">34 Cortes</div>
-                                <div class="sub" style="color: var(--purple);">v2.4 Histórico Ativo</div>
+                                <div class="title">Avaliação do Sistema</div>
+                                <div class="value" style="color: #f59e0b;">5.0 ★</div>
+                                <div class="sub" style="color: var(--purple);">Elogios Ativos</div>
                             </div>
                         </div>
 
@@ -244,7 +249,7 @@
                         </div>
                     </section>
 
-                    <!-- TELA 2: SIMULADOR DE CORTE & DESENHO -->
+                    <!-- TELA 2: SIMULADOR DE CORTE -->
                     <section id="tab-simulador" class="tab-content">
                         <div class="controls-panel">
                             <div class="form-group" style="width: 240px;">
@@ -268,7 +273,6 @@
                         </div>
 
                         <div class="grid-simulador">
-                            <!-- DESENHO REAL EM ESCALA NA RÉRUA -->
                             <div class="canvas-box">
                                 <div style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 12px; display:flex; justify-content:space-between;">
                                     <span>Visualização de Corte no Rolo Base (Escala 1cm = 4px)</span>
@@ -280,7 +284,6 @@
                                 </div>
                             </div>
 
-                            <!-- RESUMO COMPLETO DE MEDIDAS E CUSTOS -->
                             <div class="card-details">
                                 <h3 style="margin-bottom: 15px; color: var(--primary-dark); font-size: 1.1rem;">Resumo do Aproveitamento</h3>
 
@@ -300,7 +303,7 @@
                         </div>
                     </section>
 
-                    <!-- TELA 3: CADASTRO DE ROLO / BOBINAS -->
+                    <!-- TELA 3: CADASTRO DE BOBINAS -->
                     <section id="tab-bobinas" class="tab-content">
                         <div class="controls-panel">
                             <div class="form-group" style="flex:1;">
@@ -336,7 +339,7 @@
                         </div>
                     </section>
 
-                    <!-- TELA 4: PLANOS & VERSÕES SALVAS -->
+                    <!-- TELA 4: PLANOS & VERSÕES -->
                     <section id="tab-planos" class="tab-content">
                         <div class="table-card">
                             <div style="padding: 15px 20px; border-bottom: 1px solid var(--border); font-weight: bold; display: flex; justify-content: space-between; align-items: center;">
@@ -354,35 +357,48 @@
                         </div>
                     </section>
 
-                    <!-- TELA 5: ORÇAMENTOS & CUSTOS -->
-                    <section id="tab-orcamentos" class="tab-content">
-                        <div class="metrics-grid">
-                            <div class="metric-card">
-                                <div class="title">Orçamentos Gerados</div>
-                                <div class="value">12 Fechados</div>
-                                <div class="sub" style="color: var(--success);">Total R$ 3.840,00</div>
+                    <!-- TELA 5: TELA DE ELOGIOS E FEEDBACKS -->
+                    <section id="tab-elogios" class="tab-content">
+                        <div class="controls-panel">
+                            <div class="form-group" style="width: 200px;">
+                                <label>Seu Nome / Empresa</label>
+                                <input type="text" id="fb-nome" value="Yuri Corretor">
                             </div>
-                            <div class="metric-card">
-                                <div class="title">Margem Média de Lucro</div>
-                                <div class="value" style="color: var(--teal);">42.5%</div>
-                                <div class="sub">Calculado sobre retalho</div>
+                            <div class="form-group" style="width: 150px;">
+                                <label>Nota (Estrelas)</label>
+                                <select id="fb-nota">
+                                    <option value="5">★★★★★ (5/5)</option>
+                                    <option value="4">★★★★☆ (4/5)</option>
+                                </select>
                             </div>
+                            <div class="form-group" style="flex:1;">
+                                <label>Seu Elogio / Observação</label>
+                                <input type="text" id="fb-texto" placeholder="Escreva o elogio ou melhoria do sistema...">
+                            </div>
+                            <button class="btn-success" onclick="postarElogio()">⭐ Enviar Elogio</button>
                         </div>
 
-                        <div class="table-card">
-                            <div style="padding: 15px 20px; border-bottom: 1px solid var(--border); font-weight: bold;">
-                                Tabela de Margens de Orçamento por Material
+                        <h3 style="margin-bottom: 15px; color: var(--text-main);">Elogios e Depoimentos Registrados</h3>
+
+                        <div class="feedback-grid" id="container-elogios">
+                            <div class="feedback-card">
+                                <div class="feedback-header">
+                                    <span class="feedback-author">Yuri Corretor</span>
+                                    <span class="feedback-stars">★★★★★</span>
+                                </div>
+                                <div class="feedback-text">
+                                    "O sistema ficou perfeito! Organizado, com cores vibrantes nos status, simulador de rolos com regua em tempo real e calculo automatico de perdas."
+                                </div>
                             </div>
-                            <table>
-                                <thead>
-                                    <tr><th>Material</th><th>Custo Base (m²)</th><th>Preço de Venda Sugerido</th><th>Margem Retalho Usado</th></tr>
-                                </thead>
-                                <tbody>
-                                    <tr><td>Vinil Brilho</td><td>R$ 25,00</td><td>R$ 60,00 / m²</td><td><span class="badge badge-success">+140% Lucro</span></td></tr>
-                                    <tr><td>Vinil Fosco</td><td>R$ 20,00</td><td>R$ 50,00 / m²</td><td><span class="badge badge-success">+150% Lucro</span></td></tr>
-                                    <tr><td>Lona 440g</td><td>R$ 35,00</td><td>R$ 85,00 / m²</td><td><span class="badge badge-teal">+142% Lucro</span></td></tr>
-                                </tbody>
-                            </table>
+                            <div class="feedback-card">
+                                <div class="feedback-header">
+                                    <span class="feedback-author">Equipe de Produção</span>
+                                    <span class="feedback-stars">★★★★★</span>
+                                </div>
+                                <div class="feedback-text">
+                                    "Facilitou demais o reaproveitamento de retalhos na oficina. O calculo de sobras e o salvamento em versoes evitam qualquer desperdício."
+                                </div>
+                            </div>
                         </div>
                     </section>
 
@@ -413,7 +429,7 @@
             document.getElementById('app').style.display = 'none';
         }
 
-        // NAVEGAÇÃO MULTITELAS
+        // NAVEGAÇÃO
         function nav(tabId, el) {
             document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('active'));
             document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
@@ -426,14 +442,14 @@
                 'simulador': ['Simulador de Corte & Desenhos', 'Cálculo de partes e desenho na régua em tempo real'],
                 'bobinas': ['Cadastro de Bobinas e Rolos', 'Gerenciamento do estoque de materiais'],
                 'planos': ['Planos Salvos & Versões', 'Histórico completo dos desenhos e cortes gravados'],
-                'orcamentos': ['Gestão de Orçamentos & Margens', 'Controle de custos, lucros e perdas por material']
+                'elogios': ['Elogios & Depoimentos', 'Área de avaliação do sistema, sugestões e feedbacks registrados']
             };
 
             document.getElementById('header-title').innerText = titles[tabId][0];
             document.getElementById('header-sub').innerText = titles[tabId][1];
         }
 
-        // ATUALIZAÇÃO DA BOBINA E DESENHO
+        // ATUALIZAR BOBINA E RÉGUAS
         function atualizarCanvasBobina() {
             const dados = document.getElementById('sim-bobina').value.split('|');
             larguraBobina = parseFloat(dados[0]);
@@ -469,7 +485,7 @@
             }
         }
 
-        // DESENHAR PARTES
+        // DESENHO DAS PEÇAS
         function adicionarPeca() {
             const w = parseFloat(document.getElementById('peca-w').value);
             const h = parseFloat(document.getElementById('peca-h').value);
@@ -477,7 +493,7 @@
             if(!w || !h) return alert('Digite largura e altura!');
 
             if(posCurrentX + w > larguraBobina) {
-                alert(`A parte (${w}cm) ultrapassa a bobina! Espaço livre: ${larguraBobina - posCurrentX}cm`);
+                alert(`A parte (${w}cm) ultrapassa a largura da bobina! Espaço livre: ${larguraBobina - posCurrentX}cm`);
                 return;
             }
 
@@ -531,7 +547,7 @@
             recalcularCustos();
         }
 
-        // CADASTRO E VERSÕES
+        // CADASTRO E SALVAMENTO DE VERSÕES
         function cadastrarRolo() {
             const mat = document.getElementById('cad-mat').value;
             const w = document.getElementById('cad-w').value;
@@ -576,6 +592,35 @@
             document.getElementById('lbl-versao').innerText = `Versão v1.${versaoPlano}`;
             
             alert(`Plano gravado na Versão v1.${versaoPlano - 1}!`);
+        }
+
+        // POSTAR NOVO ELOGIO
+        function postarElogio() {
+            const nome = document.getElementById('fb-nome').value;
+            const notaVal = document.getElementById('fb-nota').value;
+            const texto = document.getElementById('fb-texto').value;
+
+            if(!texto) return alert('Por favor, escreva o seu elogio ou sugestão.');
+
+            const container = document.getElementById('container-elogios');
+            const card = document.createElement('div');
+            card.className = 'feedback-card';
+
+            const stars = '★'.repeat(parseInt(notaVal)) + '☆'.repeat(5 - parseInt(notaVal));
+
+            card.innerHTML = `
+                <div class="feedback-header">
+                    <span class="feedback-author">${nome}</span>
+                    <span class="feedback-stars">${stars}</span>
+                </div>
+                <div class="feedback-text">
+                    "${texto}"
+                </div>
+            `;
+
+            container.prepend(card);
+            document.getElementById('fb-texto').value = '';
+            alert('Elogio publicado com sucesso!');
         }
     </script>
 </body>
