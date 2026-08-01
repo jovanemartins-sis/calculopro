@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>CalculaJá Pro - Nesting RIP com Réguas Estilo CAD (v1.5.0)</title>
+  <title>CalculaJá Pro - Nesting RIP com Réguas Estilo CAD (v1.6.0)</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
@@ -45,7 +45,7 @@
       <div class="text-center space-y-2">
         <i class="fa-solid fa-print text-3xl text-cyan-400"></i>
         <h2 class="text-xl font-bold text-white">CalculaJá Pro</h2>
-        <p class="text-xs text-slate-400">RIP de Impressão HP Latex - Régua Estilo CAD (v1.5.0)</p>
+        <p class="text-xs text-slate-400">RIP de Impressão HP Latex - Régua Eixo Y = Largura da Bobina (v1.6.0)</p>
       </div>
       <button onclick="loginComGoogle()" class="w-full bg-slate-900 border border-slate-700 hover:bg-slate-800 text-slate-200 font-bold py-2.5 rounded-xl text-sm flex items-center justify-center space-x-2 transition shadow-sm cursor-pointer">
         <i class="fa-brands fa-google text-red-500"></i>
@@ -169,7 +169,7 @@
 
         <!-- Bloco de Resultado & Visualizador Tipo CAD / Dark -->
         <div id="resultado" class="border-t border-slate-800 pt-4 space-y-4">
-          <div class="text-center py-6 text-slate-400 text-sm">Preencha as peças e clique em <b>Processar Cálculo & RIP HP Latex</b> para simular o layout escuro com régua CAD exata.</div>
+          <div class="text-center py-6 text-slate-400 text-sm">Preencha as peças e clique em <b>Processar Cálculo & RIP HP Latex</b> para simular o layout com régua do eixo Y correspondendo à largura exata da bobina.</div>
         </div>
 
       </div>
@@ -351,9 +351,9 @@
     });
   </script>
 
-  <!-- LÓGICA DE RIP HP LATEX COM RÉGUA EXATA ESTILO CAD ESCURO -->
+  <!-- LÓGICA DE RIP HP LATEX COM CORES VIBRANTES NAS PEÇAS E EIXO Y IGUAL À LARGURA DA BOBINA -->
   <script>
-    const VERSAO_ATUAL = "v1.5.0";
+    const VERSAO_ATUAL = "v1.6.0";
 
     function verificarAtualizacaoApp() {
       const versaoSalva = localStorage.getItem("app_versao_calculaja");
@@ -372,7 +372,7 @@
         <i class="fa-solid fa-rocket text-cyan-400 text-xl"></i>
         <div>
           <p class="text-xs font-bold">App Atualizado!</p>
-          <p class="text-[10px] text-slate-400">Versão ${novaVersao} com Réguas CAD Dark idênticas ao modelo enviado.</p>
+          <p class="text-[10px] text-slate-400">Versão ${novaVersao} com cores vibrantes nas peças e Eixo Y seguindo a largura exata da bobina.</p>
         </div>
         <button onclick="this.parentElement.remove()" class="ml-3 text-slate-400 hover:text-white text-xs font-bold">✕</button>
       `;
@@ -573,10 +573,24 @@
       });
     }
 
+    // PALETA DE CORES VIBRANTES PARA AS PEÇAS
+    const paletaCoresPecas = [
+      { bg: 'bg-indigo-950/90', hover: 'hover:bg-indigo-900/90', border: 'border-indigo-400', text: 'text-indigo-200', headerBg: 'bg-indigo-900', badge: 'bg-indigo-800 text-indigo-100' },
+      { bg: 'bg-emerald-950/90', hover: 'hover:bg-emerald-900/90', border: 'border-emerald-400', text: 'text-emerald-200', headerBg: 'bg-emerald-900', badge: 'bg-emerald-800 text-emerald-100' },
+      { bg: 'bg-amber-950/90', hover: 'hover:bg-amber-900/90', border: 'border-amber-400', text: 'text-amber-200', headerBg: 'bg-amber-900', badge: 'bg-amber-800 text-amber-100' },
+      { bg: 'bg-rose-950/90', hover: 'hover:bg-rose-900/90', border: 'border-rose-400', text: 'text-rose-200', headerBg: 'bg-rose-900', badge: 'bg-rose-800 text-rose-100' },
+      { bg: 'bg-violet-950/90', hover: 'hover:bg-violet-900/90', border: 'border-violet-400', text: 'text-violet-200', headerBg: 'bg-violet-900', badge: 'bg-violet-800 text-violet-100' },
+      { bg: 'bg-teal-950/90', hover: 'hover:bg-teal-900/90', border: 'border-teal-400', text: 'text-teal-200', headerBg: 'bg-teal-900', badge: 'bg-teal-800 text-teal-100' }
+    ];
+
     // ALGORITMO RIP PROFISSIONAL HP LATEX
     function executarNestingHPLatex(pecasIn, larguraBobina) {
       let itens = [];
+      let contadorTipo = 0;
       pecasIn.forEach(p => {
+        let estiloCor = paletaCoresPecas[contadorTipo % paletaCoresPecas.length];
+        contadorTipo++;
+
         for(let i=0; i<p.q; i++) {
           let w = p.l1;
           let h = p.l2;
@@ -586,7 +600,7 @@
           if (w > larguraBobina) {
             alert(`Atenção: A peça "${p.nome}" (${w}cm) excede a largura útil da bobina HP Latex (${larguraBobina}cm)!`);
           }
-          itens.push({ nome: p.nome, w, h, area: w * h });
+          itens.push({ nome: p.nome, w, h, area: w * h, estilo: estiloCor });
         }
       });
 
@@ -703,17 +717,18 @@
       let htmlPaineis = '';
       for(let bNome in dadosProcessadosBobinas) {
         const dados = dadosProcessadosBobinas[bNome];
-        const larguraBobina = Math.ceil(dados.obj.largura); 
+        // EIXO Y SEGUE A LARGURA EXATA DA BOBINA SELECIONADA
+        const larguraEixoY = Math.ceil(dados.obj.largura); 
         const alturaConsumidaReal = Math.ceil(Math.max(30, dados.alturaTotalCm));
 
-        // ESCALA EXATA IDÊNTICA AO MODELO DO CLIENTE (10px por cm)
+        // ESCALA EXATA (10px por cm)
         const PIXELS_POR_CM = 10.0;
-        const larguraContainerPx = larguraBobina * PIXELS_POR_CM;
+        const larguraContainerPx = larguraEixoY * PIXELS_POR_CM;
         const alturaContainerPx = alturaConsumidaReal * PIXELS_POR_CM;
 
-        // Régua Superior X (Estilo CAD Dark Exato: traços cyan para baixo e números centralizados)
+        // Régua Superior X (Graduada de 0 até o comprimento consumido do rolo)
         let reguaXHtml = '';
-        for(let x = 0; x <= larguraBobina; x++) {
+        for(let x = 0; x <= alturaConsumidaReal; x++) {
           let posX = x * PIXELS_POR_CM;
           let ehDezena = (x % 10 === 0);
           let ehCinco = (x % 5 === 0);
@@ -728,7 +743,7 @@
         }
 
         // Subdivisões de Milímetro entre cada cm em X
-        for(let x = 0; x < larguraBobina; x++) {
+        for(let x = 0; x < alturaConsumidaReal; x++) {
           for(let mm = 1; mm < 10; mm++) {
             let posMm = (x + mm / 10.0) * PIXELS_POR_CM;
             let alturaMm = (mm === 5) ? 'h-2' : 'h-1';
@@ -736,16 +751,16 @@
           }
         }
 
-        // Régua Lateral Y (Estilo CAD Dark Exato: traços cyan para a direita e números alinhados)
+        // Régua Lateral Y (Graduada exatamente com a Largura da Bobina, ex: 140cm)
         let reguaYHtml = '';
-        for(let y = 0; y <= alturaConsumidaReal; y++) {
+        for(let y = 0; y <= larguraEixoY; y++) {
           let posY = y * PIXELS_POR_CM;
           let ehDezena = (y % 10 === 0);
           let ehCinco = (y % 5 === 0);
           let larguraTraco = ehDezena ? 'w-3.5' : (ehCinco ? 'w-2.5' : 'w-1.5');
           let alturaTraco = ehDezena ? 'h-0.5' : 'h-[1px]';
 
-          reguaYHtml += `<div class="absolute left-0 flex items-center justify-start pl-1" style="top: ${posY}px; transform: translateY(-50%); width: 36px;">`;
+          reguaYHtml += `<div class="absolute left-0 flex items-center justify-start pl-1" style="top: ${posY}px; transform: translateY(-50%); width: 42px;">`;
           if (ehDezena) {
             reguaYHtml += `<span class="text-[9px] text-cyan-400 font-bold mr-1 select-none">${y}</span>`;
           }
@@ -753,11 +768,11 @@
         }
 
         // Subdivisões de Milímetro entre cada cm em Y
-        for(let y = 0; y < alturaConsumidaReal; y++) {
+        for(let y = 0; y < larguraEixoY; y++) {
           for(let mm = 1; mm < 10; mm++) {
             let posMm = (y + mm / 10.0) * PIXELS_POR_CM;
             let larguraMm = (mm === 5) ? 'w-2' : 'w-1';
-            reguaYHtml += `<div class="absolute left-0 flex items-center justify-start" style="top: ${posMm}px; transform: translateY(-50%); width: 36px;"><div class="${larguraMm} h-[1px] bg-cyan-600"></div></div>`;
+            reguaYHtml += `<div class="absolute left-0 flex items-center justify-start" style="top: ${posMm}px; transform: translateY(-50%); width: 42px;"><div class="${larguraMm} h-[1px] bg-cyan-600"></div></div>`;
           }
         }
 
@@ -765,8 +780,8 @@
           <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 space-y-3 shadow-sm">
             <div class="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-slate-800 pb-3 gap-3">
               <div>
-                <h5 class="font-bold text-slate-100 text-sm"><i class="fa-solid fa-print text-cyan-400 mr-1"></i> RIP HP Latex Régua CAD Dark (Até ${larguraBobina}cm) — ${bNome}</h5>
-                <p class="text-xs text-slate-400">Largura Bobina: <b>${larguraBobina} cm</b> | Comprimento Total RIP: <b class="text-cyan-400">${alturaConsumidaReal} cm</b></p>
+                <h5 class="font-bold text-slate-100 text-sm"><i class="fa-solid fa-print text-cyan-400 mr-1"></i> RIP HP Latex (Eixo Y: ${larguraEixoY}cm) — ${bNome}</h5>
+                <p class="text-xs text-slate-400">Largura da Bobina (Eixo Y): <b class="text-cyan-400">${larguraEixoY} cm</b> | Comprimento Total (Eixo X): <b class="text-cyan-400">${alturaConsumidaReal} cm</b></p>
               </div>
               <div class="flex items-center gap-2">
                 <span class="text-xs font-bold bg-cyan-950 text-cyan-300 border border-cyan-800 px-2.5 py-1 rounded-lg">R$ ${(dados.metrosLineares * dados.obj.preco).toFixed(2)}</span>
@@ -783,39 +798,40 @@
                 
                 <!-- CANTO SUPERIOR ESQUERDO (ETIQUETA cm) -->
                 <div class="flex">
-                  <div class="w-10 h-8 bg-slate-900 border-r border-b border-cyan-700 flex items-center justify-center font-bold text-[10px] text-cyan-400 select-none rounded-tl">
+                  <div class="w-12 h-8 bg-slate-900 border-r border-b border-cyan-700 flex items-center justify-center font-bold text-[10px] text-cyan-400 select-none rounded-tl">
                     cm
                   </div>
-                  <!-- REGUA SUPERIOR X (GRADUADA ESTILO CAD DARK) -->
-                  <div class="relative h-8 bg-slate-900 border-b border-cyan-700 select-none overflow-hidden" style="width: ${larguraContainerPx}px;">
+                  <!-- REGUA SUPERIOR X (COMPRIMENTO) -->
+                  <div class="relative h-8 bg-slate-900 border-b border-cyan-700 select-none overflow-hidden" style="width: ${alturaContainerPx}px;">
                     ${reguaXHtml}
                   </div>
                 </div>
 
                 <div class="flex">
-                  <!-- REGUA LATERAL Y (GRADUADA ESTILO CAD DARK) -->
-                  <div class="relative w-10 bg-slate-900 border-r border-cyan-700 select-none overflow-hidden" style="height: ${alturaContainerPx}px;">
+                  <!-- REGUA LATERAL Y (LARGURA DA BOBINA) -->
+                  <div class="relative w-12 bg-slate-900 border-r border-cyan-700 select-none overflow-hidden" style="height: ${larguraContainerPx}px;">
                     ${reguaYHtml}
                   </div>
 
-                  <!-- AREA DE IMPRESSÃO / NESTING COM GRID ESTILO CAD DARK -->
-                  <div class="relative bg-slate-900/40 border border-cyan-700 m-0 shadow-sm" style="width: ${larguraContainerPx}px; height: ${alturaContainerPx}px; background-image: radial-gradient(circle, #1e293b 1px, transparent 1px); background-size: 20px 20px;">
+                  <!-- AREA DE IMPRESSÃO / NESTING COM GRID ESTILO CAD -->
+                  <div class="relative bg-slate-900/40 border border-cyan-700 m-0 shadow-sm" style="width: ${alturaContainerPx}px; height: ${larguraContainerPx}px; background-image: radial-gradient(circle, #1e293b 1px, transparent 1px); background-size: 20px 20px;">
         `;
 
         dados.itensNesting.forEach((item, idx) => {
-          let leftPx = item.x * PIXELS_POR_CM;
-          let topPx = item.y * PIXELS_POR_CM;
-          let widthPx = item.w * PIXELS_POR_CM;
-          let heightPx = item.h * PIXELS_POR_CM;
+          let leftPx = item.y * PIXELS_POR_CM;
+          let topPx = item.x * PIXELS_POR_CM;
+          let widthPx = item.h * PIXELS_POR_CM;
+          let heightPx = item.w * PIXELS_POR_CM;
+          let estilo = item.estilo;
 
           htmlPaineis += `
-            <div style="position: absolute; left: ${leftPx}px; top: ${topPx}px; width: ${widthPx}px; height: ${heightPx}px;" class="bg-cyan-950/80 hover:bg-cyan-900/90 text-cyan-200 p-1 border border-cyan-500 flex flex-col justify-between transition box-border shadow-sm overflow-hidden z-10 rounded-sm">
-              <div class="flex justify-between items-center text-[9px] font-bold border-b border-cyan-800 pb-0.5 text-cyan-300">
+            <div style="position: absolute; left: ${leftPx}px; top: ${topPx}px; width: ${widthPx}px; height: ${heightPx}px;" class="${estilo.bg} ${estilo.hover} ${estilo.text} p-1 border ${estilo.border} flex flex-col justify-between transition box-border shadow-md overflow-hidden z-10 rounded-sm">
+              <div class="flex justify-between items-center text-[9px] font-bold border-b border-slate-700/60 pb-0.5 text-white">
                 <span class="truncate">#${idx+1} ${item.nome}</span>
-                <span class="bg-cyan-900 text-cyan-200 px-1 rounded font-mono">${item.w}x${item.h}cm</span>
+                <span class="${estilo.badge} px-1 rounded font-mono">${item.w}x${item.h}cm</span>
               </div>
               <div class="text-center font-mono text-[10px] font-bold text-white my-auto">${item.w} x ${item.h} cm</div>
-              <div class="text-[7px] text-cyan-400 text-right font-mono">X:${item.x.toFixed(1)} Y:${item.y.toFixed(1)}</div>
+              <div class="text-[7px] text-slate-300 text-right font-mono">X:${item.y.toFixed(1)} Y:${item.x.toFixed(1)}</div>
             </div>
           `;
         });
@@ -824,9 +840,9 @@
                   </div>
                 </div>
 
-                <div class="flex justify-between text-[10px] text-slate-400 font-mono mt-2 pt-1 px-1 border-t border-slate-800" style="width: ${larguraContainerPx + 40}px;">
+                <div class="flex justify-between text-[10px] text-slate-400 font-mono mt-2 pt-1 px-1 border-t border-slate-800" style="width: ${alturaContainerPx + 48}px;">
                   <span>Origem 0cm, 0cm</span>
-                  <span class="text-cyan-400 font-bold">Régua CAD Dark ativa (Até ${larguraBobina}cm de Largura)</span>
+                  <span class="text-cyan-400 font-bold">Eixo Y travado na largura da bobina (${larguraEixoY}cm) com cores dinâmicas</span>
                   <span>Avanço Total: ${(alturaConsumidaReal/100).toFixed(2)}m</span>
                 </div>
               </div>
@@ -856,7 +872,7 @@
             </div>
           </div>
           <div class="space-y-3 pt-2">
-            <h4 class="font-bold text-slate-200 text-sm">Simulador RIP com Régua Graduada CAD Dark</h4>
+            <h4 class="font-bold text-slate-200 text-sm">Simulador RIP com Régua no Eixo Y Igual à Largura da Bobina</h4>
             ${htmlPaineis || '<p class="text-xs text-slate-400">Nenhum material selecionado.</p>'}
           </div>
         </div>
