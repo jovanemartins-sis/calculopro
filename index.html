@@ -49,7 +49,7 @@
       <div class="text-center space-y-2">
         <i class="fa-solid fa-scissors text-3xl text-emerald-600"></i>
         <h2 class="text-xl font-bold text-slate-800">CalculaJá Pro</h2>
-        <p class="text-xs text-slate-500">Mecanismo de Nesting & Corte de Plásticos, Tecidos e Chapas (Versão v1.4.1)</p>
+        <p class="text-xs text-slate-500">Mecanismo de Nesting & Corte de Plásticos, Tecidos e Chapas (Versão v1.4.2)</p>
       </div>
       <button onclick="loginComGoogle()" class="w-full bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 font-bold py-2.5 rounded-xl text-sm flex items-center justify-center space-x-2 transition shadow-sm cursor-pointer">
         <i class="fa-brands fa-google text-red-500"></i>
@@ -174,7 +174,7 @@
 
         <!-- Bloco de Resultado & Visualizador Tipo RIP -->
         <div id="resultado" class="border-t pt-4 space-y-4">
-          <div class="text-center py-6 text-slate-400 text-sm">Preencha as peças e clique em <b>Processar Cálculo & RIP Nesting</b> para simular o encaixe automático exato com réguas milimetradas de 5 em 5 cm.</div>
+          <div class="text-center py-6 text-slate-400 text-sm">Preencha as peças e clique em <b>Processar Cálculo & RIP Nesting</b> para simular o encaixe automático exato com réguas proporcionais às dimensões reais da bobina.</div>
         </div>
 
       </div>
@@ -190,15 +190,19 @@
         <form id="formBobina" class="space-y-4">
           <div>
             <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Nome do Material</label>
-            <input type="text" id="nomeBobina" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm outline-none focus:border-emerald-500" placeholder="Ex: Plástico Acrílico / Tecido Lonita" required>
+            <input type="text" id="nomeBobina" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm outline-none focus:border-emerald-500" placeholder="Ex: Bobina Plástico 140cm x 5000cm" required>
           </div>
-          <div class="grid grid-cols-2 gap-4">
+          <div class="grid grid-cols-3 gap-2">
             <div>
               <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Largura (cm)</label>
               <input type="number" id="larguraBobina" step="0.1" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm outline-none focus:border-emerald-500" placeholder="140" required>
             </div>
             <div>
-              <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Preço / Metro (R$)</label>
+              <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Comp. Rolo (cm)</label>
+              <input type="number" id="comprimentoBobina" step="1" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm outline-none focus:border-emerald-500" placeholder="5000" value="5000" required>
+            </div>
+            <div>
+              <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Preço/Metro</label>
               <input type="number" id="precoBobina" step="0.01" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm outline-none focus:border-emerald-500" placeholder="0.00" required>
             </div>
           </div>
@@ -221,8 +225,8 @@
               <tr>
                 <th class="p-3">Nome</th>
                 <th class="p-3">Largura</th>
+                <th class="p-3">Comprimento Rolo</th>
                 <th class="p-3">Preço/Metro</th>
-                <th class="p-3">Regra</th>
                 <th class="p-3 text-center">Ação</th>
               </tr>
             </thead>
@@ -352,9 +356,9 @@
     });
   </script>
 
-  <!-- LÓGICA DE DETECÇÃO DE ATUALIZAÇÃO E NESTING COM RÉGUAS DE 5 EM 5 CM -->
+  <!-- LÓGICA DE DETECÇÃO DE ATUALIZAÇÃO E NESTING COM ESCALA PROPORCIONAL À BOBINA REAL -->
   <script>
-    const VERSAO_ATUAL = "v1.4.1";
+    const VERSAO_ATUAL = "v1.4.2";
 
     function verificarAtualizacaoApp() {
       const versaoSalva = localStorage.getItem("app_versao_calculaja");
@@ -399,7 +403,7 @@
       { id: 1, nome: "Ilhós NBR", unidade: "un", valor: 0.15 }
     ];
     let bobinas = JSON.parse(localStorage.getItem("bobinas_v8")) || [
-      { id: 1, nome: "Bobina Plástico / Tecido 1.40m", largura: 140, preco: 38.00, regra: "Nesting Automático de Corte" }
+      { id: 1, nome: "Bobina Plástico 140cm x 5000cm", largura: 140, comprimentoRolo: 5000, preco: 38.00, regra: "Nesting Automático de Corte" }
     ];
     let projetosSalvos = JSON.parse(localStorage.getItem("projetos_v8")) || [];
 
@@ -430,8 +434,8 @@
           <tr class="hover:bg-slate-50">
             <td class="p-3 font-medium"><input type="text" value="${b.nome}" onchange="editarBobina(${idx}, 'nome', this.value)" class="border rounded px-2 py-1 text-sm w-full"></td>
             <td class="p-3"><input type="number" value="${b.largura}" onchange="editarBobina(${idx}, 'largura', this.value)" class="border rounded px-2 py-1 text-sm w-20"> cm</td>
+            <td class="p-3"><input type="number" value="${b.comprimentoRolo || 5000}" onchange="editarBobina(${idx}, 'comprimentoRolo', this.value)" class="border rounded px-2 py-1 text-sm w-24"> cm</td>
             <td class="p-3"><input type="number" step="0.01" value="${b.preco}" onchange="editarBobina(${idx}, 'preco', this.value)" class="border rounded px-2 py-1 text-sm w-24 font-bold text-emerald-600"></td>
-            <td class="p-3"><input type="text" value="${b.regra}" onchange="editarBobina(${idx}, 'regra', this.value)" class="border rounded px-2 py-1 text-sm w-full text-slate-500"></td>
             <td class="p-3 text-center"><button onclick="removerBobina(${idx})" class="text-red-500 hover:text-red-700 text-xs cursor-pointer"><i class="fa-solid fa-trash"></i></button></td>
           </tr>
         `;
@@ -441,7 +445,7 @@
       if(tbR) {
         tbR.innerHTML = "";
         bobinas.forEach(b => {
-          tbR.innerHTML += `<tr class="hover:bg-slate-50"><td class="p-2 font-medium text-slate-700"><i class="fa-solid fa-scroll text-emerald-500 mr-1"></i> ${b.nome}<br><span class="text-xs text-slate-400">Larg: ${b.largura}cm</span></td><td class="p-2 font-bold text-emerald-600 text-right align-middle">R$ ${b.preco.toFixed(2)}/m</td></tr>`;
+          tbR.innerHTML += `<tr class="hover:bg-slate-50"><td class="p-2 font-medium text-slate-700"><i class="fa-solid fa-scroll text-emerald-500 mr-1"></i> ${b.nome}<br><span class="text-xs text-slate-400">Larg: ${b.largura}cm | Rolo: ${b.comprimentoRolo || 5000}cm</span></td><td class="p-2 font-bold text-emerald-600 text-right align-middle">R$ ${b.preco.toFixed(2)}/m</td></tr>`;
         });
         catalogo.forEach(c => {
           tbR.innerHTML += `<tr class="hover:bg-slate-50"><td class="p-2 font-medium text-slate-700"><i class="fa-solid fa-box text-blue-500 mr-1"></i> ${c.nome}</td><td class="p-2 font-bold text-blue-600 text-right align-middle">R$ ${c.valor.toFixed(2)}/${c.unidade}</td></tr>`;
@@ -458,13 +462,20 @@
 
     document.getElementById("formBobina").addEventListener("submit", function(e) {
       e.preventDefault();
-      bobinas.push({ id: Date.now(), nome: document.getElementById("nomeBobina").value, largura: parseFloat(document.getElementById("larguraBobina").value), preco: parseFloat(document.getElementById("precoBobina").value), regra: document.getElementById("regraBobina").value || "Corte Padrão" });
+      bobinas.push({ 
+        id: Date.now(), 
+        nome: document.getElementById("nomeBobina").value, 
+        largura: parseFloat(document.getElementById("larguraBobina").value), 
+        comprimentoRolo: parseFloat(document.getElementById("comprimentoBobina").value) || 5000,
+        preco: parseFloat(document.getElementById("precoBobina").value), 
+        regra: document.getElementById("regraBobina").value || "Corte Padrão" 
+      });
       salvarLocal(); renderTudo(); this.reset();
     });
 
     function editarMaterial(idx, campo, val) { catalogo[idx][campo] = campo === 'valor' ? parseFloat(val) : val; salvarLocal(); renderTudo(); }
     function removerMaterial(idx) { catalogo.splice(idx, 1); salvarLocal(); renderTudo(); }
-    function editarBobina(idx, campo, val) { bobinas[idx][campo] = (campo === 'largura' || campo === 'preco') ? parseFloat(val) : val; salvarLocal(); renderTudo(); }
+    function editarBobina(idx, campo, val) { bobinas[idx][campo] = (campo === 'largura' || campo === 'preco' || campo === 'comprimentoRolo') ? parseFloat(val) : val; salvarLocal(); renderTudo(); }
     function removerBobina(idx) { bobinas.splice(idx, 1); salvarLocal(); renderTudo(); }
 
     function atualizaSelectsPartes() {
@@ -474,7 +485,7 @@
         bobinas.forEach(b => {
           const opt = document.createElement("option");
           opt.value = "Bobina: " + b.nome;
-          opt.textContent = `[Material] ${b.nome} (${b.largura}cm)`;
+          opt.textContent = `[Material] ${b.nome} (${b.largura}cm x ${b.comprimentoRolo || 5000}cm)`;
           if(opt.value === atual) opt.selected = true;
           select.appendChild(opt);
         });
@@ -488,7 +499,6 @@
       });
     }
 
-    // Função para alterar quantidade via botões + e -
     function alterarQtd(btn, delta) {
       const input = btn.parentElement.querySelector(".qtdParte");
       let atual = parseInt(input.value) || 0;
@@ -496,11 +506,9 @@
       input.value = novo;
     }
 
-    // Função de Edição / Salvar de Peça individual
     function editarLinhaPeca(btn) {
       const tr = btn.closest('tr');
       const inputs = tr.querySelectorAll('input, select');
-      // Verifica se atualmente está em modo somente leitura
       const isReadonly = inputs[0].hasAttribute('readonly') || inputs[0].disabled;
       
       inputs.forEach(input => {
@@ -516,7 +524,6 @@
           input.classList.remove('border-slate-300', 'bg-white');
         }
       });
-      // Alterna o ícone entre Lápis (Editar) e Check (Salvar)
       btn.innerHTML = isReadonly ? '<i class="fa-solid fa-check text-white"></i>' : '<i class="fa-solid fa-pen"></i>';
       btn.className = isReadonly ? "bg-emerald-600 hover:bg-emerald-700 text-white p-1.5 rounded text-xs cursor-pointer shadow-sm" : "bg-blue-100 hover:bg-blue-200 text-blue-600 p-1.5 rounded text-xs cursor-pointer";
       btn.title = isReadonly ? "Salvar Alteração" : "Editar";
@@ -552,12 +559,12 @@
     let nivelZoom = 1;
 
     function ajustarZoom(delta) {
-      nivelZoom = Math.max(0.6, Math.min(2.5, nivelZoom + delta));
-      const visualizador = document.getElementById("container-rip-visual");
-      if(visualizador) {
-        visualizador.style.transform = `scale(${nivelZoom})`;
-        visualizador.style.transformOrigin = 'top left';
-      }
+      nivelZoom = Math.max(0.4, Math.min(3.0, nivelZoom + delta));
+      const visualizadores = document.querySelectorAll(".container-rip-visual");
+      visualizadores.forEach(el => {
+        el.style.transform = `scale(${nivelZoom})`;
+        el.style.transformOrigin = 'top left';
+      });
     }
 
     function exportarLayoutRIP() {
@@ -638,28 +645,46 @@
       let htmlPaineis = '';
       for(let bNome in agrupadoPorBobina) {
         const dados = agrupadoPorBobina[bNome];
-        const larguraBobina = dados.obj.largura;
-        const comprimentoTotalCm = dados.totalMetrosLinear * 100;
+        const larguraBobina = dados.obj.largura; // ex: 140cm
+        const comprimentoRoloTotal = dados.obj.comprimentoRolo || 5000; // ex: 5000cm
+        const comprimentoConsumidoCm = dados.totalMetrosLinear * 100;
 
+        // Gerar régua X (Largura da Bobina - ex: de 0 até 140cm de 5 em 5cm)
         let reguaXHtml = '';
         for(let x = 0; x <= larguraBobina; x += 5) {
-          reguaXHtml += `<span class="absolute" style="left: ${(x/larguraBobina)*100}%; transform: translateX(-50%);">${x}</span>`;
+          let posPct = (x / larguraBobina) * 100;
+          reguaXHtml += `<span class="absolute text-[9px] text-amber-400 font-mono" style="left: ${posPct}%; transform: translateX(-50%);">${x}</span>`;
+        }
+        // Garantir marca exata do limite final da largura se não for múltiplo de 5
+        if(larguraBobina % 5 !== 0) {
+          reguaXHtml += `<span class="absolute text-[9px] text-amber-400 font-mono" style="left: 100%; transform: translateX(-100%);">${larguraBobina}</span>`;
         }
 
+        // Gerar régua Y (Comprimento Total do Rolo ou da Bobina Cadastrada - ex: 5000cm)
         let reguaYHtml = '';
-        let passoY = Math.max(5, Math.floor(comprimentoTotalCm / 12 / 5) * 5);
-        if(passoY < 5) passoY = 5;
-        for(let y = 0; y <= comprimentoTotalCm; y += passoY) {
-          let topoPct = (y / comprimentoTotalCm) * 100;
-          reguaYHtml += `<span class="absolute" style="top: ${topoPct}%; transform: translateY(-50%); left: 2px;">${y}</span>`;
+        // Definir passo automático limpo baseado no comprimento total do rolo para não sobrecarregar
+        let passoY = 500; 
+        if(comprimentoRoloTotal <= 1000) passoY = 100;
+        if(comprimentoRoloTotal <= 500) passoY = 50;
+
+        for(let y = 0; y <= comprimentoRoloTotal; y += passoY) {
+          let topoPct = (y / comprimentoRoloTotal) * 100;
+          reguaYHtml += `<span class="absolute text-[9px] text-amber-400 font-mono whitespace-nowrap" style="top: ${topoPct}%; transform: translateY(-50%); left: 2px;">${y}</span>`;
         }
+        if(comprimentoRoloTotal % passoY !== 0) {
+          reguaYHtml += `<span class="absolute text-[9px] text-amber-400 font-mono whitespace-nowrap" style="top: 100%; transform: translateY(-100%); left: 2px;">${comprimentoRoloTotal}</span>`;
+        }
+
+        // Definir altura visual proporcional do container do rolo (limitando a uma altura máxima amigável com scroll se for muito longo, ex: 5000cm)
+        // Cada 100cm equivale a 12px de altura visual base para manuseio fluido na tela, com mínimo de 400px
+        let alturaVisualContainer = Math.max(400, Math.min(2500, (comprimentoRoloTotal / 100) * 14));
 
         htmlPaineis += `
           <div class="bg-slate-900 border border-slate-700 rounded-xl p-4 space-y-3">
             <div class="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-slate-700 pb-3 gap-3">
               <div>
-                <h5 class="font-bold text-white text-sm"><i class="fa-solid fa-ruler-combined text-amber-400 mr-1"></i> Réguas CorelDRAW (5 em 5 cm) - ${bNome}</h5>
-                <p class="text-xs text-slate-400">Origem (0,0 no canto superior esquerdo) | Largura: <b>${larguraBobina} cm</b> | Comprimento: <b>${comprimentoTotalCm.toFixed(0)} cm</b></p>
+                <h5 class="font-bold text-white text-sm"><i class="fa-solid fa-ruler-combined text-amber-400 mr-1"></i> Réguas CorelDRAW Proporcional — ${bNome}</h5>
+                <p class="text-xs text-slate-400">Rolo Padrão: <b>${larguraBobina} cm</b> de largura por <b>${comprimentoRoloTotal} cm</b> de comprimento | Consumo do Projeto: <b>${comprimentoConsumidoCm.toFixed(0)} cm</b></p>
               </div>
               <div class="flex items-center gap-2">
                 <span class="text-xs font-bold bg-amber-500/20 text-amber-300 border border-amber-500/40 px-2.5 py-1 rounded-lg">R$ ${(dados.totalMetrosLinear * dados.obj.preco).toFixed(2)}</span>
@@ -671,28 +696,38 @@
               </div>
             </div>
 
-            <div class="overflow-x-auto" id="bloco-exportavel-rip">
-              <div id="container-rip-visual" class="bg-slate-950 rounded-xl p-3 border border-slate-800 shadow-2xl transition-transform duration-200" style="min-width: 550px;">
-                <div class="relative h-6 ml-12 border-b border-amber-500/60 text-[9px] text-amber-400 font-mono select-none">
+            <div class="overflow-x-auto overflow-y-auto max-h-[600px] border border-slate-800 rounded-xl p-2 bg-slate-950 shadow-inner" id="bloco-exportavel-rip">
+              <div class="container-rip-visual bg-slate-950 p-2 transition-transform duration-200" style="min-width: 650px;">
+                
+                <!-- REGUA SUPERIOR X (Largura Total da Bobina ex: 140cm) -->
+                <div class="relative h-6 ml-16 border-b-2 border-amber-500 select-none bg-slate-900/80 rounded-t">
                   ${reguaXHtml}
                 </div>
+
                 <div class="flex">
-                  <div class="relative w-12 border-r border-amber-500/60 text-[9px] text-amber-400 font-mono select-none" style="height: 320px;">
+                  <!-- REGUA LATERAL Y (Comprimento Total do Rolo ex: 5000cm) -->
+                  <div class="relative w-16 border-r-2 border-amber-500 select-none bg-slate-900/80" style="height: ${alturaVisualContainer}px;">
                     ${reguaYHtml}
                   </div>
-                  <div class="flex-grow pl-1">
-                    <div class="relative bg-slate-900 border border-slate-700 h-[320px] overflow-y-auto flex flex-wrap content-start p-0 m-0 gap-0">
+
+                  <!-- AREA DE NESTING / CORTE INTERNA DO ROLO -->
+                  <div class="flex-grow pl-1 bg-slate-950">
+                    <div class="relative bg-slate-900 border border-slate-800 overflow-hidden flex flex-wrap content-start p-0 m-0 gap-0" style="height: ${alturaVisualContainer}px;">
         `;
 
+        // Renderizar peças encaixadas no rolo
         dados.pecas.forEach((p, idx) => {
           let larguraPct = Math.max(15, Math.min(100, (p.w / larguraBobina) * 100));
+          // Altura proporcional da peça baseada na escala do rolo total
+          let alturaPecaPx = Math.max(35, (p.h / comprimentoRoloTotal) * alturaVisualContainer);
+
           htmlPaineis += `
-            <div style="width: ${larguraPct}%;" class="bg-white hover:bg-slate-50 text-slate-900 p-1.5 border border-black flex flex-col justify-between transition m-0 box-border shadow-sm">
+            <div style="width: ${larguraPct}%; height: ${alturaPecaPx}px;" class="bg-white hover:bg-slate-50 text-slate-900 p-1 border border-black flex flex-col justify-between transition m-0 box-border shadow-sm overflow-hidden">
               <div class="flex justify-between items-center text-[9px] font-bold border-b border-slate-300 pb-0.5 text-slate-700">
                 <span class="truncate">#${idx+1} ${p.nome}</span>
                 <span class="bg-slate-200 text-slate-800 px-1 rounded font-mono">${p.w}cm</span>
               </div>
-              <div class="text-center font-mono text-xs font-black py-1 text-slate-900">${p.h}cm</div>
+              <div class="text-center font-mono text-xs font-black text-slate-900 my-auto">${p.h}cm</div>
               <div class="text-[8px] text-slate-500 text-right font-mono">Corel 0,0</div>
             </div>
           `;
@@ -702,10 +737,11 @@
                     </div>
                   </div>
                 </div>
+
                 <div class="flex justify-between text-[10px] text-slate-400 font-mono mt-2 pt-1 px-1 border-t border-slate-800">
                   <span>Origem X:0 Y:0 (Canto Superior Esquerdo)</span>
-                  <span class="text-amber-400 font-bold">Réguas: 5 em 5 cm — Desenho Branco / Borda Preta</span>
-                  <span>Total Linear: ${dados.totalMetrosLinear.toFixed(2)}m</span>
+                  <span class="text-amber-400 font-bold">Rolo Completo: ${larguraBobina}cm x ${comprimentoRoloTotal}cm — Desenho Branco / Borda Preta</span>
+                  <span>Consumo Efetivo: ${dados.totalMetrosLinear.toFixed(2)}m</span>
                 </div>
               </div>
             </div>
@@ -734,7 +770,7 @@
             </div>
           </div>
           <div class="space-y-3 pt-2">
-            <h4 class="font-bold text-slate-700 text-sm">Simulador com Réguas de 5 em 5 cm, Desenhos Brancos e Borda Preta</h4>
+            <h4 class="font-bold text-slate-700 text-sm">Simulador com Réguas Proporcionais à Bobina Real, Desenhos Brancos e Borda Preta</h4>
             ${htmlPaineis || '<p class="text-xs text-slate-400">Nenhum material selecionado.</p>'}
           </div>
         </div>
@@ -788,7 +824,7 @@
 
     renderTudo();
     if(document.querySelectorAll("#partes tr").length === 0) {
-      addParteVazia("Peça Corte", "Bobina: Bobina Plástico / Tecido 1.40m", 60, 40, 4, 3);
+      addParteVazia("Peça Corte", "Bobina: Bobina Plástico 140cm x 5000cm", 60, 40, 4, 3);
     }
   </script>
 </body>
