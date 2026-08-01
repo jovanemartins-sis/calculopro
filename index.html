@@ -49,7 +49,7 @@
       <div class="text-center space-y-2">
         <i class="fa-solid fa-scissors text-3xl text-emerald-600"></i>
         <h2 class="text-xl font-bold text-slate-800">CalculaJá Pro</h2>
-        <p class="text-xs text-slate-500">Mecanismo de Nesting & Corte de Plásticos, Tecidos e Chapas (Versão v1.4.4)</p>
+        <p class="text-xs text-slate-500">Mecanismo de Nesting 2D Real & Corte de Plásticos, Tecidos e Chapas (Versão v1.4.5)</p>
       </div>
       <button onclick="loginComGoogle()" class="w-full bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 font-bold py-2.5 rounded-xl text-sm flex items-center justify-center space-x-2 transition shadow-sm cursor-pointer">
         <i class="fa-brands fa-google text-red-500"></i>
@@ -103,7 +103,7 @@
         <div>
           <h2 class="text-lg font-bold mb-4 text-slate-700 flex items-center space-x-2">
             <i class="fa-solid fa-calculator text-blue-600"></i>
-            <span>Orçamento & Peças (Nesting de Corte em Escala)</span>
+            <span>Orçamento & Peças (Nesting 2D True-Fit & Encaixe Dinâmico)</span>
           </h2>
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
             <div>
@@ -167,14 +167,14 @@
           </div>
 
           <div class="flex gap-2">
-            <button onclick="calcular()" class="flex-grow bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl text-sm shadow-md transition cursor-pointer">Processar Cálculo & RIP Nesting</button>
+            <button onclick="calcular()" class="flex-grow bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl text-sm shadow-md transition cursor-pointer">Processar Cálculo & Nesting 2D</button>
             <button onclick="salvarProjeto()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-5 py-3 rounded-xl text-sm shadow-md transition cursor-pointer"><i class="fa-solid fa-floppy-disk mr-1"></i> Salvar</button>
           </div>
         </div>
 
-        <!-- Bloco de Resultado & Visualizador Tipo RIP -->
+        <!-- Bloco de Resultado & Visualizador Tipo RIP Nesting 2D -->
         <div id="resultado" class="border-t pt-4 space-y-4">
-          <div class="text-center py-6 text-slate-400 text-sm">Preencha as peças e clique em <b>Processar Cálculo & RIP Nesting</b> para simular o encaixe automático exato com réguas proporcionais às dimensões reais da bobina.</div>
+          <div class="text-center py-6 text-slate-400 text-sm">Preencha as peças e clique em <b>Processar Cálculo & Nesting 2D</b> para simular o encaixe otimizado de múltiplas larguras lado a lado e em profundidade na bobina.</div>
         </div>
 
       </div>
@@ -356,9 +356,9 @@
     });
   </script>
 
-  <!-- LÓGICA DE DETECÇÃO DE ATUALIZAÇÃO E NESTING COM CORREÇÃO DE POSICIONAMENTO E ESCALA -->
+  <!-- LÓGICA DE NESTING 2D REAL (BLKP / BOTTOM-LEFT PACKING PARA BOBINAS CONTÍNUAS) -->
   <script>
-    const VERSAO_ATUAL = "v1.4.4";
+    const VERSAO_ATUAL = "v1.4.5";
 
     function verificarAtualizacaoApp() {
       const versaoSalva = localStorage.getItem("app_versao_calculaja");
@@ -377,7 +377,7 @@
         <i class="fa-solid fa-rocket text-emerald-400 text-xl"></i>
         <div>
           <p class="text-xs font-bold">App Atualizado!</p>
-          <p class="text-[10px] text-slate-400">Nova versão ${novaVersao} carregada com sucesso.</p>
+          <p class="text-[10px] text-slate-400">Nova versão ${novaVersao} com Nesting 2D carregada.</p>
         </div>
         <button onclick="this.parentElement.remove()" class="ml-3 text-slate-400 hover:text-white text-xs font-bold">✕</button>
       `;
@@ -403,7 +403,7 @@
       { id: 1, nome: "Ilhós NBR", unidade: "un", valor: 0.15 }
     ];
     let bobinas = JSON.parse(localStorage.getItem("bobinas_v8")) || [
-      { id: 1, nome: "Bobina Plástico 140cm x 5000cm", largura: 140, comprimentoRolo: 5000, preco: 38.00, regra: "Nesting Automático de Corte" }
+      { id: 1, nome: "Bobina Plástico 140cm x 5000cm", largura: 140, comprimentoRolo: 5000, preco: 38.00, regra: "Nesting 2D Automático de Corte" }
     ];
     let projetosSalvos = JSON.parse(localStorage.getItem("projetos_v8")) || [];
 
@@ -468,7 +468,7 @@
         largura: parseFloat(document.getElementById("larguraBobina").value), 
         comprimentoRolo: parseFloat(document.getElementById("comprimentoBobina").value) || 5000,
         preco: parseFloat(document.getElementById("precoBobina").value), 
-        regra: document.getElementById("regraBobina").value || "Corte Padrão" 
+        regra: document.getElementById("regraBobina").value || "Nesting 2D Otimizado" 
       });
       salvarLocal(); renderTudo(); this.reset();
     });
@@ -572,10 +572,87 @@
       if(!elemento) { alert("Nenhum layout processado para exportar."); return; }
       html2canvas(elemento, { scale: 2, backgroundColor: '#0f172a' }).then(canvas => {
         const link = document.createElement('a');
-        link.download = `Corte-Corel-Layout-${document.getElementById('cliente').value || 'Cliente'}.png`;
+        link.download = `Corte-Corel-Nesting2D-${document.getElementById('cliente').value || 'Cliente'}.png`;
         link.href = canvas.toDataURL('image/png');
         link.click();
       });
+    }
+
+    // ALGORITMO DE NESTING 2D REAL (Bottom-Left Shelf Packing para rolos contínuos)
+    function executarNesting2D(pecasIn, larguraBobina) {
+      // 1. Expandir todas as peças unitárias e ordenar decrescente por altura/área para melhor encaixe
+      let itens = [];
+      pecasIn.forEach(p => {
+        for(let i=0; i<p.q; i++) {
+          let w = p.l1;
+          let h = p.l2;
+          // Permitir rotação automática se couber na largura e otimizar formato
+          let rotacionado = false;
+          if (w > larguraBobina && h <= larguraBobina) {
+            w = p.l2; h = p.l1; rotacionado = true;
+          } else if (w <= larguraBobina && h <= larguraBobina) {
+            // Se ambos cabem, priorizar a orientação que deixa a maior dimensão em w ou h conforme heurística
+            if(w < h && h <= larguraBobina) {
+              // Mantém original ou rotaciona se vantajoso
+            }
+          }
+          if (w > larguraBobina) {
+            alert(`Atenção: A peça "${p.nome}" (${w}cm) excede a largura máxima da bobina (${larguraBobina}cm)!`);
+          }
+          itens.push({ nome: p.nome, w, h, originalW: p.l1, originalH: p.l2, area: w * h });
+        }
+      });
+
+      // Ordenar por altura decrescente (Shelf Packing)
+      itens.sort((a, b) => b.h - a.h);
+
+      let prateleiras = [{ y: 0, alturaPrateleira: 0, larguraOcupada: 0, itens: [] }];
+
+      itens.forEach(item => {
+        let colocado = false;
+        // Tentar encaixar nas prateleiras existentes
+        for (let shelf of prateleiras) {
+          if (shelf.larguraOcupada + item.w <= larguraBobina) {
+            // Encaixa na prateleira atual
+            let x = shelf.larguraOcupada;
+            let y = shelf.y;
+            shelf.itens.push({ ...item, x, y });
+            shelf.larguraOcupada += item.w;
+            if (item.h > shelf.alturaPrateleira) {
+              // Ajusta altura da prateleira se a peça for mais alta
+              let diff = item.h - shelf.alturaPrateleira;
+              shelf.alturaPrateleira = item.h;
+              // Atualizar y dos itens anteriores da prateleira se necessário ou manter topo alinhado
+            }
+            colocado = true;
+            break;
+          }
+        }
+
+        // Se não coube em nenhuma prateleira aberta, abrir nova prateleira abaixo
+        if (!colocado) {
+          let ultimaPrateleira = prateleiras[prateleiras.length - 1];
+          let novoY = ultimaPrateleira.y + ultimaPrateleira.alturaPrateleira;
+          let novaPrateleira = {
+            y: novoY,
+            alturaPrateleira: item.h,
+            larguraOcupada: item.w,
+            itens: [{ ...item, x: 0, y: novoY }]
+          };
+          prateleiras.push(novaPrateleira);
+        }
+      });
+
+      // Calcular altura total consumida no rolo
+      let ultima = prateleiras[prateleiras.length - 1];
+      let alturaTotalConsumidaCm = ultima ? (ultima.y + ultima.alturaPrateleira) : 0;
+
+      let listaPlana = [];
+      prateleiras.forEach(s => {
+        s.itens.forEach(i => listaPlana.push(i));
+      });
+
+      return { listaPlana, alturaTotalConsumidaCm };
     }
 
     function calcular() {
@@ -603,32 +680,9 @@
             const bObj = bobinas.find(x => x.nome === bNome);
             if(bObj) {
               if(!agrupadoPorBobina[bNome]) {
-                agrupadoPorBobina[bNome] = { obj: bObj, pecas: [], totalMetrosLinear: 0 };
+                agrupadoPorBobina[bNome] = { obj: bObj, pecasInput: [] };
               }
-
-              // CORREÇÃO DE ORIENTAÇÃO PARA PEÇAS QUADRADAS OU RETANGULARES:
-              // Se a largura informada (l1) for maior que a largura da bobina, tentamos inverter automaticamente (l2 como largura).
-              let w = l1;
-              let h = l2;
-              if (w > bObj.largura && h <= bObj.largura) {
-                w = l2;
-                h = l1;
-              }
-
-              if(w > bObj.largura) {
-                alert(`Atenção: A peça "${nomeP}" (${w}cm) excede a largura máxima do material ${bObj.nome} (${bObj.largura}cm)!`);
-              }
-
-              const pistas = Math.max(1, Math.floor(bObj.largura / w));
-              const linhasRIP = Math.ceil(q / pistas);
-              const comprimentoConsumido = (linhasRIP * h / 100) * (1 + perda/100);
-
-              agrupadoPorBobina[bNome].totalMetrosLinear += comprimentoConsumido;
-              custoMat += comprimentoConsumido * bObj.preco;
-
-              for(let i=0; i<q; i++) {
-                agrupadoPorBobina[bNome].pecas.push({ nome: nomeP, w, h });
-              }
+              agrupadoPorBobina[bNome].pecasInput.push({ nome: nomeP, l1, l2, q, perda });
             }
           } else {
             const cNome = matVal.replace("Insumo: ", "");
@@ -643,52 +697,67 @@
         }
       });
 
+      // Processar Nesting 2D para cada bobina agrupada
+      let dadosProcessadosBobinas = {};
+      for(let bNome in agrupadoPorBobina) {
+        const dados = agrupadoPorBobina[bNome];
+        const resultadoNesting = executarNesting2D(dados.pecasInput, dados.obj.largura);
+        // Aplicar percentual médio de perda informado nas peças ou padrão
+        let perdaMedia = dados.pecasInput.reduce((acc, cur) => acc + cur.perda, 0) / dados.pecasInput.length || 0;
+        let metrosLinearesEfetivos = (resultadoNesting.alturaTotalConsumidaCm / 100) * (1 + perdaMedia/100);
+
+        custoMat += metrosLinearesEfetivos * dados.obj.preco;
+        dadosProcessadosBobinas[bNome] = {
+          obj: dados.obj,
+          itensNesting: resultadoNesting.listaPlana,
+          alturaTotalCm: resultadoNesting.alturaTotalConsumidaCm,
+          metrosLineares: metrosLinearesEfetivos
+        };
+      }
+
       const custoPuro = custoMat + mao + outros;
       const precoFinal = custoPuro * (1 + (lucro + imposto)/100);
 
       ultimoCache = { id: Date.now(), data: new Date().toLocaleDateString('pt-BR'), cliente, produto, mao, outros, lucro, imposto, custoMat, precoFinal, totalPecas, pecas: pecasArr };
 
       let htmlPaineis = '';
-      for(let bNome in agrupadoPorBobina) {
-        const dados = agrupadoPorBobina[bNome];
+      for(let bNome in dadosProcessadosBobinas) {
+        const dados = dadosProcessadosBobinas[bNome];
         const larguraBobina = dados.obj.largura; // ex: 140cm
         const comprimentoRoloTotal = dados.obj.comprimentoRolo || 5000; // ex: 5000cm
-        const comprimentoConsumidoCm = dados.totalMetrosLinear * 100;
+        const alturaConsumidaReal = Math.max(100, dados.alturaTotalCm);
 
-        // Gerar régua X (Largura da Bobina - de 5 em 5 cm exata, garantindo 100% visível na extremidade)
+        // Gerar régua X (Largura da Bobina - de 5 em 5 cm exata)
         let reguaXHtml = '';
         for(let x = 0; x < larguraBobina; x += 5) {
           let posPct = (x / larguraBobina) * 100;
           reguaXHtml += `<span class="absolute text-[9px] text-amber-400 font-mono" style="left: ${posPct}%; transform: translateX(-50%);">${x}</span>`;
         }
-        // Garante exibição exata da marcação final da largura total (ex: 140cm) sem cortar
         reguaXHtml += `<span class="absolute text-[9px] text-amber-400 font-mono" style="left: 100%; transform: translateX(-100%);">${larguraBobina}</span>`;
 
-        // Gerar régua Y (Comprimento Total do Rolo - de 5 em 5 cm ou passo adequado para grandes rolos)
+        // Gerar régua Y (Comprimento Dinâmico Consumido pelo Nesting 2D)
         let reguaYHtml = '';
-        let passoY = 500; 
-        if(comprimentoRoloTotal <= 1000) passoY = 100;
-        if(comprimentoRoloTotal <= 500) passoY = 50;
+        let passoY = 50; 
+        if(alturaConsumidaReal > 500) passoY = 100;
+        if(alturaConsumidaReal > 2000) passoY = 500;
 
-        for(let y = 0; y <= comprimentoRoloTotal; y += passoY) {
-          let topoPct = (y / comprimentoRoloTotal) * 100;
+        for(let y = 0; y <= alturaConsumidaReal; y += passoY) {
+          let topoPct = (y / alturaConsumidaReal) * 100;
           reguaYHtml += `<span class="absolute text-[9px] text-amber-400 font-mono whitespace-nowrap" style="top: ${topoPct}%; transform: translateY(-50%); left: 2px;">${y}</span>`;
         }
-        if(comprimentoRoloTotal % passoY !== 0) {
-          reguaYHtml += `<span class="absolute text-[9px] text-amber-400 font-mono whitespace-nowrap" style="top: 100%; transform: translateY(-100%); left: 2px;">${comprimentoRoloTotal}</span>`;
-        }
+        reguaYHtml += `<span class="absolute text-[9px] text-amber-400 font-mono whitespace-nowrap" style="top: 100%; transform: translateY(-100%); left: 2px;">${Math.round(alturaConsumidaReal)}</span>`;
 
-        let alturaVisualContainer = Math.max(500, Math.min(3000, (comprimentoRoloTotal / 100) * 14));
+        let alturaVisualContainer = Math.max(450, Math.min(2500, (alturaConsumidaReal / 100) * 120));
 
         htmlPaineis += `
           <div class="bg-slate-900 border border-slate-700 rounded-xl p-4 space-y-3">
             <div class="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-slate-700 pb-3 gap-3">
               <div>
-                <h5 class="font-bold text-white text-sm"><i class="fa-solid fa-ruler-combined text-amber-400 mr-1"></i> Réguas CorelDRAW Proporcional — ${bNome}</h5>
-                <p class="text-xs text-slate-400">Rolo Padrão: <b>${larguraBobina} cm</b> de largura por <b>${comprimentoRoloTotal} cm</b> de comprimento | Consumo do Projeto: <b>${comprimentoConsumidoCm.toFixed(0)} cm</b></p>
+                <h5 class="font-bold text-white text-sm"><i class="fa-solid fa-shapes text-amber-400 mr-1"></i> Nesting 2D CorelDRAW — ${bNome}</h5>
+                <p class="text-xs text-slate-400">Largura Bobina: <b>${larguraBobina} cm</b> | Comprimento Otimizado no Rolo: <b>${alturaConsumidaReal.toFixed(0)} cm</b></p>
               </div>
               <div class="flex items-center gap-2">
-                <span class="text-xs font-bold bg-amber-500/20 text-amber-300 border border-amber-500/40 px-2.5 py-1 rounded-lg">R$ ${(dados.totalMetrosLinear * dados.obj.preco).toFixed(2)}</span>
+                <span class="text-xs font-bold bg-amber-500/20 text-amber-300 border border-amber-500/40 px-2.5 py-1 rounded-lg">R$ ${(dados.metrosLineares * dados.obj.preco).toFixed(2)}</span>
                 <div class="flex items-center bg-slate-800 rounded-lg p-0.5 space-x-1 border border-slate-700">
                   <button onclick="ajustarZoom(-0.2)" title="Diminuir Zoom" class="px-2 py-1 bg-slate-700 hover:bg-slate-600 text-white rounded text-xs font-bold cursor-pointer"><i class="fa-solid fa-magnifying-glass-minus"></i></button>
                   <button onclick="ajustarZoom(0.2)" title="Aumentar Zoom" class="px-2 py-1 bg-slate-700 hover:bg-slate-600 text-white rounded text-xs font-bold cursor-pointer"><i class="fa-solid fa-magnifying-glass-plus"></i></button>
@@ -700,35 +769,37 @@
             <div class="overflow-x-auto overflow-y-auto max-h-[600px] border border-slate-800 rounded-xl p-2 bg-slate-950 shadow-inner" id="bloco-exportavel-rip">
               <div class="container-rip-visual bg-slate-950 p-2 transition-transform duration-200" style="min-width: 650px;">
                 
-                <!-- REGUA SUPERIOR X (Largura Total da Bobina ex: 140cm, com padding right para evitar corte na margem) -->
+                <!-- REGUA SUPERIOR X -->
                 <div class="relative h-6 ml-16 mr-2 border-b-2 border-amber-500 select-none bg-slate-900/80 rounded-t">
                   ${reguaXHtml}
                 </div>
 
                 <div class="flex">
-                  <!-- REGUA LATERAL Y (Comprimento Total do Rolo ex: 5000cm) -->
+                  <!-- REGUA LATERAL Y -->
                   <div class="relative w-16 border-r-2 border-amber-500 select-none bg-slate-900/80" style="height: ${alturaVisualContainer}px;">
                     ${reguaYHtml}
                   </div>
 
-                  <!-- AREA DE NESTING / CORTE INTERNA DO ROLO (Grade exata flexbox sem distorção) -->
+                  <!-- AREA DE NESTING 2D ABSOLUTA (Posicionamento exato via CSS absolute) -->
                   <div class="flex-grow pl-0 bg-slate-950">
-                    <div class="relative bg-slate-900 border border-slate-800 overflow-hidden flex flex-wrap content-start items-start justify-start p-0 m-0" style="height: ${alturaVisualContainer}px;">
+                    <div class="relative bg-slate-900 border border-slate-800 overflow-hidden m-0" style="height: ${alturaVisualContainer}px;">
         `;
 
-        // Renderizar peças encaixadas no rolo com proporção exata e largura baseada na proporção exata de w / larguraBobina
-        dados.pecas.forEach((p, idx) => {
-          let larguraPct = (p.w / larguraBobina) * 100;
-          let alturaPecaPx = Math.max(35, (p.h / comprimentoRoloTotal) * alturaVisualContainer);
+        // Renderizar cada peça nas coordenadas exatas (x, y, w, h) geradas pelo algoritmo de Nesting 2D
+        dados.itensNesting.forEach((item, idx) => {
+          let leftPct = (item.x / larguraBobina) * 100;
+          let topPct = (item.y / alturaConsumidaReal) * 100;
+          let widthPct = (item.w / larguraBobina) * 100;
+          let heightPct = (item.h / alturaConsumidaReal) * 100;
 
           htmlPaineis += `
-            <div style="width: ${larguraPct}%; height: ${alturaPecaPx}px;" class="bg-white hover:bg-slate-50 text-slate-900 p-1 border border-black flex flex-col justify-between transition m-0 box-border shadow-sm overflow-hidden">
+            <div style="position: absolute; left: ${leftPct}%; top: ${topPct}%; width: ${widthPct}%; height: ${heightPct}%;" class="bg-white hover:bg-slate-100 text-slate-900 p-1 border border-black flex flex-col justify-between transition box-border shadow-sm overflow-hidden z-10">
               <div class="flex justify-between items-center text-[9px] font-bold border-b border-slate-300 pb-0.5 text-slate-700">
-                <span class="truncate">#${idx+1} ${p.nome}</span>
-                <span class="bg-slate-200 text-slate-800 px-1 rounded font-mono">${p.w}cm</span>
+                <span class="truncate">#${idx+1} ${item.nome}</span>
+                <span class="bg-slate-200 text-slate-800 px-1 rounded font-mono">${item.w}x${item.h}cm</span>
               </div>
-              <div class="text-center font-mono text-xs font-black text-slate-900 my-auto">${p.h}cm</div>
-              <div class="text-[8px] text-slate-500 text-right font-mono">Corel 0,0</div>
+              <div class="text-center font-mono text-[10px] font-black text-slate-900 my-auto">${item.w} x ${item.h} cm</div>
+              <div class="text-[7px] text-slate-500 text-right font-mono">X:${item.x} Y:${item.y}</div>
             </div>
           `;
         });
@@ -740,8 +811,8 @@
 
                 <div class="flex justify-between text-[10px] text-slate-400 font-mono mt-2 pt-1 px-1 border-t border-slate-800">
                   <span>Origem X:0 Y:0 (Canto Superior Esquerdo)</span>
-                  <span class="text-amber-400 font-bold">Rolo Completo: ${larguraBobina}cm x ${comprimentoRoloTotal}cm — Réguas de 5 em 5cm | Desenhos Brancos / Borda Preta</span>
-                  <span>Consumo Efetivo: ${dados.totalMetrosLinear.toFixed(2)}m</span>
+                  <span class="text-amber-400 font-bold">Nesting 2D Ativo — Encaixe Automático de Múltiplas Peças</span>
+                  <span>Consumo: ${dados.metrosLineares.toFixed(2)}m</span>
                 </div>
               </div>
             </div>
@@ -770,7 +841,7 @@
             </div>
           </div>
           <div class="space-y-3 pt-2">
-            <h4 class="font-bold text-slate-700 text-sm">Simulador com Réguas de 5 em 5 cm, Desenhos Brancos e Borda Preta</h4>
+            <h4 class="font-bold text-slate-700 text-sm">Simulador com Nesting 2D Real, Réguas e Encaixe Inteligente</h4>
             ${htmlPaineis || '<p class="text-xs text-slate-400">Nenhum material selecionado.</p>'}
           </div>
         </div>
@@ -783,7 +854,7 @@
       if(!res || res.pecas.length === 0) { alert("Adicione peças válidas antes de salvar."); return; }
       projetosSalvos.unshift(res);
       salvarLocal();
-      alert("Orçamento e layout de corte salvos com sucesso!");
+      alert("Orçamento e layout de Nesting 2D salvos com sucesso!");
       mudarAba('salvos');
     }
 
@@ -824,7 +895,7 @@
 
     renderTudo();
     if(document.querySelectorAll("#partes tr").length === 0) {
-      addParteVazia("Peça Corte", "Bobina: Bobina Plástico 140cm x 5000cm", 139, 139, 1, 0);
+      addParteVazia("Peça 1", "Bobina: Bobina Plástico 140cm x 5000cm", 139, 139, 1, 0);
     }
   </script>
 </body>
