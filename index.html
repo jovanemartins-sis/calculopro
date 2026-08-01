@@ -49,7 +49,7 @@
       <div class="text-center space-y-2">
         <i class="fa-solid fa-scissors text-3xl text-emerald-600"></i>
         <h2 class="text-xl font-bold text-slate-800">CalculaJá Pro</h2>
-        <p class="text-xs text-slate-500">Mecanismo de Nesting & Corte de Plásticos, Tecidos e Chapas (Versão v1.4.0)</p>
+        <p class="text-xs text-slate-500">Mecanismo de Nesting & Corte de Plásticos, Tecidos e Chapas (Versão v1.4.1)</p>
       </div>
       <button onclick="loginComGoogle()" class="w-full bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 font-bold py-2.5 rounded-xl text-sm flex items-center justify-center space-x-2 transition shadow-sm cursor-pointer">
         <i class="fa-brands fa-google text-red-500"></i>
@@ -139,6 +139,12 @@
                 <tbody id="partes" class="divide-y divide-slate-100"></tbody>
               </table>
             </div>
+            <!-- BOTÃO ADICIONAR PEÇA ABAIXO DA ÚLTIMA -->
+            <div class="mt-2">
+              <button onclick="addParteVazia()" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2 rounded-lg text-xs transition border border-slate-300 border-dashed cursor-pointer flex items-center justify-center gap-1">
+                <i class="fa-solid fa-plus text-emerald-600"></i> Adicionar nova peça abaixo
+              </button>
+            </div>
           </div>
 
           <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
@@ -166,7 +172,7 @@
           </div>
         </div>
 
-        <!-- Bloco de Resultado & Visualizador Tipo RIP com Réguas a cada 5cm, Desenhos Brancos e Borda Preta -->
+        <!-- Bloco de Resultado & Visualizador Tipo RIP -->
         <div id="resultado" class="border-t pt-4 space-y-4">
           <div class="text-center py-6 text-slate-400 text-sm">Preencha as peças e clique em <b>Processar Cálculo & RIP Nesting</b> para simular o encaixe automático exato com réguas milimetradas de 5 em 5 cm.</div>
         </div>
@@ -346,9 +352,9 @@
     });
   </script>
 
-  <!-- LÓGICA DE DETECÇÃO DE ATUALIZAÇÃO E NESTING COM RÉGUAS DE 5 EM 5 CM (Corel Style) -->
+  <!-- LÓGICA DE DETECÇÃO DE ATUALIZAÇÃO E NESTING COM RÉGUAS DE 5 EM 5 CM -->
   <script>
-    const VERSAO_ATUAL = "v1.4.0";
+    const VERSAO_ATUAL = "v1.4.1";
 
     function verificarAtualizacaoApp() {
       const versaoSalva = localStorage.getItem("app_versao_calculaja");
@@ -482,17 +488,56 @@
       });
     }
 
+    // Função para alterar quantidade via botões + e -
+    function alterarQtd(btn, delta) {
+      const input = btn.parentElement.querySelector(".qtdParte");
+      let atual = parseInt(input.value) || 0;
+      let novo = Math.max(1, atual + delta);
+      input.value = novo;
+    }
+
+    // Função de Edição de Peça individual
+    function editarLinhaPeca(btn) {
+      const tr = btn.closest('tr');
+      const inputs = tr.querySelectorAll('input, select');
+      const isReadonly = inputs[0].hasAttribute('readonly');
+      
+      inputs.forEach(input => {
+        if(isReadonly) {
+          input.removeAttribute('readonly');
+          input.removeAttribute('disabled');
+          input.classList.remove('bg-slate-50', 'border-transparent');
+          input.classList.add('border-slate-300');
+        } else {
+          input.setAttribute('readonly', true);
+          if(input.tagName === 'SELECT') input.setAttribute('disabled', true);
+          input.classList.add('bg-slate-50', 'border-transparent');
+          input.classList.remove('border-slate-300');
+        }
+      });
+      btn.innerHTML = isReadonly ? '<i class="fa-solid fa-check text-emerald-600"></i>' : '<i class="fa-solid fa-pen text-blue-500"></i>';
+    }
+
     function addParteVazia(nome="", mat="", l1="", l2="", q=1, p=0) {
       const tbody = document.getElementById("partes");
       const tr = document.createElement("tr");
       tr.innerHTML = `
-        <td class="p-2"><input class="nomeParte w-full border rounded px-2 py-1 text-sm" type="text" placeholder="Ex: Peça Plástico / Tecido" value="${nome}"></td>
-        <td class="p-2"><select class="materialParte w-full border rounded px-2 py-1 text-sm"><option value="">Selecione...</option></select></td>
-        <td class="p-2"><input class="lado1 w-full border rounded px-2 py-1 text-sm" type="number" placeholder="cm" value="${l1}"></td>
-        <td class="p-2"><input class="lado2 w-full border rounded px-2 py-1 text-sm" type="number" placeholder="cm" value="${l2}"></td>
-        <td class="p-2"><input class="qtdParte w-full border rounded px-2 py-1 text-sm" type="number" placeholder="1" value="${q}"></td>
-        <td class="p-2"><input class="perdaParte w-full border rounded px-2 py-1 text-sm" type="number" placeholder="0" value="${p}"></td>
-        <td class="p-2 text-center"><button class="bg-red-500 text-white p-1.5 rounded text-xs cursor-pointer" type="button" onclick="this.closest('tr').remove()"><i class="fa-solid fa-xmark"></i></button></td>
+        <td class="p-2"><input class="nomeParte w-full border border-slate-300 rounded px-2 py-1 text-sm" type="text" placeholder="Ex: Peça Plástico / Tecido" value="${nome}"></td>
+        <td class="p-2"><select class="materialParte w-full border border-slate-300 rounded px-2 py-1 text-sm"><option value="">Selecione...</option></select></td>
+        <td class="p-2"><input class="lado1 w-full border border-slate-300 rounded px-2 py-1 text-sm" type="number" placeholder="cm" value="${l1}"></td>
+        <td class="p-2"><input class="lado2 w-full border border-slate-300 rounded px-2 py-1 text-sm" type="number" placeholder="cm" value="${l2}"></td>
+        <td class="p-2">
+          <div class="flex items-center space-x-1">
+            <button type="button" onclick="alterarQtd(this, -1)" class="bg-slate-200 hover:bg-slate-300 text-slate-700 px-1.5 py-1 rounded text-xs font-bold cursor-pointer">-</button>
+            <input class="qtdParte w-12 text-center border border-slate-300 rounded px-1 py-1 text-sm" type="number" value="${q}">
+            <button type="button" onclick="alterarQtd(this, 1)" class="bg-slate-200 hover:bg-slate-300 text-slate-700 px-1.5 py-1 rounded text-xs font-bold cursor-pointer">+</button>
+          </div>
+        </td>
+        <td class="p-2"><input class="perdaParte w-full border border-slate-300 rounded px-2 py-1 text-sm" type="number" placeholder="0" value="${p}"></td>
+        <td class="p-2 text-center flex items-center justify-center space-x-1">
+          <button class="bg-blue-100 hover:bg-blue-200 text-blue-600 p-1.5 rounded text-xs cursor-pointer" type="button" onclick="editarLinhaPeca(this)" title="Editar"><i class="fa-solid fa-pen"></i></button>
+          <button class="bg-red-500 hover:bg-red-600 text-white p-1.5 rounded text-xs cursor-pointer" type="button" onclick="this.closest('tr').remove()" title="Excluir"><i class="fa-solid fa-xmark"></i></button>
+        </td>
       `;
       tbody.appendChild(tr);
       atualizaSelectsPartes();
@@ -586,20 +631,17 @@
 
       ultimoCache = { id: Date.now(), data: new Date().toLocaleDateString('pt-BR'), cliente, produto, mao, outros, lucro, imposto, custoMat, precoFinal, totalPecas, pecas: pecasArr };
 
-      // Renderizar Painel de Nesting com Réguas Milimetradas de 5 em 5 cm, desenhos brancos e borda preta
       let htmlPaineis = '';
       for(let bNome in agrupadoPorBobina) {
         const dados = agrupadoPorBobina[bNome];
         const larguraBobina = dados.obj.largura;
         const comprimentoTotalCm = dados.totalMetrosLinear * 100;
 
-        // Gerador de marcações da régua superior estilo Corel (EXATAMENTE DE 5 EM 5 CM)
         let reguaXHtml = '';
         for(let x = 0; x <= larguraBobina; x += 5) {
           reguaXHtml += `<span class="absolute" style="left: ${(x/larguraBobina)*100}%; transform: translateX(-50%);">${x}</span>`;
         }
 
-        // Gerador de marcações da régua lateral Y (EXATAMENTE DE 5 EM 5 CM)
         let reguaYHtml = '';
         let passoY = Math.max(5, Math.floor(comprimentoTotalCm / 12 / 5) * 5);
         if(passoY < 5) passoY = 5;
@@ -617,7 +659,6 @@
               </div>
               <div class="flex items-center gap-2">
                 <span class="text-xs font-bold bg-amber-500/20 text-amber-300 border border-amber-500/40 px-2.5 py-1 rounded-lg">R$ ${(dados.totalMetrosLinear * dados.obj.preco).toFixed(2)}</span>
-                <!-- FERRAMENTAS DE ZOOM E EXPORTAR -->
                 <div class="flex items-center bg-slate-800 rounded-lg p-0.5 space-x-1 border border-slate-700">
                   <button onclick="ajustarZoom(-0.2)" title="Diminuir Zoom" class="px-2 py-1 bg-slate-700 hover:bg-slate-600 text-white rounded text-xs font-bold cursor-pointer"><i class="fa-solid fa-magnifying-glass-minus"></i></button>
                   <button onclick="ajustarZoom(0.2)" title="Aumentar Zoom" class="px-2 py-1 bg-slate-700 hover:bg-slate-600 text-white rounded text-xs font-bold cursor-pointer"><i class="fa-solid fa-magnifying-glass-plus"></i></button>
@@ -626,41 +667,29 @@
               </div>
             </div>
 
-            <!-- SIMULADOR GRÁFICO COM RÉGUAS DE 5 EM 5 CM, DESENHOS BRANCOS E BORDA PRETA -->
             <div class="overflow-x-auto" id="bloco-exportavel-rip">
               <div id="container-rip-visual" class="bg-slate-950 rounded-xl p-3 border border-slate-800 shadow-2xl transition-transform duration-200" style="min-width: 550px;">
-                
-                <!-- régua superior X (Marcas exatas de 5 em 5 cm) -->
                 <div class="relative h-6 ml-12 border-b border-amber-500/60 text-[9px] text-amber-400 font-mono select-none">
                   ${reguaXHtml}
                 </div>
-
                 <div class="flex">
-                  <!-- régua lateral esquerda Y (Marcas exatas de 5 em 5 cm em cm) -->
                   <div class="relative w-12 border-r border-amber-500/60 text-[9px] text-amber-400 font-mono select-none" style="height: 320px;">
                     ${reguaYHtml}
                   </div>
-
-                  <!-- Área de trabalho / Mesa de Corte (Peças perfeitamente juntas, fundo branco e borda preta) -->
                   <div class="flex-grow pl-1">
                     <div class="relative bg-slate-900 border border-slate-700 h-[320px] overflow-y-auto flex flex-wrap content-start p-0 m-0 gap-0">
         `;
 
         dados.pecas.forEach((p, idx) => {
           let larguraPct = Math.max(15, Math.min(100, (p.w / larguraBobina) * 100));
-          
           htmlPaineis += `
             <div style="width: ${larguraPct}%;" class="bg-white hover:bg-slate-50 text-slate-900 p-1.5 border border-black flex flex-col justify-between transition m-0 box-border shadow-sm">
               <div class="flex justify-between items-center text-[9px] font-bold border-b border-slate-300 pb-0.5 text-slate-700">
                 <span class="truncate">#${idx+1} ${p.nome}</span>
                 <span class="bg-slate-200 text-slate-800 px-1 rounded font-mono">${p.w}cm</span>
               </div>
-              <div class="text-center font-mono text-xs font-black py-1 text-slate-900">
-                ${p.h}cm
-              </div>
-              <div class="text-[8px] text-slate-500 text-right font-mono">
-                Corel 0,0
-              </div>
+              <div class="text-center font-mono text-xs font-black py-1 text-slate-900">${p.h}cm</div>
+              <div class="text-[8px] text-slate-500 text-right font-mono">Corel 0,0</div>
             </div>
           `;
         });
@@ -669,8 +698,6 @@
                     </div>
                   </div>
                 </div>
-
-                <!-- Rodapé informativo de escala -->
                 <div class="flex justify-between text-[10px] text-slate-400 font-mono mt-2 pt-1 px-1 border-t border-slate-800">
                   <span>Origem X:0 Y:0 (Canto Superior Esquerdo)</span>
                   <span class="text-amber-400 font-bold">Réguas: 5 em 5 cm — Desenho Branco / Borda Preta</span>
