@@ -23,18 +23,18 @@
     </div>
   </header>
 
-  <main class="flex-grow container mx-auto p-4 max-w-6xl grid grid-cols-1 md:grid-cols-2 gap-6">
+  <main class="flex-grow container mx-auto p-4 max-w-7xl grid grid-cols-1 lg:grid-cols-3 gap-6">
     
-    <!-- COLUNA DE CADASTRO DE MATERIAIS / CATÁLOGO -->
-    <section class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+    <!-- COLUNA 1: CATÁLOGO DE PREÇOS -->
+    <section class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 lg:col-span-1">
       <h2 class="text-lg font-bold mb-4 text-slate-700 flex items-center space-x-2">
         <i class="fa-solid fa-boxes-stacked text-emerald-600"></i>
-        <span>Cadastro de Preços e Catálogo</span>
+        <span>Catálogo de Materiais</span>
       </h2>
       <form id="formPreco" class="space-y-4">
         <div>
           <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Nome do Material</label>
-          <input type="text" id="nomePreco" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm outline-none focus:border-emerald-500" placeholder="Ex: Chapa PVC 0.20" required>
+          <input type="text" id="nomePreco" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm outline-none focus:border-emerald-500" placeholder="Ex: Chapa PVC Cristal" required>
         </div>
         <div class="grid grid-cols-2 gap-4">
           <div>
@@ -46,70 +46,103 @@
             </select>
           </div>
           <div>
-            <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Valor Unitário (R$)</label>
+            <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Valor (R$)</label>
             <input type="number" id="valorPreco" step="0.01" min="0" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm outline-none focus:border-emerald-500" placeholder="0,00" required>
           </div>
         </div>
         <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-lg text-sm transition">
-          Cadastrar no Catálogo
+          Adicionar ao Catálogo
         </button>
       </form>
 
       <div class="mt-6">
-        <h3 class="text-sm font-bold text-slate-600 mb-2">Tabela Ativa</h3>
-        <div class="overflow-x-auto max-h-48 border rounded-lg">
+        <h3 class="text-sm font-bold text-slate-600 mb-2">Tabela Cadastrada</h3>
+        <div class="overflow-x-auto max-h-64 border rounded-lg">
           <table class="w-full text-left border-collapse">
             <tbody id="tabelaPrecos" class="divide-y divide-slate-100 text-sm">
-              <!-- Preenchido via Script -->
+              <!-- Preenchido via script -->
             </tbody>
           </table>
         </div>
       </div>
     </section>
 
-    <!-- COLUNA DE CÁLCULO E ORÇAMENTO -->
-    <section class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex flex-col justify-between">
+    <!-- COLUNA 2 e 3: PAINEL DE PARTES E CÁLCULO DE ORÇAMENTO -->
+    <section class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 lg:col-span-2 flex flex-col justify-between">
       <div>
         <h2 class="text-lg font-bold mb-4 text-slate-700 flex items-center space-x-2">
-          <i class="fa-solid fa-receipt text-blue-600"></i>
-          <span>Painel de Cálculo</span>
+          <i class="fa-solid fa-ruler-combined text-blue-600"></i>
+          <span>Composição do Projeto e Partes</span>
         </h2>
-        <div class="space-y-4">
-          <div class="grid grid-cols-2 gap-4">
-            <div>
-              <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Cliente / Projeto</label>
-              <input type="text" id="cliente" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-500" placeholder="Nome do Cliente">
-            </div>
-            <div>
-              <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Produto</label>
-              <input type="text" id="produto" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-500" placeholder="Descrição">
-            </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+          <div>
+            <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Cliente / Projeto</label>
+            <input type="text" id="cliente" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-500" placeholder="Nome do Cliente">
           </div>
-          
-          <div class="grid grid-cols-3 gap-2">
-            <div>
-              <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Mão de Obra (R$)</label>
-              <input type="number" id="mao" step="0.01" value="0" class="w-full border border-slate-300 rounded-lg px-2 py-1.5 text-sm">
-            </div>
-            <div>
-              <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Lucro (%)</label>
-              <input type="number" id="lucro" step="1" value="30" class="w-full border border-slate-300 rounded-lg px-2 py-1.5 text-sm">
-            </div>
-            <div>
-              <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Imposto (%)</label>
-              <input type="number" id="imposto" step="1" value="0" class="w-full border border-slate-300 rounded-lg px-2 py-1.5 text-sm">
-            </div>
+          <div>
+            <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Produto</label>
+            <input type="text" id="produto" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-500" placeholder="Descrição do Produto">
           </div>
-          
-          <button onclick="calcular()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg text-sm shadow-md transition">
-            Calcular Orçamento Completo
-          </button>
         </div>
+
+        <!-- TABELA DE PARTES DO PROJETO -->
+        <div class="mb-4">
+          <div class="flex justify-between items-center mb-2">
+            <h3 class="text-sm font-bold text-slate-600">Partes / Peças do Corte</h3>
+            <button onclick="addParteVazia()" class="bg-slate-800 hover:bg-slate-900 text-white px-3 py-1.5 rounded-lg text-xs font-bold transition">
+              <i class="fa-solid fa-plus mr-1"></i> Adicionar Peça
+            </button>
+          </div>
+          <div class="overflow-x-auto border rounded-lg max-h-48">
+            <table class="w-full text-left border-collapse text-sm">
+              <thead class="bg-slate-50 border-b text-xs text-slate-500 uppercase">
+                <tr>
+                  <th class="p-2">Nome</th>
+                  <th class="p-2">Material</th>
+                  <th class="p-2">Lado 1 (cm)</th>
+                  <th class="p-2">Lado 2 (cm)</th>
+                  <th class="p-2">Qtd</th>
+                  <th class="p-2">Perda (%)</th>
+                  <th class="p-2 text-center">Ação</th>
+                </tr>
+              </thead>
+              <tbody id="partes" class="divide-y divide-slate-100">
+                <!-- Linhas inseridas dinamicamente -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- CUSTOS EXTRAS E MARGENS -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+          <div>
+            <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Mão de Obra (R$)</label>
+            <input type="number" id="mao" step="0.01" value="0" class="w-full border border-slate-300 rounded-lg px-2 py-1.5 text-sm">
+          </div>
+          <div>
+            <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Outros Custos (R$)</label>
+            <input type="number" id="outros" step="0.01" value="0" class="w-full border border-slate-300 rounded-lg px-2 py-1.5 text-sm">
+          </div>
+          <div>
+            <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Lucro (%)</label>
+            <input type="number" id="lucro" step="1" value="30" class="w-full border border-slate-300 rounded-lg px-2 py-1.5 text-sm">
+          </div>
+          <div>
+            <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Imposto (%)</label>
+            <input type="number" id="imposto" step="1" value="0" class="w-full border border-slate-300 rounded-lg px-2 py-1.5 text-sm">
+          </div>
+        </div>
+
+        <button onclick="calcular()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl text-sm shadow-md transition">
+          Calcular Orçamento Completo
+        </button>
       </div>
 
+      <!-- RESULTADO DO CÁLCULO -->
       <div id="resultado" class="mt-6 border-t pt-4">
         <div class="text-center py-4 text-slate-400 text-sm">
-          <p>Preencha os dados e clique em <b>Calcular Orçamento</b>.</p>
+          <p>Adicione as peças, preencha os custos e clique em <b>Calcular Orçamento Completo</b>.</p>
         </div>
       </div>
     </section>
@@ -127,7 +160,7 @@
       projectId: "SEU_PROJECT_ID",
       storageBucket: "SEU_STORAGE_BUCKET.appspot.com",
       messagingSenderId: "SEU_MESSAGING_SENDER_ID",
-      appId: "SEU_APP_ID"
+      appId: "SUA_APP_ID"
     };
 
     const app = initializeApp(firebaseConfig);
@@ -164,7 +197,7 @@
     });
   </script>
 
-  <!-- LÓGICA DE CADASTRO E CÁLCULO -->
+  <!-- LÓGICA DE CADASTRO, PARTES E CÁLCULO -->
   <script>
     let catalogo = JSON.parse(localStorage.getItem("catalogo_calculaja")) || [
       { id: 1, nome: "Chapa PVC Cristal", unidade: "m²", valor: 25.00 }
@@ -189,6 +222,7 @@
         `;
         tbody.appendChild(tr);
       });
+      atualizaSelectsCatalogo();
     }
 
     document.getElementById("formPreco").addEventListener("submit", function(e) {
@@ -211,37 +245,93 @@
       renderTabelaPrecos();
     }
 
+    function atualizaSelectsCatalogo() {
+      document.querySelectorAll(".materialParte").forEach(select => {
+        const valorAtual = select.value;
+        select.innerHTML = '<option value="">Selecione...</option>';
+        catalogo.forEach(item => {
+          const opt = document.createElement("option");
+          opt.value = item.nome;
+          opt.textContent = item.nome;
+          if (item.nome === valorAtual) opt.selected = true;
+          select.appendChild(opt);
+        });
+      });
+    }
+
+    function addParteVazia() {
+      const tbody = document.getElementById("partes");
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td class="p-2"><input class="nomeParte w-full border border-slate-300 rounded px-2 py-1 text-sm outline-none focus:border-blue-500" type="text" placeholder="Peça"></td>
+        <td class="p-2"><select class="materialParte w-full border border-slate-300 rounded px-2 py-1 text-sm outline-none focus:border-blue-500"><option value="">Selecione...</option></select></td>
+        <td class="p-2"><input class="lado1 w-full border border-slate-300 rounded px-2 py-1 text-sm outline-none focus:border-blue-500" type="number" placeholder="0"></td>
+        <td class="p-2"><input class="lado2 w-full border border-slate-300 rounded px-2 py-1 text-sm outline-none focus:border-blue-500" type="number" placeholder="0"></td>
+        <td class="p-2"><input class="qtdParte w-full border border-slate-300 rounded px-2 py-1 text-sm outline-none focus:border-blue-500" type="number" placeholder="1" value="1"></td>
+        <td class="p-2"><input class="perdaParte w-full border border-slate-300 rounded px-2 py-1 text-sm outline-none focus:border-blue-500" type="number" placeholder="0" value="0"></td>
+        <td class="p-2 text-center"><button class="bg-red-500 hover:bg-red-600 text-white p-1.5 rounded text-xs" type="button" onclick="this.closest('tr').remove()"><i class="fa-solid fa-xmark"></i></button></td>
+      `;
+      tbody.appendChild(tr);
+      atualizaSelectsCatalogo();
+    }
+
     function calcular() {
       const maoObra = parseFloat(document.getElementById("mao").value) || 0;
+      const outrosCustos = parseFloat(document.getElementById("outros").value) || 0;
       const margemLucro = parseFloat(document.getElementById("lucro").value) || 0;
       const taxaImposto = parseFloat(document.getElementById("imposto").value) || 0;
 
-      const custoBaseMaterial = catalogo.length > 0 ? catalogo[0].valor * 2 : 50; 
-      const custoTotalPuro = custoBaseMaterial + maoObra;
+      let totalMaterialCusto = 0;
+      let totalPecasMapeadas = 0;
+
+      document.querySelectorAll("#partes tr").forEach(tr => {
+        const matNome = tr.querySelector(".materialParte").value;
+        const lado1 = parseFloat(tr.querySelector(".lado1").value) || 0;
+        const lado2 = parseFloat(tr.querySelector(".lado2").value) || 0;
+        const qtd = parseInt(tr.querySelector(".qtdParte").value) || 0;
+        const perda = parseFloat(tr.querySelector(".perdaParte").value) || 0;
+
+        if (lado1 > 0 && lado2 > 0 && qtd > 0) {
+          const itemCat = catalogo.find(i => i.nome === matNome);
+          const precoUnit = itemCat ? itemCat.valor : 0;
+          
+          const areaUnitaria = (lado1 * lado2) / 10000; // m²
+          const areaTotalPecas = areaUnitaria * qtd * (1 + perda / 100);
+          totalMaterialCusto += areaTotalPecas * precoUnit;
+          totalPecasMapeadas += qtd;
+        }
+      });
+
+      const custoTotalPuro = totalMaterialCusto + maoObra + outrosCustos;
       const fatorMultiplicador = 1 + (margemLucro + taxaImposto) / 100;
       const precoFinal = custoTotalPuro * fatorMultiplicador;
 
-      ultimoResultadoCalculado = {
-        cliente: document.getElementById("cliente").value || "Geral",
-        produto: document.getElementById("produto").value || "Projeto Personalizado",
-        precoFinal
-      };
-
       const resultadoDiv = document.getElementById("resultado");
       resultadoDiv.innerHTML = `
-        <div class="space-y-3 bg-slate-50 p-4 rounded-xl border">
-          <div class="flex justify-between items-center">
-            <span class="text-sm font-bold text-slate-600">Total do Orçamento:</span>
-            <span class="text-xl font-black text-blue-600">R$ ${precoFinal.toFixed(2).replace(".",",")}</span>
+        <div class="space-y-4">
+          <div class="flex justify-between items-center border-b pb-3">
+            <h4 class="font-bold text-slate-800 text-lg">Resumo do Orçamento</h4>
+            <span class="text-2xl font-black text-emerald-600">R$ ${precoFinal.toFixed(2).replace(".",",")}</span>
           </div>
-          <div class="text-xs text-slate-500 flex justify-between">
-            <span>Custo Direto: R$ ${custoTotalPuro.toFixed(2).replace(".",",")}</span>
-            <span>Lucro Aplicado: ${margemLucro}%</span>
+          <div class="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
+            <div class="bg-slate-50 p-3 rounded-xl border">
+              <span class="block text-xs text-slate-400 font-bold uppercase">Custo de Materiais</span>
+              <span class="font-bold text-slate-700">R$ ${totalMaterialCusto.toFixed(2).replace(".",",")}</span>
+            </div>
+            <div class="bg-slate-50 p-3 rounded-xl border">
+              <span class="block text-xs text-slate-400 font-bold uppercase">Mão de Obra / Outros</span>
+              <span class="font-bold text-slate-700">R$ ${(maoObra + outrosCustos).toFixed(2).replace(".",",")}</span>
+            </div>
+            <div class="bg-slate-50 p-3 rounded-xl border col-span-2 md:col-span-1">
+              <span class="block text-xs text-slate-400 font-bold uppercase">Peças Mapeadas</span>
+              <span class="font-bold text-slate-700">${totalPecasMapeadas} unidades</span>
+            </div>
           </div>
         </div>
       `;
     }
 
+    // Inicialização da tabela de preços
     renderTabelaPrecos();
   </script>
 </body>
