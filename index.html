@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>CalculaJá Pro - Painel Gráfico de Corte Real</title>
+  <title>CalculaJá Pro - Painel de Corte Inteligente (Estilo HP RIP)</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
@@ -13,7 +13,7 @@
   <header id="header-principal" class="hidden bg-slate-900 text-white shadow-md p-4 flex flex-col md:flex-row justify-between items-center gap-4">
     <div class="flex items-center space-x-3 w-full md:w-auto justify-between md:justify-start">
       <div class="flex items-center space-x-2">
-        <i class="fa-solid fa-ruler-combined text-2xl text-emerald-400"></i>
+        <i class="fa-solid fa-print text-2xl text-emerald-400"></i>
         <h1 class="text-xl font-bold tracking-wide">CalculaJá <span class="text-emerald-400">Pro</span></h1>
       </div>
       <div id="auth-container-topo-mobile" class="md:hidden"></div>
@@ -22,7 +22,7 @@
     <!-- ABAS -->
     <nav class="flex flex-wrap justify-center gap-2 bg-slate-800 p-1.5 rounded-xl border border-slate-700">
       <button onclick="mudarAba('calculo')" id="btn-aba-calculo" class="px-3.5 py-2 rounded-lg text-xs font-bold transition bg-emerald-600 text-white shadow">
-        <i class="fa-solid fa-scissors mr-1"></i> Orçamento & Corte
+        <i class="fa-solid fa-scissors mr-1"></i> Orçamento & RIP Corte
       </button>
       <button onclick="mudarAba('bobinas')" id="btn-aba-bobinas" class="px-3.5 py-2 rounded-lg text-xs font-bold transition text-slate-300 hover:bg-slate-700 hover:text-white">
         <i class="fa-solid fa-scroll mr-1"></i> Bobinas & Rolos
@@ -42,9 +42,9 @@
   <div id="tela-login" class="flex-grow flex flex-col items-center justify-center p-6">
     <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-200 max-w-md w-full space-y-6">
       <div class="text-center space-y-2">
-        <i class="fa-solid fa-ruler-combined text-3xl text-emerald-600"></i>
+        <i class="fa-solid fa-print text-3xl text-emerald-600"></i>
         <h2 class="text-xl font-bold text-slate-800">CalculaJá Pro</h2>
-        <p class="text-xs text-slate-500">Acesse para faturar com painel de corte real</p>
+        <p class="text-xs text-slate-500">Mecanismo de Nesting & Impressão/Corte HP</p>
       </div>
       <button onclick="loginComGoogle()" class="w-full bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 font-bold py-2.5 rounded-xl text-sm flex items-center justify-center space-x-2 transition shadow-sm cursor-pointer">
         <i class="fa-brands fa-google text-red-500"></i>
@@ -98,7 +98,7 @@
         <div>
           <h2 class="text-lg font-bold mb-4 text-slate-700 flex items-center space-x-2">
             <i class="fa-solid fa-calculator text-blue-600"></i>
-            <span>Orçamento & Peças a Cortar</span>
+            <span>Orçamento & Peças (Nesting HP)</span>
           </h2>
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
             <div>
@@ -107,13 +107,13 @@
             </div>
             <div>
               <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Projeto / Descrição</label>
-              <input type="text" id="produto" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-500" placeholder="Ex: Capas e Painéis">
+              <input type="text" id="produto" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-500" placeholder="Ex: Adesivos e Recortes">
             </div>
           </div>
 
           <div class="mb-4">
             <div class="flex justify-between items-center mb-2">
-              <h3 class="text-sm font-bold text-slate-600">Lista de Peças (Medidas em cm)</h3>
+              <h3 class="text-sm font-bold text-slate-600">Lista de Peças / Desenhos (Medidas em cm)</h3>
               <button onclick="addParteVazia()" class="bg-slate-800 hover:bg-slate-900 text-white px-3 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer">
                 <i class="fa-solid fa-plus mr-1"></i> Add Peça
               </button>
@@ -156,14 +156,14 @@
           </div>
 
           <div class="flex gap-2">
-            <button onclick="calcular()" class="flex-grow bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl text-sm shadow-md transition cursor-pointer">Processar Cálculo & Painel de Corte</button>
+            <button onclick="calcular()" class="flex-grow bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl text-sm shadow-md transition cursor-pointer">Processar Cálculo & RIP Nesting</button>
             <button onclick="salvarProjeto()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-5 py-3 rounded-xl text-sm shadow-md transition cursor-pointer"><i class="fa-solid fa-floppy-disk mr-1"></i> Salvar</button>
           </div>
         </div>
 
-        <!-- Bloco de Resultado & Painel Gráfico Relativo -->
+        <!-- Bloco de Resultado & Visualizador Tipo RIP HP com Réguas -->
         <div id="resultado" class="border-t pt-4 space-y-4">
-          <div class="text-center py-6 text-slate-400 text-sm">Preencha as peças e clique em <b>Processar Cálculo & Painel de Corte</b> para gerar o orçamento financeiro e a régua proporcional do rolo.</div>
+          <div class="text-center py-6 text-slate-400 text-sm">Preencha as peças e clique em <b>Processar Cálculo & RIP Nesting</b> para simular o encaixe automático estilo impressora HP com réguas milimetradas.</div>
         </div>
 
       </div>
@@ -193,7 +193,7 @@
           </div>
           <div>
             <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Regra de Corte / Observação</label>
-            <input type="text" id="regraBobina" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm outline-none focus:border-emerald-500" placeholder="Ex: Sentido longitudinal obrigatório">
+            <input type="text" id="regraBobina" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm outline-none focus:border-emerald-500" placeholder="Ex: Espelhamento de margem HP">
           </div>
           <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-lg text-sm transition cursor-pointer">Salvar Bobina</button>
         </form>
@@ -341,7 +341,7 @@
     });
   </script>
 
-  <!-- LÓGICA INDUSTRIAL DE PAINEL DE CORTE COM RÉGUA PROPORCIONAL -->
+  <!-- LÓGICA DE NESTING AUTOMÁTICO ESTILO RIP HP COM RÉGUA DE EIXOS -->
   <script>
     function mudarAba(aba) {
       ['calculo', 'bobinas', 'catalogo', 'salvos'].forEach(a => {
@@ -353,18 +353,18 @@
       if(aba === 'salvos') renderProjetosSalvos();
     }
 
-    let catalogo = JSON.parse(localStorage.getItem("catalogo_v5")) || [
+    let catalogo = JSON.parse(localStorage.getItem("catalogo_v6")) || [
       { id: 1, nome: "Ilhós NBR", unidade: "un", valor: 0.15 }
     ];
-    let bobinas = JSON.parse(localStorage.getItem("bobinas_v5")) || [
-      { id: 1, nome: "Bobina Vinil Cristal 1.40m", largura: 140, preco: 38.00, regra: "Sentido longitudinal" }
+    let bobinas = JSON.parse(localStorage.getItem("bobinas_v6")) || [
+      { id: 1, nome: "Bobina Vinil Cristal 1.40m", largura: 140, preco: 38.00, regra: "Nesting RIP Automático" }
     ];
-    let projetosSalvos = JSON.parse(localStorage.getItem("projetos_v5")) || [];
+    let projetosSalvos = JSON.parse(localStorage.getItem("projetos_v6")) || [];
 
     function salvarLocal() {
-      localStorage.setItem("catalogo_v5", JSON.stringify(catalogo));
-      localStorage.setItem("bobinas_v5", JSON.stringify(bobinas));
-      localStorage.setItem("projetos_v5", JSON.stringify(projetosSalvos));
+      localStorage.setItem("catalogo_v6", JSON.stringify(catalogo));
+      localStorage.setItem("bobinas_v6", JSON.stringify(bobinas));
+      localStorage.setItem("projetos_v6", JSON.stringify(projetosSalvos));
     }
 
     function renderTudo() {
@@ -416,7 +416,7 @@
 
     document.getElementById("formBobina").addEventListener("submit", function(e) {
       e.preventDefault();
-      bobinas.push({ id: Date.now(), nome: document.getElementById("nomeBobina").value, largura: parseFloat(document.getElementById("larguraBobina").value), preco: parseFloat(document.getElementById("precoBobina").value), regra: document.getElementById("regraBobina").value || "Padrão" });
+      bobinas.push({ id: Date.now(), nome: document.getElementById("nomeBobina").value, largura: parseFloat(document.getElementById("larguraBobina").value), preco: parseFloat(document.getElementById("precoBobina").value), regra: document.getElementById("regraBobina").value || "RIP Padrão" });
       salvarLocal(); renderTudo(); this.reset();
     });
 
@@ -450,7 +450,7 @@
       const tbody = document.getElementById("partes");
       const tr = document.createElement("tr");
       tr.innerHTML = `
-        <td class="p-2"><input class="nomeParte w-full border rounded px-2 py-1 text-sm" type="text" placeholder="Ex: Lateral" value="${nome}"></td>
+        <td class="p-2"><input class="nomeParte w-full border rounded px-2 py-1 text-sm" type="text" placeholder="Ex: Adesivo Logo" value="${nome}"></td>
         <td class="p-2"><select class="materialParte w-full border rounded px-2 py-1 text-sm"><option value="">Selecione...</option></select></td>
         <td class="p-2"><input class="lado1 w-full border rounded px-2 py-1 text-sm" type="number" placeholder="cm" value="${l1}"></td>
         <td class="p-2"><input class="lado2 w-full border rounded px-2 py-1 text-sm" type="number" placeholder="cm" value="${l2}"></td>
@@ -471,7 +471,7 @@
       const lucro = parseFloat(document.getElementById("lucro").value) || 0;
       const imposto = parseFloat(document.getElementById("imposto").value) || 0;
       const cliente = document.getElementById("cliente").value || "Cliente Geral";
-      const produto = document.getElementById("produto").value || "Orçamento";
+      const produto = document.getElementById("produto").value || "Orçamento RIP";
 
       let custoMat = 0, totalPecas = 0, pecasArr = [];
       let agrupadoPorBobina = {};
@@ -492,34 +492,32 @@
               if(!agrupadoPorBobina[bNome]) {
                 agrupadoPorBobina[bNome] = { obj: bObj, pecas: [], totalMetrosLinear: 0 };
               }
-              let larguraPeca = Math.min(l1, l2);
-              let comprimentoPeca = Math.max(l1, l2);
-              
-              if(larguraPeca > bObj.largura) {
-                alert(`Atenção: A peça "${nomeP}" (${larguraPeca}cm) é maior que a largura da bobina ${bObj.nome} (${bObj.largura}cm)!`);
+
+              // ALGORITMO ESTILO RIP HP (Nesting Inteligente por Faixas Horizontais/Verticais)
+              let w = Math.min(l1, l2);
+              let h = Math.max(l1, l2);
+
+              if(w > bObj.largura) {
+                alert(`Atenção: A peça "${nomeP}" (${w}cm) excede a largura máxima da bobina ${bObj.nome} (${bObj.largura}cm)!`);
               }
 
-              const colunas = Math.max(1, Math.floor(bObj.largura / larguraPeca));
-              const linhasNecessarias = Math.ceil(q / colunas);
-              const comprimentoConsumido = (linhasNecessarias * comprimentoPeca / 100) * (1 + perda/100);
+              // Simula o empacotamento automático nas pistas (lanes) da impressora
+              const pistas = Math.max(1, Math.floor(bObj.largura / w));
+              const linhasRIP = Math.ceil(q / pistas);
+              const comprimentoConsumido = (linhasRIP * h / 100) * (1 + perda/100);
 
               agrupadoPorBobina[bNome].totalMetrosLinear += comprimentoConsumido;
               custoMat += comprimentoConsumido * bObj.preco;
 
               for(let i=0; i<q; i++) {
-                agrupadoPorBobina[bNome].pecas.push({ nome: nomeP, largura: larguraPeca, comprimento: comprimentoPeca });
+                agrupadoPorBobina[bNome].pecas.push({ nome: nomeP, w, h });
               }
             }
           } else {
             const cNome = matVal.replace("Insumo: ", "");
             const cObj = catalogo.find(x => x.nome === cNome);
             if(cObj) {
-              let consumo = 0;
-              if(cObj.unidade === 'm²') {
-                consumo = ((l1 * l2) / 10000) * q * (1 + perda/100);
-              } else {
-                consumo = q * (1 + perda/100);
-              }
+              let consumo = cObj.unidade === 'm²' ? ((l1 * l2) / 10000) * q * (1 + perda/100) : q * (1 + perda/100);
               custoMat += consumo * cObj.valor;
             }
           }
@@ -533,7 +531,7 @@
 
       ultimoCache = { id: Date.now(), data: new Date().toLocaleDateString('pt-BR'), cliente, produto, mao, outros, lucro, imposto, custoMat, precoFinal, totalPecas, pecas: pecasArr };
 
-      // Renderizar Painel Gráfico de Corte com Régua Proporcional Relativa
+      // Renderizar Painel RIP Estilo HP com Réguas de Eixos X e Y
       let htmlPaineis = '';
       for(let bNome in agrupadoPorBobina) {
         const dados = agrupadoPorBobina[bNome];
@@ -544,53 +542,60 @@
           <div class="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-4">
             <div class="flex justify-between items-center border-b pb-2">
               <div>
-                <h5 class="font-bold text-slate-800 text-sm"><i class="fa-solid fa-scroll text-emerald-600 mr-1"></i> ${bNome}</h5>
-                <p class="text-xs text-slate-500">Largura Física: <b>${larguraBobina} cm</b> | Comprimento Total do Rolo: <b>${dados.totalMetrosLinear.toFixed(2)} m</b></p>
+                <h5 class="font-bold text-slate-800 text-sm"><i class="fa-solid fa-print text-emerald-600 mr-1"></i> RIP HP - ${bNome}</h5>
+                <p class="text-xs text-slate-500">Largura de Impressão: <b>${larguraBobina} cm</b> | Avanço Linear Estimado: <b>${dados.totalMetrosLinear.toFixed(2)} m</b></p>
               </div>
               <span class="text-xs font-bold bg-emerald-100 text-emerald-800 px-2.5 py-1 rounded-lg">R$ ${(dados.totalMetrosLinear * dados.obj.preco).toFixed(2)}</span>
             </div>
 
-            <!-- PAINEL DE CORTE COM RÉGUA PROPORCIONAL -->
+            <!-- SIMULADOR GRÁFICO TIPO RIP COM RÉGUA DE LARGURA (EIXO X) E COMPRIMENTO (EIXO Y) -->
             <div class="space-y-2">
               <div class="flex justify-between items-center text-[11px] text-slate-500 font-bold uppercase">
-                <span>Painel Gráfico de Posicionamento (Escala Relativa ao Rolo)</span>
-                <span>Início 0m ➔ Fim ${dados.totalMetrosLinear.toFixed(2)}m</span>
+                <span>Régua de Encaixe e Posicionamento (Layout Gráfico)</span>
+                <span>Comprimento Total: ${comprimentoTotalCm.toFixed(0)} cm</span>
               </div>
 
-              <!-- Simulação Visual Proporcional do Rolo / Chapa -->
-              <div class="relative bg-slate-900 rounded-lg p-2 overflow-x-auto border-2 border-slate-700 shadow-inner">
-                <!-- Régua de Medida Superior -->
-                <div class="flex justify-between text-[9px] text-emerald-400 font-mono mb-1 border-b border-slate-800 pb-1">
-                  <span>| 0 cm (Início)</span>
-                  <span>| ${(comprimentoTotalCm / 2).toFixed(0)} cm (Meio)</span>
-                  <span>| ${comprimentoTotalCm.toFixed(0)} cm (Fim)</span>
+              <!-- Container visual com Régua Superior (Largura da Bobina) -->
+              <div class="bg-slate-900 rounded-lg p-3 border-2 border-slate-700 shadow-inner overflow-x-auto">
+                
+                <!-- Régua Horizontal de Largura (Eixo X em cm) -->
+                <div class="flex justify-between text-[9px] text-emerald-400 font-mono mb-2 border-b border-slate-700 pb-1">
+                  <span>0 cm (Borda Esq.)</span>
+                  <span>| ${(larguraBobina/2).toFixed(0)} cm (Centro)</span>
+                  <span>${larguraBobina} cm (Borda Dir.) |</span>
                 </div>
 
-                <!-- Contêiner do Rolo Proporcional -->
-                <div class="relative bg-slate-800 rounded border border-slate-600 min-h-[90px] flex items-center p-2 gap-2 overflow-x-auto">
+                <!-- Grade de Encaixe Estilo RIP (Agrupando por pistas otimizadas) -->
+                <div class="relative bg-slate-800 rounded border border-slate-600 p-3 min-h-[120px] flex flex-wrap gap-2 items-start content-start">
         `;
 
         dados.pecas.forEach((p, idx) => {
-          // Largura proporcional da peça baseada na largura da bobina (ex: se bobina é 140cm e peça 70cm, ocupa 50% visualmente)
-          let proporcaoLargura = Math.max(25, Math.min(100, (p.largura / larguraBobina) * 100));
+          // Ajusta a escala visual proporcional à largura da bobina
+          let larguraVisualPct = Math.max(30, Math.min(100, (p.w / larguraBobina) * 100));
           
           htmlPaineis += `
-            <div style="min-width: 90px; width: ${proporcaoLargura}%;" class="bg-emerald-600 hover:bg-emerald-500 text-white rounded p-2 flex flex-col justify-between shadow transition border border-emerald-400">
-              <div class="flex justify-between items-center text-[10px] font-bold">
-                <span class="truncate">#${idx+1} ${p.nome}</span>
-                <span class="bg-emerald-900 px-1 rounded text-[9px]">${p.largura}cm</span>
+            <div style="width: ${larguraVisualPct}%;" class="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white rounded-lg p-2.5 shadow-md flex flex-col justify-between border border-emerald-400/50">
+              <div class="flex justify-between items-center text-[10px] font-bold border-b border-emerald-500/40 pb-1 mb-1">
+                <span class="truncate"><i class="fa-solid fa-vector-square mr-1"></i>#${idx+1} ${p.nome}</span>
+                <span class="bg-emerald-900/80 px-1.5 py-0.5 rounded text-[9px] font-mono">${p.w}cm L</span>
               </div>
-              <div class="my-1 text-center font-mono text-xs font-bold bg-emerald-700/50 rounded py-1">
-                ${p.comprimento} cm
+              <div class="text-center font-mono text-xs font-black tracking-wider bg-black/20 rounded py-1 my-0.5">
+                ${p.h} cm (Comp.)
               </div>
-              <div class="text-[9px] text-emerald-200 text-right">
-                Linha de Corte
+              <div class="flex justify-between items-center text-[9px] text-emerald-200 pt-1">
+                <span>Passada HP</span>
+                <span class="font-mono">Eixo Y</span>
               </div>
             </div>
           `;
         });
 
         htmlPaineis += `
+                </div>
+                <!-- Legenda da Régua Inferior -->
+                <div class="flex justify-between text-[9px] text-slate-400 font-mono mt-2 pt-1 border-t border-slate-800">
+                  <span>Início do Rolo (0.00m)</span>
+                  <span>Fim do Serviço (${dados.totalMetrosLinear.toFixed(2)}m)</span>
                 </div>
               </div>
             </div>
@@ -619,7 +624,7 @@
             </div>
           </div>
           <div class="space-y-3 pt-2">
-            <h4 class="font-bold text-slate-700 text-sm">Painel de Corte e Régua Proporcional do Rolo</h4>
+            <h4 class="font-bold text-slate-700 text-sm">Simulador de Posicionamento e Régua Gráfica HP</h4>
             ${htmlPaineis || '<p class="text-xs text-slate-400">Nenhuma bobina selecionada.</p>'}
           </div>
         </div>
@@ -632,7 +637,7 @@
       if(!res || res.pecas.length === 0) { alert("Adicione peças válidas antes de salvar."); return; }
       projetosSalvos.unshift(res);
       salvarLocal();
-      alert("Orçamento e painel de corte salvos com sucesso!");
+      alert("Orçamento e layout RIP salvos com sucesso!");
       mudarAba('salvos');
     }
 
@@ -673,7 +678,7 @@
 
     renderTudo();
     if(document.querySelectorAll("#partes tr").length === 0) {
-      addParteVazia("Painel Lateral", "Bobina: Bobina Vinil Cristal 1.40m", 120, 60, 2, 5);
+      addParteVazia("Adesivo Recorte", "Bobina: Bobina Vinil Cristal 1.40m", 60, 40, 4, 3);
     }
   </script>
 </body>
