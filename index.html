@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>CalculaJá Pro - Nesting RIP CAD (v1.9.2)</title>
+  <title>CalculaJá Pro - Nesting RIP CAD (v1.9.3)</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
@@ -46,7 +46,7 @@
       <div class="text-center space-y-2">
         <i class="fa-solid fa-print text-3xl text-cyan-600"></i>
         <h2 class="text-xl font-bold text-slate-900">CalculaJá Pro</h2>
-        <p class="text-xs text-slate-500">RIP HP Latex - Layout Perfeito (v1.9.2)</p>
+        <p class="text-xs text-slate-500">RIP HP Latex - Layout Perfeito (v1.9.3)</p>
       </div>
       <button onclick="loginComGoogle()" class="w-full bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 font-bold py-2.5 rounded-xl text-sm flex items-center justify-center space-x-2 transition shadow-sm cursor-pointer">
         <i class="fa-brands fa-google text-red-500"></i>
@@ -352,9 +352,9 @@
     });
   </script>
 
-  <!-- LÓGICA DE RIP HP LATEX COM ORIENTAÇÃO DE IMPRESSORA (EIXO Y TRAVADO NA LARGURA DA BOBINA) -->
+  <!-- LÓGICA DE RIP HP LATEX COM ORIENTAÇÃO DE IMPRESSORA (SEM ESPAÇAMENTO / NESTING CONTÍNUO E RÉGUA ATÉ 200CM) -->
   <script>
-    const VERSAO_ATUAL = "v1.9.2";
+    const VERSAO_ATUAL = "v1.9.3";
 
     function verificarAtualizacaoApp() {
       const versaoSalva = localStorage.getItem("app_versao_calculaja");
@@ -373,7 +373,7 @@
         <i class="fa-solid fa-rocket text-cyan-600 text-sm"></i>
         <div>
           <p class="text-[11px] font-bold text-slate-900">App Atualizado!</p>
-          <p class="text-[9px] text-slate-500">Versão ${novaVersao} ajustada para a lógica real de impressão (Eixo Y fixo na largura da bobina).</p>
+          <p class="text-[9px] text-slate-500">Versão ${novaVersao} ajustada: Sem espaçamento entre peças e régua horizontal até 200cm.</p>
         </div>
         <button onclick="this.parentElement.remove()" class="ml-2 text-slate-400 hover:text-slate-700 text-xs font-bold">✕</button>
       `;
@@ -609,8 +609,6 @@
           let larguraPeca = p.l1;
           let comprimentoPeca = p.l2;
 
-          // Na impressora, a largura fixa (Eixo Y) é a da bobina (ex: 140cm).
-          // Se o usuário digitou invertido, tentamos rotacionar se couber na largura.
           if (larguraPeca > larguraBobina && comprimentoPeca <= larguraBobina) {
             larguraPeca = p.l2; 
             comprimentoPeca = p.l1;
@@ -618,9 +616,6 @@
           if (larguraPeca > larguraBobina) {
             alert(`Atenção: A peça "${p.nome}" (${larguraPeca}cm) excede a largura útil da bobina (${larguraBobina}cm)!`);
           }
-          // Na lógica de RIP de impressora de rolo:
-          // A largura da peça (dimensão paralela à largura da bobina/Eixo Y) ocupa o eixo Y.
-          // O comprimento da peça (avanço no rolo/Eixo X) avança ao longo do comprimento da bobina.
           itens.push({ nome: p.nome, largY: larguraPeca, compX: comprimentoPeca, area: larguraPeca * comprimentoPeca, estilo: estiloCor });
         }
       });
@@ -628,10 +623,9 @@
       // Ordenar por comprimento decrescente (avanço no rolo) para otimizar o nesting
       itens.sort((a, b) => b.compX - a.compX);
 
-      // Prateleiras ao longo do avanço do rolo (Eixo X)
-      // Cada prateleira tem um comprimento fixo (compX) e acumula largura no Eixo Y (largY) até o limite da bobina.
+      // Prateleiras ao longo do avanço do rolo (Eixo X) sem espaçamento (GAP = 0)
       let prateleiras = [{ x: 0, comprimentoPrateleira: 0, larguraOcupadaY: 0, itens: [] }];
-      const GAP = 1.0; 
+      const GAP = 0.0; 
 
       itens.forEach(item => {
         let colocado = false;
@@ -652,7 +646,7 @@
 
         if (!colocado) {
           let ultimaPrateleira = prateleiras[prateleiras.length - 1];
-          const MARGEM_AVANCO_ROLO = 2.0;
+          const MARGEM_AVANCO_ROLO = 0.0;
           let novoX = ultimaPrateleira.x + ultimaPrateleira.comprimentoPrateleira + MARGEM_AVANCO_ROLO;
           let novaPrateleira = {
             x: novoX,
@@ -665,7 +659,7 @@
       });
 
       let ultima = prateleiras[prateleiras.length - 1];
-      let comprimentoTotalConsumidoCm = ultima ? (ultima.x + ultima.comprimentoPrateleira + 5.0) : 0;
+      let comprimentoTotalConsumidoCm = ultima ? (ultima.x + ultima.comprimentoPrateleira + 2.0) : 0;
 
       let listaPlana = [];
       prateleiras.forEach(s => {
@@ -742,13 +736,14 @@
       for(let bNome in dadosProcessadosBobinas) {
         const dados = dadosProcessadosBobinas[bNome];
         const larguraBobinaEixoY = Math.ceil(dados.obj.largura); // Ex: 140 cm (Largura fixa da impressora)
-        const comprimentoRoloEixoX = Math.ceil(Math.max(50, dados.comprimentoTotalCm)); // Avanço no rolo
+        // Garante que a régua horizontal exiba pelo menos até 200cm, ou mais caso o projeto ultrapasse 200cm
+        const comprimentoRoloEixoX = Math.ceil(Math.max(200, dados.comprimentoTotalCm));
 
         const PIXELS_POR_CM = 10.0;
         const larguraContainerYPx = larguraBobinaEixoY * PIXELS_POR_CM;
         const comprimentoContainerXPx = comprimentoRoloEixoX * PIXELS_POR_CM;
 
-        // Régua X (Comprimento / Avanço do rolo) no topo
+        // Régua X (Comprimento / Avanço do rolo) no topo até 200cm ou mais
         let reguaXHtml = '';
         for(let x = 0; x <= comprimentoRoloEixoX; x++) {
           let posX = x * PIXELS_POR_CM;
@@ -836,11 +831,6 @@
         `;
 
         dados.itensNesting.forEach((item, idx) => {
-          // Na renderização correta de impressora de rolo:
-          // X do item (avanço horizontal na tela) = item.x
-          // Y do item (posição vertical na largura da bobina 0 a 140cm) = item.y
-          // Largura da caixa na tela = item.compX (avanço no rolo)
-          // Altura da caixa na tela = item.largY (largura da peça no eixo Y da bobina)
           let leftPx = item.x * PIXELS_POR_CM;
           let topPx = item.y * PIXELS_POR_CM;
           let widthPx = item.compX * PIXELS_POR_CM;
