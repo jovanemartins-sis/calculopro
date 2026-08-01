@@ -3,14 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>CalculaJá Pro - Nesting RIP de Materiais com Réguas CorelDRAW (cm)</title>
+  <title>CalculaJá Pro - Nesting RIP com Régua de Avanço HP Latex</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <!-- Biblioteca para exportar imagem do RIP (Html2Canvas) -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-  <meta http-equiv="Pragma" content="no-cache">
-  <meta http-equiv="Expires" content="0">
 </head>
 <body class="bg-slate-100 min-h-screen text-slate-800 flex flex-col">
 
@@ -18,16 +15,15 @@
   <header id="header-principal" class="hidden bg-slate-900 text-white shadow-md p-4 flex flex-col md:flex-row justify-between items-center gap-4">
     <div class="flex items-center space-x-3 w-full md:w-auto justify-between md:justify-start">
       <div class="flex items-center space-x-2">
-        <i class="fa-solid fa-scissors text-2xl text-emerald-400"></i>
+        <i class="fa-solid fa-print text-2xl text-emerald-400"></i>
         <h1 class="text-xl font-bold tracking-wide">CalculaJá <span class="text-emerald-400">Pro</span></h1>
       </div>
       <div id="auth-container-topo-mobile" class="md:hidden"></div>
     </div>
 
-    <!-- ABAS -->
     <nav class="flex flex-wrap justify-center gap-2 bg-slate-800 p-1.5 rounded-xl border border-slate-700">
       <button onclick="mudarAba('calculo')" id="btn-aba-calculo" class="px-3.5 py-2 rounded-lg text-xs font-bold transition bg-emerald-600 text-white shadow cursor-pointer">
-        <i class="fa-solid fa-shapes mr-1"></i> Orçamento & RIP Corte
+        <i class="fa-solid fa-shapes mr-1"></i> Orçamento & RIP HP Latex
       </button>
       <button onclick="mudarAba('bobinas')" id="btn-aba-bobinas" class="px-3.5 py-2 rounded-lg text-xs font-bold transition text-slate-300 hover:bg-slate-700 hover:text-white cursor-pointer">
         <i class="fa-solid fa-scroll mr-1"></i> Bobinas & Chapas
@@ -47,9 +43,9 @@
   <div id="tela-login" class="flex-grow flex flex-col items-center justify-center p-6">
     <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-200 max-w-md w-full space-y-6">
       <div class="text-center space-y-2">
-        <i class="fa-solid fa-scissors text-3xl text-emerald-600"></i>
+        <i class="fa-solid fa-print text-3xl text-emerald-600"></i>
         <h2 class="text-xl font-bold text-slate-800">CalculaJá Pro</h2>
-        <p class="text-xs text-slate-500">Mecanismo de Nesting 2D Real & Corte de Plásticos, Tecidos e Chapas (Versão v1.4.5)</p>
+        <p class="text-xs text-slate-500">RIP de Impressão com Régua de Avanço Contínuo HP Latex (v1.4.6)</p>
       </div>
       <button onclick="loginComGoogle()" class="w-full bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 font-bold py-2.5 rounded-xl text-sm flex items-center justify-center space-x-2 transition shadow-sm cursor-pointer">
         <i class="fa-brands fa-google text-red-500"></i>
@@ -103,7 +99,7 @@
         <div>
           <h2 class="text-lg font-bold mb-4 text-slate-700 flex items-center space-x-2">
             <i class="fa-solid fa-calculator text-blue-600"></i>
-            <span>Orçamento & Peças (Nesting 2D True-Fit & Encaixe Dinâmico)</span>
+            <span>Orçamento & Peças (Nesting RIP HP Latex)</span>
           </h2>
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
             <div>
@@ -112,13 +108,13 @@
             </div>
             <div>
               <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Projeto / Descrição</label>
-              <input type="text" id="produto" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-500" placeholder="Ex: Peças em Plástico / Tecido">
+              <input type="text" id="produto" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-500" placeholder="Ex: Impressão / Corte em Bobina">
             </div>
           </div>
 
           <div class="mb-4">
             <div class="flex justify-between items-center mb-2">
-              <h3 class="text-sm font-bold text-slate-600">Lista de Peças / Desenhos (Medidas em cm)</h3>
+              <h3 class="text-sm font-bold text-slate-600">Lista de Peças / Layout (Medidas em cm)</h3>
               <button onclick="addParteVazia()" class="bg-slate-800 hover:bg-slate-900 text-white px-3 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer">
                 <i class="fa-solid fa-plus mr-1"></i> Add Peça
               </button>
@@ -139,7 +135,6 @@
                 <tbody id="partes" class="divide-y divide-slate-100"></tbody>
               </table>
             </div>
-            <!-- BOTÃO ADICIONAR PEÇA ABAIXO DA ÚLTIMA -->
             <div class="mt-2">
               <button onclick="addParteVazia()" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2 rounded-lg text-xs transition border border-slate-300 border-dashed cursor-pointer flex items-center justify-center gap-1">
                 <i class="fa-solid fa-plus text-emerald-600"></i> Adicionar nova peça abaixo
@@ -167,14 +162,14 @@
           </div>
 
           <div class="flex gap-2">
-            <button onclick="calcular()" class="flex-grow bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl text-sm shadow-md transition cursor-pointer">Processar Cálculo & Nesting 2D</button>
+            <button onclick="calcular()" class="flex-grow bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl text-sm shadow-md transition cursor-pointer">Processar Cálculo & RIP HP Latex</button>
             <button onclick="salvarProjeto()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-5 py-3 rounded-xl text-sm shadow-md transition cursor-pointer"><i class="fa-solid fa-floppy-disk mr-1"></i> Salvar</button>
           </div>
         </div>
 
-        <!-- Bloco de Resultado & Visualizador Tipo RIP Nesting 2D -->
+        <!-- Bloco de Resultado & Visualizador Tipo HP Latex RIP -->
         <div id="resultado" class="border-t pt-4 space-y-4">
-          <div class="text-center py-6 text-slate-400 text-sm">Preencha as peças e clique em <b>Processar Cálculo & Nesting 2D</b> para simular o encaixe otimizado de múltiplas larguras lado a lado e em profundidade na bobina.</div>
+          <div class="text-center py-6 text-slate-400 text-sm">Preencha as peças e clique em <b>Processar Cálculo & RIP HP Latex</b> para simular o avanço linear contínuo do rolo.</div>
         </div>
 
       </div>
@@ -190,7 +185,7 @@
         <form id="formBobina" class="space-y-4">
           <div>
             <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Nome do Material</label>
-            <input type="text" id="nomeBobina" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm outline-none focus:border-emerald-500" placeholder="Ex: Bobina Plástico 140cm x 5000cm" required>
+            <input type="text" id="nomeBobina" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm outline-none focus:border-emerald-500" placeholder="Ex: Bobina Lona 140cm x 5000cm" required>
           </div>
           <div class="grid grid-cols-3 gap-2">
             <div>
@@ -207,8 +202,8 @@
             </div>
           </div>
           <div>
-            <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Regra de Corte / Observação</label>
-            <input type="text" id="regraBobina" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm outline-none focus:border-emerald-500" placeholder="Ex: Margem de sangria para corte">
+            <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Regra de Impressão / Observação</label>
+            <input type="text" id="regraBobina" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm outline-none focus:border-emerald-500" placeholder="Ex: Margem de avanço e sangria HP Latex">
           </div>
           <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-lg text-sm transition cursor-pointer">Salvar Material</button>
         </form>
@@ -246,7 +241,7 @@
         <form id="formPreco" class="space-y-4">
           <div>
             <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Nome do Material</label>
-            <input type="text" id="nomePreco" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm outline-none focus:border-emerald-500" placeholder="Ex: Cola / Parafuso" required>
+            <input type="text" id="nomePreco" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm outline-none focus:border-emerald-500" placeholder="Ex: Ilhós / Válvula" required>
           </div>
           <div class="grid grid-cols-2 gap-4">
             <div>
@@ -356,9 +351,9 @@
     });
   </script>
 
-  <!-- LÓGICA DE NESTING 2D REAL (BLKP / BOTTOM-LEFT PACKING PARA BOBINAS CONTÍNUAS) -->
+  <!-- LÓGICA DE RIP HP LATEX COM RÉGUA DE AVANÇO CONTINUO -->
   <script>
-    const VERSAO_ATUAL = "v1.4.5";
+    const VERSAO_ATUAL = "v1.4.6";
 
     function verificarAtualizacaoApp() {
       const versaoSalva = localStorage.getItem("app_versao_calculaja");
@@ -377,7 +372,7 @@
         <i class="fa-solid fa-rocket text-emerald-400 text-xl"></i>
         <div>
           <p class="text-xs font-bold">App Atualizado!</p>
-          <p class="text-[10px] text-slate-400">Nova versão ${novaVersao} com Nesting 2D carregada.</p>
+          <p class="text-[10px] text-slate-400">Versão ${novaVersao} com Régua de Avanço HP Latex carregada.</p>
         </div>
         <button onclick="this.parentElement.remove()" class="ml-3 text-slate-400 hover:text-white text-xs font-bold">✕</button>
       `;
@@ -403,7 +398,7 @@
       { id: 1, nome: "Ilhós NBR", unidade: "un", valor: 0.15 }
     ];
     let bobinas = JSON.parse(localStorage.getItem("bobinas_v8")) || [
-      { id: 1, nome: "Bobina Plástico 140cm x 5000cm", largura: 140, comprimentoRolo: 5000, preco: 38.00, regra: "Nesting 2D Automático de Corte" }
+      { id: 1, nome: "Bobina Lona 140cm x 5000cm", largura: 140, comprimentoRolo: 5000, preco: 38.00, regra: "RIP HP Latex Avanço Contínuo" }
     ];
     let projetosSalvos = JSON.parse(localStorage.getItem("projetos_v8")) || [];
 
@@ -468,7 +463,7 @@
         largura: parseFloat(document.getElementById("larguraBobina").value), 
         comprimentoRolo: parseFloat(document.getElementById("comprimentoBobina").value) || 5000,
         preco: parseFloat(document.getElementById("precoBobina").value), 
-        regra: document.getElementById("regraBobina").value || "Nesting 2D Otimizado" 
+        regra: document.getElementById("regraBobina").value || "RIP HP Latex Avanço Contínuo" 
       });
       salvarLocal(); renderTudo(); this.reset();
     });
@@ -533,7 +528,7 @@
       const tbody = document.getElementById("partes");
       const tr = document.createElement("tr");
       tr.innerHTML = `
-        <td class="p-2"><input class="nomeParte w-full border border-slate-300 rounded px-2 py-1 text-sm bg-white" type="text" placeholder="Ex: Peça Plástico / Tecido" value="${nome}"></td>
+        <td class="p-2"><input class="nomeParte w-full border border-slate-300 rounded px-2 py-1 text-sm bg-white" type="text" placeholder="Ex: Peça / Banner" value="${nome}"></td>
         <td class="p-2"><select class="materialParte w-full border border-slate-300 rounded px-2 py-1 text-sm bg-white"><option value="">Selecione...</option></select></td>
         <td class="p-2"><input class="lado1 w-full border border-slate-300 rounded px-2 py-1 text-sm bg-white" type="number" placeholder="cm" value="${l1}"></td>
         <td class="p-2"><input class="lado2 w-full border border-slate-300 rounded px-2 py-1 text-sm bg-white" type="number" placeholder="cm" value="${l2}"></td>
@@ -572,67 +567,60 @@
       if(!elemento) { alert("Nenhum layout processado para exportar."); return; }
       html2canvas(elemento, { scale: 2, backgroundColor: '#0f172a' }).then(canvas => {
         const link = document.createElement('a');
-        link.download = `Corte-Corel-Nesting2D-${document.getElementById('cliente').value || 'Cliente'}.png`;
+        link.download = `RIP-HPLatex-${document.getElementById('cliente').value || 'Cliente'}.png`;
         link.href = canvas.toDataURL('image/png');
         link.click();
       });
     }
 
-    // ALGORITMO DE NESTING 2D REAL (Bottom-Left Shelf Packing para rolos contínuos)
-    function executarNesting2D(pecasIn, larguraBobina) {
-      // 1. Expandir todas as peças unitárias e ordenar decrescente por altura/área para melhor encaixe
+    // ALGORITMO RIP PROFISSIONAL HP LATEX (Shelf Packing com correção precisa de comprimento e margem de avanço)
+    function executarNestingHPLatex(pecasIn, larguraBobina) {
       let itens = [];
       pecasIn.forEach(p => {
         for(let i=0; i<p.q; i++) {
           let w = p.l1;
           let h = p.l2;
-          // Permitir rotação automática se couber na largura e otimizar formato
-          let rotacionado = false;
+          // Rotação inteligente se necessário para ajustar na largura da impressora
           if (w > larguraBobina && h <= larguraBobina) {
-            w = p.l2; h = p.l1; rotacionado = true;
-          } else if (w <= larguraBobina && h <= larguraBobina) {
-            // Se ambos cabem, priorizar a orientação que deixa a maior dimensão em w ou h conforme heurística
-            if(w < h && h <= larguraBobina) {
-              // Mantém original ou rotaciona se vantajoso
-            }
+            w = p.l2; h = p.l1;
           }
           if (w > larguraBobina) {
-            alert(`Atenção: A peça "${p.nome}" (${w}cm) excede a largura máxima da bobina (${larguraBobina}cm)!`);
+            alert(`Atenção: A peça "${p.nome}" (${w}cm) excede a largura útil da bobina HP Latex (${larguraBobina}cm)!`);
           }
-          itens.push({ nome: p.nome, w, h, originalW: p.l1, originalH: p.l2, area: w * h });
+          itens.push({ nome: p.nome, w, h, area: w * h });
         }
       });
 
-      // Ordenar por altura decrescente (Shelf Packing)
+      // Ordenar por altura decrescente para otimizar fileiras (prateleiras de impressão)
       itens.sort((a, b) => b.h - a.h);
 
       let prateleiras = [{ y: 0, alturaPrateleira: 0, larguraOcupada: 0, itens: [] }];
 
+      // Margem lateral e espaçamento padrão de RIP profissional (ex: 1cm de respiro entre cópias)
+      const GAP = 1.0; 
+
       itens.forEach(item => {
         let colocado = false;
-        // Tentar encaixar nas prateleiras existentes
         for (let shelf of prateleiras) {
-          if (shelf.larguraOcupada + item.w <= larguraBobina) {
-            // Encaixa na prateleira atual
-            let x = shelf.larguraOcupada;
+          let espacoNecessario = shelf.larguraOcupada === 0 ? item.w : (GAP + item.w);
+          if (shelf.larguraOcupada + espacoNecessario <= larguraBobina) {
+            let x = shelf.larguraOcupada === 0 ? 0 : (shelf.larguraOcupada + GAP);
             let y = shelf.y;
             shelf.itens.push({ ...item, x, y });
-            shelf.larguraOcupada += item.w;
+            shelf.larguraOcupada = x + item.w;
             if (item.h > shelf.alturaPrateleira) {
-              // Ajusta altura da prateleira se a peça for mais alta
-              let diff = item.h - shelf.alturaPrateleira;
               shelf.alturaPrateleira = item.h;
-              // Atualizar y dos itens anteriores da prateleira se necessário ou manter topo alinhado
             }
             colocado = true;
             break;
           }
         }
 
-        // Se não coube em nenhuma prateleira aberta, abrir nova prateleira abaixo
         if (!colocado) {
           let ultimaPrateleira = prateleiras[prateleiras.length - 1];
-          let novoY = ultimaPrateleira.y + ultimaPrateleira.alturaPrateleira;
+          // Adicionar margem de avanço de cabeça de impressão / secagem HP (ex: 2cm de respiro entre fileiras)
+          const MARGEM_AVANCO_ROLO = 2.0;
+          let novoY = ultimaPrateleira.y + ultimaPrateleira.alturaPrateleira + MARGEM_AVANCO_ROLO;
           let novaPrateleira = {
             y: novoY,
             alturaPrateleira: item.h,
@@ -643,9 +631,8 @@
         }
       });
 
-      // Calcular altura total consumida no rolo
       let ultima = prateleiras[prateleiras.length - 1];
-      let alturaTotalConsumidaCm = ultima ? (ultima.y + ultima.alturaPrateleira) : 0;
+      let alturaTotalConsumidaCm = ultima ? (ultima.y + ultima.alturaPrateleira + 5.0) : 0; // +5cm de margem final de corte do rolo
 
       let listaPlana = [];
       prateleiras.forEach(s => {
@@ -661,7 +648,7 @@
       const lucro = parseFloat(document.getElementById("lucro").value) || 0;
       const imposto = parseFloat(document.getElementById("imposto").value) || 0;
       const cliente = document.getElementById("cliente").value || "Cliente Geral";
-      const produto = document.getElementById("produto").value || "Orçamento Corte";
+      const produto = document.getElementById("produto").value || "Orçamento Impressão HP Latex";
 
       let custoMat = 0, totalPecas = 0, pecasArr = [];
       let agrupadoPorBobina = {};
@@ -697,12 +684,10 @@
         }
       });
 
-      // Processar Nesting 2D para cada bobina agrupada
       let dadosProcessadosBobinas = {};
       for(let bNome in agrupadoPorBobina) {
         const dados = agrupadoPorBobina[bNome];
-        const resultadoNesting = executarNesting2D(dados.pecasInput, dados.obj.largura);
-        // Aplicar percentual médio de perda informado nas peças ou padrão
+        const resultadoNesting = executarNestingHPLatex(dados.pecasInput, dados.obj.largura);
         let perdaMedia = dados.pecasInput.reduce((acc, cur) => acc + cur.perda, 0) / dados.pecasInput.length || 0;
         let metrosLinearesEfetivos = (resultadoNesting.alturaTotalConsumidaCm / 100) * (1 + perdaMedia/100);
 
@@ -723,19 +708,17 @@
       let htmlPaineis = '';
       for(let bNome in dadosProcessadosBobinas) {
         const dados = dadosProcessadosBobinas[bNome];
-        const larguraBobina = dados.obj.largura; // ex: 140cm
-        const comprimentoRoloTotal = dados.obj.comprimentoRolo || 5000; // ex: 5000cm
+        const larguraBobina = dados.obj.largura; 
         const alturaConsumidaReal = Math.max(100, dados.alturaTotalCm);
 
-        // Gerar régua X (Largura da Bobina - de 5 em 5 cm exata)
+        // Régua Superior X (Largura exata da impressora de 10 em 10 cm com marcações HP Latex)
         let reguaXHtml = '';
-        for(let x = 0; x < larguraBobina; x += 5) {
+        for(let x = 0; x <= larguraBobina; x += 10) {
           let posPct = (x / larguraBobina) * 100;
-          reguaXHtml += `<span class="absolute text-[9px] text-amber-400 font-mono" style="left: ${posPct}%; transform: translateX(-50%);">${x}</span>`;
+          reguaXHtml += `<div class="absolute flex flex-col items-center" style="left: ${posPct}%; transform: translateX(-50%);"><span class="text-[9px] text-cyan-400 font-mono">${x}cm</span><div class="h-2 w-0.5 bg-cyan-500"></div></div>`;
         }
-        reguaXHtml += `<span class="absolute text-[9px] text-amber-400 font-mono" style="left: 100%; transform: translateX(-100%);">${larguraBobina}</span>`;
 
-        // Gerar régua Y (Comprimento Dinâmico Consumido pelo Nesting 2D)
+        // Régua Lateral Y (Avanço Contínuo do Rolo - Estilo HP Latex RIP Professional com marcação precisa em cm)
         let reguaYHtml = '';
         let passoY = 50; 
         if(alturaConsumidaReal > 500) passoY = 100;
@@ -743,49 +726,47 @@
 
         for(let y = 0; y <= alturaConsumidaReal; y += passoY) {
           let topoPct = (y / alturaConsumidaReal) * 100;
-          reguaYHtml += `<span class="absolute text-[9px] text-amber-400 font-mono whitespace-nowrap" style="top: ${topoPct}%; transform: translateY(-50%); left: 2px;">${y}</span>`;
+          reguaYHtml += `<div class="absolute flex items-center w-full" style="top: ${topoPct}%; transform: translateY(-50%);"><span class="text-[9px] text-cyan-400 font-mono w-12 text-right pr-1">${y}cm</span><div class="w-3 h-0.5 bg-cyan-500"></div></div>`;
         }
-        reguaYHtml += `<span class="absolute text-[9px] text-amber-400 font-mono whitespace-nowrap" style="top: 100%; transform: translateY(-100%); left: 2px;">${Math.round(alturaConsumidaReal)}</span>`;
 
-        let alturaVisualContainer = Math.max(450, Math.min(2500, (alturaConsumidaReal / 100) * 120));
+        let alturaVisualContainer = Math.max(500, Math.min(2500, (alturaConsumidaReal / 100) * 120));
 
         htmlPaineis += `
           <div class="bg-slate-900 border border-slate-700 rounded-xl p-4 space-y-3">
             <div class="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-slate-700 pb-3 gap-3">
               <div>
-                <h5 class="font-bold text-white text-sm"><i class="fa-solid fa-shapes text-amber-400 mr-1"></i> Nesting 2D CorelDRAW — ${bNome}</h5>
-                <p class="text-xs text-slate-400">Largura Bobina: <b>${larguraBobina} cm</b> | Comprimento Otimizado no Rolo: <b>${alturaConsumidaReal.toFixed(0)} cm</b></p>
+                <h5 class="font-bold text-white text-sm"><i class="fa-solid fa-print text-cyan-400 mr-1"></i> RIP HP Latex Avanço Contínuo — ${bNome}</h5>
+                <p class="text-xs text-slate-400">Largura Bobina: <b>${larguraBobina} cm</b> | Comprimento Total RIP (Avanço Real): <b class="text-cyan-300">${alturaConsumidaReal.toFixed(1)} cm</b></p>
               </div>
               <div class="flex items-center gap-2">
-                <span class="text-xs font-bold bg-amber-500/20 text-amber-300 border border-amber-500/40 px-2.5 py-1 rounded-lg">R$ ${(dados.metrosLineares * dados.obj.preco).toFixed(2)}</span>
+                <span class="text-xs font-bold bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 px-2.5 py-1 rounded-lg">R$ ${(dados.metrosLineares * dados.obj.preco).toFixed(2)}</span>
                 <div class="flex items-center bg-slate-800 rounded-lg p-0.5 space-x-1 border border-slate-700">
                   <button onclick="ajustarZoom(-0.2)" title="Diminuir Zoom" class="px-2 py-1 bg-slate-700 hover:bg-slate-600 text-white rounded text-xs font-bold cursor-pointer"><i class="fa-solid fa-magnifying-glass-minus"></i></button>
                   <button onclick="ajustarZoom(0.2)" title="Aumentar Zoom" class="px-2 py-1 bg-slate-700 hover:bg-slate-600 text-white rounded text-xs font-bold cursor-pointer"><i class="fa-solid fa-magnifying-glass-plus"></i></button>
-                  <button onclick="exportarLayoutRIP()" title="Exportar Imagem do Layout" class="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded text-xs font-bold cursor-pointer flex items-center gap-1"><i class="fa-solid fa-download"><span>Exportar</span></i></button>
+                  <button onclick="exportarLayoutRIP()" title="Exportar Layout RIP" class="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded text-xs font-bold cursor-pointer flex items-center gap-1"><i class="fa-solid fa-download"><span>Exportar</span></i></button>
                 </div>
               </div>
             </div>
 
             <div class="overflow-x-auto overflow-y-auto max-h-[600px] border border-slate-800 rounded-xl p-2 bg-slate-950 shadow-inner" id="bloco-exportavel-rip">
-              <div class="container-rip-visual bg-slate-950 p-2 transition-transform duration-200" style="min-width: 650px;">
+              <div class="container-rip-visual bg-slate-950 p-2 transition-transform duration-200" style="min-width: 700px;">
                 
-                <!-- REGUA SUPERIOR X -->
-                <div class="relative h-6 ml-16 mr-2 border-b-2 border-amber-500 select-none bg-slate-900/80 rounded-t">
+                <!-- REGUA SUPERIOR X (LARGURA) -->
+                <div class="relative h-8 ml-16 mr-2 border-b-2 border-cyan-500 select-none bg-slate-900 rounded-t pt-1">
                   ${reguaXHtml}
                 </div>
 
                 <div class="flex">
-                  <!-- REGUA LATERAL Y -->
-                  <div class="relative w-16 border-r-2 border-amber-500 select-none bg-slate-900/80" style="height: ${alturaVisualContainer}px;">
+                  <!-- REGUA LATERAL Y (AVANÇO DO ROLO HP LATEX) -->
+                  <div class="relative w-16 border-r-2 border-cyan-500 select-none bg-slate-900" style="height: ${alturaVisualContainer}px;">
                     ${reguaYHtml}
                   </div>
 
-                  <!-- AREA DE NESTING 2D ABSOLUTA (Posicionamento exato via CSS absolute) -->
+                  <!-- AREA DE IMPRESSÃO / NESTING COM COORDENADAS REAIS -->
                   <div class="flex-grow pl-0 bg-slate-950">
                     <div class="relative bg-slate-900 border border-slate-800 overflow-hidden m-0" style="height: ${alturaVisualContainer}px;">
         `;
 
-        // Renderizar cada peça nas coordenadas exatas (x, y, w, h) geradas pelo algoritmo de Nesting 2D
         dados.itensNesting.forEach((item, idx) => {
           let leftPct = (item.x / larguraBobina) * 100;
           let topPct = (item.y / alturaConsumidaReal) * 100;
@@ -793,13 +774,13 @@
           let heightPct = (item.h / alturaConsumidaReal) * 100;
 
           htmlPaineis += `
-            <div style="position: absolute; left: ${leftPct}%; top: ${topPct}%; width: ${widthPct}%; height: ${heightPct}%;" class="bg-white hover:bg-slate-100 text-slate-900 p-1 border border-black flex flex-col justify-between transition box-border shadow-sm overflow-hidden z-10">
+            <div style="position: absolute; left: ${leftPct}%; top: ${topPct}%; width: ${widthPct}%; height: ${heightPct}%;" class="bg-slate-100 hover:bg-white text-slate-900 p-1 border border-cyan-600 flex flex-col justify-between transition box-border shadow-md overflow-hidden z-10 rounded-sm">
               <div class="flex justify-between items-center text-[9px] font-bold border-b border-slate-300 pb-0.5 text-slate-700">
                 <span class="truncate">#${idx+1} ${item.nome}</span>
-                <span class="bg-slate-200 text-slate-800 px-1 rounded font-mono">${item.w}x${item.h}cm</span>
+                <span class="bg-cyan-100 text-cyan-900 px-1 rounded font-mono">${item.w}x${item.h}cm</span>
               </div>
               <div class="text-center font-mono text-[10px] font-black text-slate-900 my-auto">${item.w} x ${item.h} cm</div>
-              <div class="text-[7px] text-slate-500 text-right font-mono">X:${item.x} Y:${item.y}</div>
+              <div class="text-[7px] text-slate-500 text-right font-mono">X:${item.x.toFixed(1)} Y:${item.y.toFixed(1)}</div>
             </div>
           `;
         });
@@ -810,9 +791,9 @@
                 </div>
 
                 <div class="flex justify-between text-[10px] text-slate-400 font-mono mt-2 pt-1 px-1 border-t border-slate-800">
-                  <span>Origem X:0 Y:0 (Canto Superior Esquerdo)</span>
-                  <span class="text-amber-400 font-bold">Nesting 2D Ativo — Encaixe Automático de Múltiplas Peças</span>
-                  <span>Consumo: ${dados.metrosLineares.toFixed(2)}m</span>
+                  <span>Origem 0,0 (Início do Job RIP)</span>
+                  <span class="text-cyan-400 font-bold">Régua de Avanço HP Latex Ativa — Comprimento Linear Exato</span>
+                  <span>Avanço Total: ${(alturaConsumidaReal/100).toFixed(2)}m</span>
                 </div>
               </div>
             </div>
@@ -841,7 +822,7 @@
             </div>
           </div>
           <div class="space-y-3 pt-2">
-            <h4 class="font-bold text-slate-700 text-sm">Simulador com Nesting 2D Real, Réguas e Encaixe Inteligente</h4>
+            <h4 class="font-bold text-slate-700 text-sm">Simulador RIP Profissional com Régua de Avanço HP Latex</h4>
             ${htmlPaineis || '<p class="text-xs text-slate-400">Nenhum material selecionado.</p>'}
           </div>
         </div>
@@ -854,7 +835,7 @@
       if(!res || res.pecas.length === 0) { alert("Adicione peças válidas antes de salvar."); return; }
       projetosSalvos.unshift(res);
       salvarLocal();
-      alert("Orçamento e layout de Nesting 2D salvos com sucesso!");
+      alert("Orçamento e layout RIP HP Latex salvos com sucesso!");
       mudarAba('salvos');
     }
 
@@ -895,7 +876,7 @@
 
     renderTudo();
     if(document.querySelectorAll("#partes tr").length === 0) {
-      addParteVazia("Peça 1", "Bobina: Bobina Plástico 140cm x 5000cm", 139, 139, 1, 0);
+      addParteVazia("Banner 1", "Bobina: Bobina Lona 140cm x 5000cm", 100, 120, 1, 0);
     }
   </script>
 </body>
