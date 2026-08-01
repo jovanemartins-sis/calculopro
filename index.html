@@ -14,7 +14,7 @@
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
 </head>
-<body class="bg-slate-100 text-slate-800 font-sans antialiased min-h-screen">
+<body class="bg-slate-100 text-slate-800 font-sans antialiased min-h-screen text-[80%]">
 
   <!-- TELA DE LOGIN / AUTENTICAÇÃO FIREBASE -->
   <div id="authModal" class="fixed inset-0 bg-slate-900/90 z-50 flex items-center justify-center p-4">
@@ -284,14 +284,14 @@
     if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
 
-    const ESCALA_BASE = 36; 
+    let ESCALA_BASE = 24; 
     let zoomAtual = 1.0;
     let escalaPxPorCm = ESCALA_BASE;
     
     const LARGURA_REGUA_X_MAX = 150; 
     const ALTURA_REGUA_Y_MAX = 5000; 
     
-    let larguraBobinaAtual = 135; 
+    let larguraBobinaAtual = 150; 
     let alturaTotalLayout = 300;  
     let pecasEmCache = [];
 
@@ -314,11 +314,32 @@
 
         atualizarSelectGlobalBobinas();
         renderizarTabelaSuprimentos();
+        
+        // Ajustar escala inicial exata para caber 150cm na largura padrão do container
+        setTimeout(() => {
+          calcularEscalaFit150();
+        }, 50);
       } else {
         document.getElementById("authModal").classList.remove("hidden");
         document.getElementById("appContainer").classList.add("hidden");
       }
     });
+
+    function calcularEscalaFit150() {
+      const viewport = document.getElementById('viewportPlotagem');
+      if(!viewport) return;
+      const larguraDisponivel = viewport.clientWidth - 40; // margem de segurança
+      if(larguraDisponivel > 0) {
+        // Queremos que 150cm caibam na largura disponível
+        ESCALA_BASE = larguraDisponivel / 150;
+        escalaPxPorCm = ESCALA_BASE * zoomAtual;
+        if(pecasEmCache.length > 0) {
+          renderizarPecasNoCanvas();
+        } else {
+          gerarDimensoesReguas();
+        }
+      }
+    }
 
     function ajustarZoom(delta) {
       zoomAtual += delta;
@@ -410,6 +431,7 @@
       }
       if (aba === 'desenho') {
         document.getElementById("abaDesenho").classList.remove("hidden");
+        calcularEscalaFit150();
         if(pecasEmCache.length === 0) gerarDimensoesReguas();
       }
     }
@@ -421,9 +443,9 @@
     }
 
     function mudarBobinaGlobal(selectEl) {
-      larguraBobinaAtual = parseFloat(selectEl.value) || 135;
+      larguraBobinaAtual = parseFloat(selectEl.value) || 150;
       if(larguraBobinaAtual > 150) larguraBobinaAtual = 150;
-      gerarDimensoesReguas();
+      calcularEscalaFit150();
     }
 
     function renderizarTabelaSuprimentos() {
