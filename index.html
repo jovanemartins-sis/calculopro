@@ -622,46 +622,38 @@
       container.innerHTML = html;
     }
     
-    // Funções de Autenticação Atualizadas
+    // Funções de Autenticação Firebase
     function fazerLoginEmail() {
       const email = document.getElementById("loginEmail").value.trim();
       const senha = document.getElementById("loginSenha").value;
       const erroEl = document.getElementById("authError");
-      erroEl.innerText = "";
+      erroEl.textContent = "";
 
       if (!email || !senha) {
-        erroEl.innerText = "Preencha o e-mail e a senha.";
+        erroEl.textContent = "Preencha o e-mail e a senha.";
         return;
       }
 
       auth.signInWithEmailAndPassword(email, senha)
         .catch((error) => {
-          if (error.code === 'auth/user-not-found' || error.code === 'auth/invalid-credential' || error.code === 'auth/invalid-email') {
-            return auth.createUserWithEmailAndPassword(email, senha);
+          if (error.code === 'auth/user-not-found' || error.code === 'auth/invalid-credential') {
+            auth.createUserWithEmailAndPassword(email, senha)
+              .catch((err) => { erroEl.textContent = err.message; });
           } else {
-            throw error;
+            erroEl.textContent = error.message;
           }
-        })
-        .catch((error) => {
-          erroEl.innerText = "Erro: " + error.message;
         });
     }
 
     function fazerLoginGoogle() {
       const provider = new firebase.auth.GoogleAuthProvider();
       auth.signInWithPopup(provider).catch((error) => {
-        document.getElementById("authError").innerText = "Erro no Google: " + error.message;
+        document.getElementById("authError").textContent = error.message;
       });
     }
 
     function fazerLogout() {
-      auth.signOut().then(() => {
-        document.getElementById("loginEmail").value = "";
-        document.getElementById("loginSenha").value = "";
-        document.getElementById("authError").innerText = "";
-      }).catch((error) => {
-        console.error("Erro ao sair:", error);
-      });
+      auth.signOut();
     }
   </script>
 </body>
