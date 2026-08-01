@@ -24,7 +24,7 @@
           <i class="fa-solid fa-cubes text-2xl"></i>
         </div>
         <h2 class="text-xl font-bold text-slate-900">CalculaJá Pro <span class="text-xs text-cyan-600 font-normal">v3.0 Master</span></h2>
-        <p class="text-xs text-slate-500">Entre com suas credenciais ou cadastre um novo e-mail</p>
+        <p class="text-xs text-slate-500">Insira as credenciais fornecidas pelo administrador para acessar o sistema</p>
       </div>
 
       <div class="space-y-4">
@@ -37,16 +37,7 @@
           <input type="password" id="loginSenha" placeholder="••••••••" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-xs text-slate-900 outline-none focus:border-cyan-500">
         </div>
         <button type="button" onclick="fazerLoginEmail()" class="w-full bg-cyan-600 hover:bg-cyan-700 text-white py-2.5 rounded-lg text-xs font-bold transition shadow cursor-pointer">
-          Entrar / Cadastrar com E-mail
-        </button>
-        <div class="relative flex py-2 items-center">
-          <div class="flex-grow border-t border-slate-200"></div>
-          <span class="flex-shrink mx-4 text-[10px] text-slate-400 uppercase">ou</span>
-          <div class="flex-grow border-t border-slate-200"></div>
-        </div>
-        <button type="button" onclick="fazerLoginGoogle()" class="w-full bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 py-2.5 rounded-lg text-xs font-bold transition flex items-center justify-center space-x-2 cursor-pointer shadow-sm">
-          <i class="fa-brands fa-google text-red-500"></i>
-          <span>Continuar com Google</span>
+          Entrar no Sistema
         </button>
       </div>
       <p id="authError" class="text-center text-xs text-red-500 font-medium"></p>
@@ -622,7 +613,7 @@
       container.innerHTML = html;
     }
     
-    // Funções de Autenticação Firebase
+    // Função de Autenticação Firebase (Apenas credenciais do Administrador)
     function fazerLoginEmail() {
       const email = document.getElementById("loginEmail").value.trim();
       const senha = document.getElementById("loginSenha").value;
@@ -636,20 +627,12 @@
 
       auth.signInWithEmailAndPassword(email, senha)
         .catch((error) => {
-          if (error.code === 'auth/user-not-found' || error.code === 'auth/invalid-credential') {
-            auth.createUserWithEmailAndPassword(email, senha)
-              .catch((err) => { erroEl.textContent = err.message; });
+          if (error.code === 'auth/user-not-found' || error.code === 'auth/invalid-credential' || error.code === 'auth/wrong-password') {
+            erroEl.textContent = "E-mail ou senha incorretos. Solicite acesso ao administrador.";
           } else {
             erroEl.textContent = error.message;
           }
         });
-    }
-
-    function fazerLoginGoogle() {
-      const provider = new firebase.auth.GoogleAuthProvider();
-      auth.signInWithPopup(provider).catch((error) => {
-        document.getElementById("authError").textContent = error.message;
-      });
     }
 
     function fazerLogout() {
