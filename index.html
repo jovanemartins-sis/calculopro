@@ -1,132 +1,72 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard do Projeto - Reduzido 50%</title>
-    <style>
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
+<!-- Navegação Superior / Abas -->
+<header class="flex justify-between items-center bg-slate-900 px-6 py-3 border-b border-slate-800 text-white">
+  <h1 class="text-sm font-bold text-cyan-400"><i class="fa-solid fa-cubes mr-2"></i> CalculaJá Pro - Sistema Integrado</h1>
+  <nav class="flex space-x-2">
+    <button onclick="mudarAba('dados')" id="btnAbaDados" class="px-3 py-1.5 rounded text-xs font-medium bg-cyan-600 text-white transition cursor-pointer">
+      <i class="fa-solid fa-list-check mr-1"></i> Dados & Orçamento
+    </button>
+    <button onclick="mudarAba('desenho')" id="btnAbaDesenho" class="px-3 py-1.5 rounded text-xs font-medium bg-slate-800 text-slate-300 hover:bg-slate-700 transition cursor-pointer">
+      <i class="fa-solid fa-network-wired mr-1"></i> Formação de Desenho (RIP)
+    </button>
+  </nav>
+</header>
 
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f6f9;
-            color: #333;
-            /* Permite scroll caso o projeto ainda ultrapasse o espaço ajustado */
-            overflow: auto;
-            padding: 20px;
-        }
-
-        /* Container externo que isola o zoom/escala de 50% */
-        .view-port-wrapper {
-            width: 200%;  /* Compensa a redução de escala para evitar cortes laterais */
-            height: 200%; /* Compensa a altura */
-            transform: scale(0.5); /* Reduz tudo em 50% */
-            transform-origin: top left; /* Mantém preso no canto superior esquerdo */
-        }
-
-        .dashboard-container {
-            max-width: 1400px; /* Ajuste conforme a largura total do seu projeto (ex: cobrindo até 140cm+) */
-            background: #ffffff;
-            padding: 30px;
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-        }
-
-        h1 {
-            font-size: 24px;
-            margin-bottom: 20px;
-            color: #111;
-        }
-
-        /* Estilização da régua e área de projeto */
-        .regua-container {
-            position: relative;
-            width: 100%;
-            height: 80px;
-            background: #eaeaea;
-            border: 1px solid #ccc;
-            margin-bottom: 20px;
-            display: flex;
-            align-items: center;
-        }
-
-        .marcador-cm {
-            position: absolute;
-            font-size: 12px;
-            text-align: center;
-            border-left: 1px solid #666;
-            height: 15px;
-            top: 0;
-        }
-
-        .marcador-cm.principal {
-            height: 30px;
-            font-weight: bold;
-            border-left: 2px solid #000;
-        }
-
-        /* Área de visualização do projeto (exibindo até 140cm e além) */
-        .projeto-visualizador {
-            position: relative;
-            width: 100%; /* Representa o espaço total dimensionado */
-            height: 400px;
-            background: #fafafa;
-            border: 2px dashed #b0bec5;
-            border-radius: 6px;
-            padding: 20px;
-        }
-
-        .ponto-140cm {
-            position: absolute;
-            left: 70%; /* Exemplo de posição proporcional para a marca de 140cm */
-            top: 0;
-            bottom: 0;
-            border-left: 2px dashed #ff5722;
-            padding-left: 5px;
-            font-size: 14px;
-            color: #ff5722;
-            font-weight: bold;
-        }
-    </style>
-</head>
-<body>
-
-    <!-- O wrapper aplica a escala de 50% em todo o conteúdo interno -->
-    <div class="view-port-wrapper">
-        <div class="dashboard-container">
-            <h1>Visualizador do Projeto (Escala 50%)</h1>
-
-            <!-- Régua de Medidas -->
-            <div class="regua-container">
-                <!-- Exemplo de marcações na régua (incluindo a marca de 140cm) -->
-                <div class="marcador-cm principal" style="left: 0%;">0cm</div>
-                <div class="marcador-cm" style="left: 10%;">20cm</div>
-                <div class="marcador-cm principal" style="left: 20%;">40cm</div>
-                <div class="marcador-cm" style="left: 30%;">60cm</div>
-                <div class="marcador-cm principal" style="left: 40%;">80cm</div>
-                <div class="marcador-cm" style="left: 50%;">100cm</div>
-                <div class="marcador-cm principal" style="left: 60%;">120cm</div>
-                <div class="marcador-cm principal" style="left: 70%;">140cm</div>
-                <div class="marcador-cm" style="left: 80%;">160cm</div>
-                <div class="marcador-cm principal" style="left: 90%;">180cm</div>
-                <div class="marcador-cm principal" style="left: 100%;">200cm</div>
-            </div>
-
-            <!-- Área do Projeto -->
-            <div class="projeto-visualizador">
-                <p>Espaço de renderização do projeto. Agora a marca de 140cm e o restante da estrutura cabem perfeitamente no campo de visão.</p>
-                
-                <!-- Indicador visual da marca de 140cm -->
-                <div class="ponto-140cm">
-                    <span>Marca: 140 cm</span>
-                </div>
-            </div>
-        </div>
+<main class="p-4 max-w-7xl mx-auto">
+  
+  <!-- ABA 1: DADOS, PEÇAS E CUSTOS -->
+  <section id="abaDados" class="space-y-4">
+    <!-- Seus inputs de cliente, produto, custos e tabela de peças continuam aqui -->
+    <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200">
+      <h2 class="text-xs font-bold text-slate-700 mb-3 uppercase tracking-wider">Parâmetros e Peças</h2>
+      <!-- Tabela e inputs preexistentes -->
     </div>
+    
+    <div class="flex justify-end">
+      <button type="button" onclick="processarECalcular()" class="bg-cyan-600 hover:bg-cyan-700 text-white px-5 py-2 rounded-lg text-xs font-bold transition shadow cursor-pointer">
+        Calcular e Gerar Desenho <i class="fa-solid fa-arrow-right ml-1"></i>
+      </button>
+    </div>
+  </section>
 
-</body>
-</html>
+  <!-- ABA 2: NOVA PÁGINA DE FORMAÇÃO DE DESENHO -->
+  <section id="abaDesenho" class="hidden space-y-4">
+    <div class="bg-slate-900 text-white p-5 rounded-xl shadow-inner space-y-3">
+      <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+        <div>
+          <h3 class="text-xs font-bold text-cyan-400"><i class="fa-solid fa-network-wired mr-1"></i> Simulação RIP HP Latex (Nesting Contínuo)</h3>
+          <p id="infoClienteDesenho" class="text-[10px] text-slate-400">Aguardando processamento de dados...</p>
+        </div>
+        <div class="text-right">
+          <span id="valorFinalDesenho" class="text-sm font-bold text-emerald-400">R$ 0.00</span>
+          <p id="custoTotalDesenho" class="text-[9px] text-slate-400">Custo: R$ 0.00</p>
+        </div>
+      </div>
+
+      <!-- Régua de Escala até 200cm -->
+      <div class="bg-slate-800 p-2 rounded text-[10px] text-slate-300 flex justify-between items-center border border-slate-700">
+        <span>Escala de Referência (Régua Térmica / CAD):</span>
+        <div class="flex space-x-4 font-mono text-cyan-300">
+          <span>0 cm</span>
+          <span>50 cm</span>
+          <span>100 cm</span>
+          <span>150 cm</span>
+          <span>200 cm+</span>
+        </div>
+      </div>
+
+      <!-- Área de Plotagem Gráfica isolada na nova página -->
+      <div class="overflow-x-auto bg-slate-950 p-4 rounded-lg border border-slate-800 min-h-[220px] flex items-center">
+        <div id="containerPlotagem" class="relative border-l-2 border-dashed border-cyan-500 pl-2 flex gap-1 items-center">
+          <div class="text-slate-500 text-xs py-6 w-full text-center">Nenhuma peça processada. Vá para a aba "Dados & Orçamento" e clique em calcular.</div>
+        </div>
+      </div>
+
+      <div class="flex justify-start pt-2">
+        <button type="button" onclick="mudarAba('dados')" class="bg-slate-800 hover:bg-slate-700 text-slate-300 px-4 py-1.5 rounded text-xs transition cursor-pointer">
+          <i class="fa-solid fa-arrow-left mr-1"></i> Voltar para Edição
+        </button>
+      </div>
+    </div>
+  </section>
+
+</main>
