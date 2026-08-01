@@ -1,1044 +1,507 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>CalculaJá Pro - Dashboard Moderno</title>
-<!-- Tailwind CSS via CDN -->
-<script src="https://cdn.tailwindcss.com"></script>
-<!-- Font Awesome para ícones -->
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-<!-- html2canvas para exportar imagem -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-<script>
-  tailwind.config = {
-    theme: {
-      extend: {
-        colors: {
-          brand: {
-            50: '#eff6ff',
-            100: '#dbeafe',
-            500: '#3b82f6',
-            600: '#2563eb',
-            700: '#1d4ed8',
-            800: '#1e40af'
-          }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CalculaJá Pro</title>
+    <!-- FontAwesome para Ícones -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Firebase App (versão compatível com SDK compat) -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --success: #16a34a;
+            --danger: #dc2626;
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --border: #cbd5e1;
         }
-      }
-    }
-  }
-</script>
-<style>
-  .touch-scroll {
-    -webkit-overflow-scrolling: touch;
-    overscroll-behavior-x: contain;
-  }
-  .plotter-viewport {
-    position: relative;
-    width: 100%;
-    height: 65vh;
-    max-height: 520px;
-    background: #f8fafc;
-    border: 1px solid #cbd5e1;
-    border-radius: 12px;
-    overflow: auto;
-    box-shadow: inset 0 2px 4px rgba(0,0,0,0.04);
-    -webkit-overflow-scrolling: touch;
-  }
-  .plotter-workspace {
-    position: relative;
-    transform-origin: top left;
-    transition: transform 0.1s ease;
-    background: #f1f5f9;
-  }
-  .regua-horizontal {
-    position: sticky;
-    top: 0;
-    left: 0;
-    height: 30px;
-    background: linear-gradient(to bottom, #f8fafc, #e2e8f0);
-    border-bottom: 2px solid #94a3b8;
-    display: flex;
-    align-items: flex-end;
-    z-index: 20;
-    white-space: nowrap;
-  }
-  .regua-vertical {
-    position: sticky;
-    left: 0;
-    width: 45px;
-    background: linear-gradient(to right, #f8fafc, #e2e8f0);
-    border-right: 2px solid #94a3b8;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    z-index: 15;
-  }
-  .canvas-bobina {
-    position: absolute;
-    top: 30px;
-    left: 45px;
-    background: #ffffff;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-    border: 1px solid #94a3b8;
-  }
-  .peca-plotter {
-    position: absolute;
-    background: rgba(37, 99, 235, 0.15);
-    border: 1.5px solid #2563eb;
-    color: #1e3a8a;
-    font-size: 10px;
-    font-weight: 700;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    padding: 2px;
-    box-sizing: border-box;
-    overflow: hidden;
-    cursor: pointer;
-    border-radius: 4px;
-    touch-action: manipulation;
-  }
-  .peca-plotter:hover, .peca-plotter:active { filter: brightness(0.95); background: rgba(37, 99, 235, 0.3); }
 
-  @media print {
-    .no-print { display: none !important; }
-    body { background: white !important; padding: 0 !important; }
-  }
-</style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* TELA DE LOGIN */
+        #auth-screen {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .auth-card {
+            background: var(--card-bg);
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .auth-card h1 {
+            font-size: 24px;
+            color: var(--primary);
+            text-align: center;
+            margin-bottom: 8px;
+        }
+
+        .auth-card p {
+            text-align: center;
+            color: var(--text-muted);
+            margin-bottom: 24px;
+            font-size: 14px;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 10px 14px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .form-group input:focus {
+            border-color: var(--primary);
+        }
+
+        .error-msg {
+            color: var(--danger);
+            font-size: 12px;
+            margin-top: 4px;
+            display: none;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 11px;
+            border: none;
+            border-radius: 6px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+            margin-top: 8px;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+        }
+
+        .btn-google {
+            background: #ffffff;
+            color: #374151;
+            border: 1px solid var(--border);
+            margin-top: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .btn-google:hover {
+            background: #f1f5f9;
+        }
+
+        .auth-switch {
+            text-align: center;
+            margin-top: 16px;
+            font-size: 14px;
+        }
+
+        .auth-switch a {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .auth-switch a:hover {
+            text-decoration: underline;
+        }
+
+        /* APLICAÇÃO PRINCIPAL */
+        #app-screen {
+            display: none;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        header {
+            background: var(--primary);
+            color: white;
+            padding: 16px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 4px rgb(0 0 0 / 0.1);
+        }
+
+        header h2 {
+            font-size: 20px;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            font-size: 14px;
+        }
+
+        .btn-logout {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 13px;
+        }
+
+        .btn-logout:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .nav-tabs {
+            background: #ffffff;
+            display: flex;
+            gap: 8px;
+            padding: 0 24px;
+            border-bottom: 1px solid var(--border);
+            box-shadow: 0 1px 3px rgb(0 0 0 / 0.05);
+        }
+
+        .tab-btn {
+            background: none;
+            border: none;
+            padding: 14px 16px;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-muted);
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+        }
+
+        .tab-btn.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+        }
+
+        main {
+            flex: 1;
+            padding: 24px;
+            max-width: 1000px;
+            width: 100%;
+            margin: 0 auto;
+        }
+
+        .tab-content {
+            display: none;
+            background: var(--card-bg);
+            padding: 24px;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgb(0 0 0 / 0.1);
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .tab-content h3 {
+            margin-bottom: 16px;
+            font-size: 18px;
+            color: var(--text-main);
+        }
+
+        .history-list {
+            list-style: none;
+        }
+
+        .history-item {
+            padding: 12px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .history-item:last-child {
+            border-bottom: none;
+        }
+    </style>
 </head>
-<body class="bg-slate-100 text-slate-800 font-sans min-h-screen p-2 sm:p-4 md:p-6 select-none sm:select-text">
+<body>
 
-<!-- TELA DE LOGIN / CADASTRO -->
-<div id="tela-login" class="max-w-md mx-auto my-12 bg-white rounded-2xl shadow-xl border border-slate-200 p-6 space-y-6">
-  <div class="text-center space-y-2">
-    <div class="inline-block bg-blue-100 p-3 rounded-2xl text-blue-600 mb-1">
-      <i class="fa-solid fa-calculator text-3xl"></i>
-    </div>
-    <h2 class="text-2xl font-black text-slate-800">CalculaJá Pro</h2>
-    <p class="text-xs text-slate-500 font-medium">Acesse sua conta para utilizar o sistema</p>
-  </div>
+    <!-- TELA DE AUTENTICAÇÃO -->
+    <div id="auth-screen">
+        <div class="auth-card">
+            <h1 id="auth-title">CalculaJá Pro</h1>
+            <p id="auth-subtitle">Acesse sua conta para utilizar o sistema</p>
+            
+            <form id="auth-form">
+                <div class="form-group">
+                    <label>E-mail</label>
+                    <input type="email" id="email" placeholder="seu@email.com" required>
+                    <div id="email-error" class="error-msg">Por favor, digite um e-mail válido (ex: seu@email.com).</div>
+                </div>
 
-  <div class="space-y-4">
-    <div>
-      <label class="block text-xs font-bold text-slate-500 uppercase mb-1">E-mail</label>
-      <input id="login-email" type="email" placeholder="seu@email.com" class="w-full border border-slate-300 rounded-xl px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-blue-500">
-    </div>
-    <div>
-      <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Senha (Mínimo 6 caracteres)</label>
-      <input id="login-senha" type="password" placeholder="••••••••" class="w-full border border-slate-300 rounded-xl px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-blue-500">
-    </div>
+                <div class="form-group">
+                    <label>Senha (Mínimo 6 caracteres)</label>
+                    <input type="password" id="password" placeholder="******" required minlength="6">
+                </div>
 
-    <div id="login-erro" class="hidden text-xs text-red-600 bg-red-50 p-2.5 rounded-lg border border-red-200 font-semibold text-center"></div>
+                <button type="submit" id="btn-submit" class="btn btn-primary">Entrar</button>
+            </form>
 
-    <div class="grid grid-cols-2 gap-3 pt-2">
-      <button onclick="fazerLogin()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 px-4 rounded-xl text-sm transition">
-        Entrar
-      </button>
-      <button onclick="criarConta()" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2.5 px-4 rounded-xl text-sm transition">
-        Criar Conta
-      </button>
-    </div>
-  </div>
-</div>
-
-<!-- DASHBOARD PRINCIPAL (OCULTO ATÉ O LOGIN) -->
-<div id="app-dashboard" class="hidden max-w-7xl mx-auto bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden">
-  
-  <!-- CABEÇALHO MODERNO RESPONSIVO -->
-  <header class="bg-gradient-to-r from-blue-900 via-blue-700 to-indigo-800 text-white p-4 sm:p-6 flex flex-col md:flex-row justify-between items-center gap-4 border-b border-blue-900/20">
-    <div class="flex items-center gap-3 w-full md:w-auto justify-between md:justify-start">
-      <div class="flex items-center gap-3">
-        <div class="bg-white/10 p-2.5 sm:p-3 rounded-xl backdrop-blur-md">
-          <i class="fa-solid font-bold text-xl sm:text-2xl text-blue-200 fa-calculator"></i>
-        </div>
-        <div>
-          <h1 class="text-xl sm:text-2xl font-black tracking-tight">CalculaJá Pro</h1>
-          <p id="usuario-logado-email" class="text-xs text-blue-100/80 font-medium">Carregando usuário...</p>
-        </div>
-      </div>
-      <button onclick="fazerLogout()" class="md:hidden bg-red-500/80 hover:bg-red-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold transition">
-        Sair
-      </button>
-    </div>
-    
-    <!-- Ações Rápidas -->
-    <div class="grid grid-cols-3 sm:flex items-center gap-2 w-full md:w-auto no-print">
-      <button onclick="calcular()" class="bg-emerald-500 hover:bg-emerald-600 active:scale-95 text-white px-3 sm:px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm shadow-lg shadow-emerald-500/20 transition flex items-center justify-center gap-1.5">
-        <i class="fa-solid fa-bolt"></i> <span>Calcular</span>
-      </button>
-      <button onclick="salvarOrcamentoLocal()" class="bg-amber-500 hover:bg-amber-600 active:scale-95 text-white px-3 sm:px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm shadow-lg shadow-amber-500/20 transition flex items-center justify-center gap-1.5">
-        <i class="fa-solid fa-floppy-disk"></i> <span>Salvar</span>
-      </button>
-      <button onclick="fazerLogout()" class="hidden md:flex bg-red-500 hover:bg-red-600 active:scale-95 text-white px-3 sm:px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm shadow-lg transition items-center justify-center gap-1.5">
-        <i class="fa-solid fa-right-from-bracket"></i> <span>Sair</span>
-      </button>
-    </div>
-  </header>
-
-  <!-- NAVEGAÇÃO POR ABAS -->
-  <div class="border-b border-slate-200 bg-slate-50 px-2 sm:px-6 flex gap-1 sm:gap-2 overflow-x-auto touch-scroll no-print">
-    <button id="tab-btn-orcamento" onclick="trocarAba('orcamento')" class="py-3 px-3 sm:px-4 font-bold text-xs sm:text-sm border-b-2 border-blue-600 text-blue-600 flex items-center gap-2 whitespace-nowrap transition">
-      <i class="fa-solid fa-file-invoice-dollar"></i> Orçamento & Peças
-    </button>
-    <button id="tab-btn-catalogo" onclick="trocarAba('catalogo')" class="py-3 px-3 sm:px-4 font-semibold text-xs sm:text-sm border-b-2 border-transparent text-slate-500 hover:text-slate-700 flex items-center gap-2 whitespace-nowrap transition">
-      <i class="fa-solid fa-boxes-packing"></i> Catálogo de Preços
-    </button>
-    <button id="tab-btn-historico" onclick="trocarAba('historico')" class="py-3 px-3 sm:px-4 font-semibold text-xs sm:text-sm border-b-2 border-transparent text-slate-500 hover:text-slate-700 flex items-center gap-2 whitespace-nowrap transition">
-      <i class="fa-solid fa-clock-rotate-left"></i> Histórico
-    </button>
-    <button id="tab-btn-backup" onclick="trocarAba('backup')" class="py-3 px-3 sm:px-4 font-semibold text-xs sm:text-sm border-b-2 border-transparent text-slate-500 hover:text-slate-700 flex items-center gap-2 whitespace-nowrap transition">
-      <i class="fa-solid fa-cloud-arrow-down"></i> Backup / Nuvem
-    </button>
-  </div>
-
-  <div class="p-3 sm:p-5 md:p-6 space-y-5 sm:space-y-6">
-
-    <!-- ABA 1: ORÇAMENTO & PEÇAS -->
-    <div id="aba-orcamento" class="space-y-5 sm:space-y-6">
-      
-      <!-- CADASTRO DA BOBINA E INFORMACÕES DO PEDIDO -->
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        
-        <!-- CARD BOBINA -->
-        <div class="bg-slate-50 p-4 sm:p-5 rounded-2xl border border-slate-200 shadow-sm border-l-4 border-l-blue-600">
-          <h3 class="font-bold text-slate-800 text-xs sm:text-sm uppercase tracking-wider mb-3 flex items-center gap-2">
-            <i class="fa-solid fa-scroll text-blue-600"></i> Bobina Utilizada
-          </h3>
-          <div class="space-y-3">
-            <div>
-              <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Descrição</label>
-              <input id="nomeBobina" type="text" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none" value="Bobina PVC Cristal">
-            </div>
-            <div class="grid grid-cols-2 gap-3">
-              <div>
-                <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Largura (cm)</label>
-                <input id="larguraBobina" type="number" inputmode="decimal" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none" value="140" min="1" step="0.1" oninput="atualizarBobinaEstatica()">
-              </div>
-              <div>
-                <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Comprimento (m)</label>
-                <input id="comprimentoBobina" type="number" inputmode="decimal" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none" value="50" min="1" step="0.1" oninput="atualizarBobinaEstatica()">
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- CARD PEDIDO -->
-        <div class="bg-slate-50 p-4 sm:p-5 rounded-2xl border border-slate-200 shadow-sm border-l-4 border-l-indigo-600">
-          <h3 class="font-bold text-slate-800 text-xs sm:text-sm uppercase tracking-wider mb-3 flex items-center gap-2">
-            <i class="fa-solid fa-user-tag text-indigo-600"></i> Informações do Pedido
-          </h3>
-          <div class="space-y-3">
-            <div>
-              <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Cliente</label>
-              <input id="cliente" type="text" placeholder="Nome do cliente..." class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
-            </div>
-            <div>
-              <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Produto / Projeto</label>
-              <input id="produto" type="text" placeholder="Nome do projeto..." class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
-            </div>
-          </div>
-        </div>
-
-      </div>
-
-      <!-- TABELA DE PARTES PRINCIPAIS -->
-      <div class="bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 shadow-sm">
-        <div class="flex justify-between items-center mb-3">
-          <h3 class="font-bold text-slate-800 text-sm sm:text-base flex items-center gap-2">
-            <i class="fa-solid fa-shapes text-blue-600"></i> 1. Partes Principais (Lado x Lado)
-          </h3>
-        </div>
-        
-        <div class="overflow-x-auto touch-scroll -mx-4 px-4 sm:mx-0 sm:px-0">
-          <table class="w-full text-left text-sm min-w-[600px]">
-            <thead class="bg-blue-900 text-white text-xs uppercase font-semibold">
-              <tr>
-                <th class="p-2.5 sm:p-3 rounded-l-lg">Nome da Parte</th>
-                <th class="p-2.5 sm:p-3">Material</th>
-                <th class="p-2.5 sm:p-3">Lado 1 (cm)</th>
-                <th class="p-2.5 sm:p-3">Lado 2 (cm)</th>
-                <th class="p-2.5 sm:p-3">Qtd</th>
-                <th class="p-2.5 sm:p-3">Perda (%)</th>
-                <th class="p-2.5 sm:p-3 text-center rounded-r-lg">Ação</th>
-              </tr>
-            </thead>
-            <tbody id="partes" class="divide-y divide-slate-100"></tbody>
-          </table>
-        </div>
-        <button onclick="addParte()" type="button" class="mt-3 w-full py-3 bg-emerald-50 hover:bg-emerald-100 active:bg-emerald-200 text-emerald-700 font-bold text-sm rounded-xl border border-emerald-200 transition flex items-center justify-center gap-2">
-          <i class="fa-solid fa-plus"></i> Adicionar Parte
-        </button>
-      </div>
-
-      <!-- TABELA DE SUPLEMENTOS -->
-      <div class="bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 shadow-sm">
-        <div class="flex justify-between items-center mb-3">
-          <h3 class="font-bold text-slate-800 text-sm sm:text-base flex items-center gap-2">
-            <i class="fa-solid fa-toolbox text-indigo-600"></i> 2. Suplementos & Acessórios
-          </h3>
-        </div>
-        
-        <div class="overflow-x-auto touch-scroll -mx-4 px-4 sm:mx-0 sm:px-0">
-          <table class="w-full text-left text-sm min-w-[650px]">
-            <thead class="bg-indigo-900 text-white text-xs uppercase font-semibold">
-              <tr>
-                <th class="p-2.5 sm:p-3 rounded-l-lg">Nome do Item</th>
-                <th class="p-2.5 sm:p-3">Material</th>
-                <th class="p-2.5 sm:p-3">Medida / Qtd</th>
-                <th class="p-2.5 sm:p-3">Unidade</th>
-                <th class="p-2.5 sm:p-3">Qtd Peças</th>
-                <th class="p-2.5 sm:p-3">Perda (%)</th>
-                <th class="p-2.5 sm:p-3 text-center rounded-r-lg">Ação</th>
-              </tr>
-            </thead>
-            <tbody id="suplementos" class="divide-y divide-slate-100"></tbody>
-          </table>
-        </div>
-        <button onclick="addSuplemento()" type="button" class="mt-3 w-full py-3 bg-indigo-50 hover:bg-indigo-100 active:bg-indigo-200 text-indigo-700 font-bold text-sm rounded-xl border border-indigo-200 transition flex items-center justify-center gap-2">
-          <i class="fa-solid fa-plus"></i> Adicionar Suplemento
-        </button>
-      </div>
-
-      <!-- CUSTOS OPERACIONAIS -->
-      <div class="bg-slate-50 border border-slate-200 rounded-2xl p-4 sm:p-5 shadow-sm space-y-4">
-        <h3 class="font-bold text-slate-800 text-xs sm:text-sm uppercase tracking-wider flex items-center gap-2">
-          <i class="fa-solid fa-coins text-amber-500"></i> Custos Operacionais & Margens
-        </h3>
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
-          <div>
-            <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Mão de Obra (R$)</label>
-            <input id="mao" type="number" inputmode="decimal" value="0" min="0" step="0.01" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
-          </div>
-          <div>
-            <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Outros Custos (R$)</label>
-            <input id="outros" type="number" inputmode="decimal" value="0" min="0" step="0.01" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
-          </div>
-          <div>
-            <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Lucro (%)</label>
-            <input id="lucro" type="number" inputmode="decimal" value="0" min="0" step="0.01" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
-          </div>
-          <div>
-            <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Impostos (%)</label>
-            <input id="imposto" type="number" inputmode="decimal" value="0" min="0" step="0.01" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
-          </div>
-        </div>
-      </div>
-
-      <!-- RESULTADO & PLOTTER -->
-      <div id="resultado" class="bg-white border border-slate-200 rounded-2xl p-4 sm:p-6 shadow-sm"></div>
-
-    </div>
-
-    <!-- ABA 2: CATÁLOGO -->
-    <div id="aba-catalogo" class="hidden space-y-6">
-      <div class="bg-white border border-slate-200 rounded-2xl p-4 sm:p-6 shadow-sm">
-        <h3 class="font-bold text-slate-800 text-base sm:text-lg mb-4 flex items-center gap-2">
-          <i class="fa-solid fa-list-check text-blue-600"></i> Catálogo de Materiais
-        </h3>
-
-        <div class="overflow-x-auto touch-scroll mb-6 -mx-4 px-4 sm:mx-0 sm:px-0">
-          <table class="w-full text-left text-sm min-w-[500px]">
-            <thead class="bg-slate-800 text-white text-xs uppercase font-semibold">
-              <tr>
-                <th class="p-3 rounded-l-lg">Nome do Item</th>
-                <th class="p-3">Unidade Base</th>
-                <th class="p-3">Valor (R$)</th>
-                <th class="p-3 text-center rounded-r-lg">Ação</th>
-              </tr>
-            </thead>
-            <tbody id="tabelaPrecos" class="divide-y divide-slate-100"></tbody>
-          </table>
-        </div>
-
-        <form id="formPreco" class="bg-slate-50 p-4 rounded-xl border border-slate-200 grid grid-cols-1 md:grid-cols-4 gap-3 sm:gap-4 items-end">
-          <div>
-            <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Nome do Item</label>
-            <input type="text" id="nomePreco" placeholder="Ex: Zíper de Metro" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none" required>
-          </div>
-          <div>
-            <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Unidade</label>
-            <select id="unidadePreco" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
-              <option value="m2">m² (Lado x Lado)</option>
-              <option value="metro">Metro</option>
-              <option value="unidade">Unidade</option>
-              <option value="peca">Peça</option>
-            </select>
-          </div>
-          <div>
-            <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Valor (R$)</label>
-            <input type="number" id="valorPreco" inputmode="decimal" step="0.01" min="0" placeholder="0,00" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none" required>
-          </div>
-          <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-bold py-2.5 px-4 rounded-lg text-sm transition">
-            + Adicionar ao Catálogo
-          </button>
-        </form>
-      </div>
-    </div>
-
-    <!-- ABA 3: HISTÓRICO -->
-    <div id="aba-historico" class="hidden space-y-6">
-      <div class="bg-white border border-slate-200 rounded-2xl p-4 sm:p-6 shadow-sm">
-        <h3 class="font-bold text-slate-800 text-base sm:text-lg mb-4 flex items-center gap-2">
-          <i class="fa-solid fa-clock-rotate-left text-blue-600"></i> Orçamentos Salvos na Nuvem
-        </h3>
-        <div id="listaSalvos" class="space-y-3"></div>
-      </div>
-    </div>
-
-    <!-- ABA 4: BACKUP -->
-    <div id="aba-backup" class="hidden space-y-6">
-      <div class="bg-white border border-slate-200 rounded-2xl p-4 sm:p-6 shadow-sm">
-        <h3 class="font-bold text-slate-800 text-base sm:text-lg mb-2 flex items-center gap-2">
-          <i class="fa-solid fa-cloud-arrow-down text-blue-600"></i> Gerenciamento de Backup (JSON)
-        </h3>
-        <p class="text-sm text-slate-500 mb-6">
-          Exporte o catálogo de materiais e todo o seu histórico salvo para guardar com segurança ou importar em outro dispositivo.
-        </p>
-
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <button onclick="baixarBackupPasta()" class="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow transition flex items-center justify-center gap-2 text-sm">
-            <i class="fa-solid fa-download"></i> Baixar Backup do Sistema
-          </button>
-          
-          <div>
-            <button onclick="document.getElementById('inputImportarBackup').click()" class="w-full py-3 bg-slate-700 hover:bg-slate-800 text-white font-bold rounded-xl shadow transition flex items-center justify-center gap-2 text-sm">
-              <i class="fa-solid fa-upload"></i> Restaurar Arquivo de Backup
+            <button type="button" id="btn-google" class="btn btn-google">
+                <i class="fab fa-google" style="color: #ea4335;"></i> Entrar com o Google
             </button>
-            <input type="file" id="inputImportarBackup" accept=".json" class="hidden" onchange="importarBackupPasta(event)">
-          </div>
+
+            <div class="auth-switch">
+                <span id="switch-text">Não tem uma conta?</span> 
+                <a id="switch-mode-btn">Criar Conta</a>
+            </div>
         </div>
-      </div>
     </div>
 
-  </div>
-</div>
+    <!-- TELA DO APLICATIVO -->
+    <div id="app-screen">
+        <header>
+            <h2>CalculaJá Pro</h2>
+            <div class="user-info">
+                <span id="user-display-email"></span>
+                <button id="btn-logout" class="btn-logout">Sair</button>
+            </div>
+        </header>
 
-<!-- SCRIPTS DE CONEXÃO FIREBASE E LÓGICA DO APP -->
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-  import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-  import { getFirestore, collection, addDoc, getDocs, query, where, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        <nav class="nav-tabs">
+            <button class="tab-btn active" onclick="switchTab(event, 'tab-orcamento')">Orçamento & Peças</button>
+            <button class="tab-btn" onclick="switchTab(event, 'tab-catalogo')">Catálogo de Preços</button>
+            <button class="tab-btn" onclick="switchTab(event, 'tab-historico')">Histórico</button>
+            <button class="tab-btn" onclick="switchTab(event, 'tab-backup')">Backup / Nuvem</button>
+        </nav>
 
-  // Suas credenciais oficiais do Firebase
-  const firebaseConfig = {
-    apiKey: "AIzaSyBK2M_6YeHCV_mNOrh2v8FO8g6BcOFBlFw",
-    authDomain: "calculo-pro.firebaseapp.com",
-    projectId: "calculo-pro",
-    storageBucket: "calculo-pro.firebasestorage.app",
-    messagingSenderId: "986889549980",
-    appId: "1:986889549980:web:3f2e25a049cfbc6dced559"
-  };
+        <main>
+            <div id="tab-orcamento" class="tab-content active">
+                <h3>Novo Orçamento</h3>
+                <p>Preencha os dados abaixo para calcular seu projeto.</p>
+            </div>
 
-  const app = initializeApp(firebaseConfig);
-  const auth = getAuth(app);
-  const db = getFirestore(app);
+            <div id="tab-catalogo" class="tab-content">
+                <h3>Catálogo de Preços</h3>
+                <p>Gerencie seus custos e valores de peças.</p>
+            </div>
 
-  window.auth = auth;
-  window.db = db;
+            <div id="tab-historico" class="tab-content">
+                <h3>Histórico de Orçamentos</h3>
+                <p>Orçamentos salvos no banco de dados do Firebase:</p>
+                <ul id="history-list" class="history-list">
+                    <li class="history-item">Nenhum orçamento carregado ainda.</li>
+                </ul>
+            </div>
 
-  // Monitora mudança no estado do Usuário
-  onAuthStateChanged(auth, (user) => {
-    if (user) {
-      document.getElementById("tela-login").classList.add("hidden");
-      document.getElementById("app-dashboard").classList.remove("hidden");
-      document.getElementById("usuario-logado-email").innerText = user.email;
-      carregarOrcamentosSalvosFirebase();
-    } else {
-      document.getElementById("tela-login").classList.remove("hidden");
-      document.getElementById("app-dashboard").classList.add("hidden");
-    }
-  });
-
-  window.fazerLogin = function() {
-    const email = document.getElementById("login-email").value.trim().toLowerCase();
-    const senha = document.getElementById("login-senha").value.trim();
-    const erroEl = document.getElementById("login-erro");
-    erroEl.classList.add("hidden");
-
-    if (!email || !email.includes("@")) {
-      erroEl.innerText = "Por favor, digite um e-mail válido (ex: seu@email.com).";
-      erroEl.classList.remove("hidden");
-      return;
-    }
-
-    signInWithEmailAndPassword(auth, email, senha)
-      .catch((error) => {
-        let mensagem = "Erro ao entrar: " + error.message;
-        if (error.code === 'auth/invalid-email') mensagem = "O formato de e-mail digitado é inválido.";
-        if (error.code === 'auth/invalid-credential') mensagem = "E-mail ou senha incorretos.";
-        
-        erroEl.innerText = mensagem;
-        erroEl.classList.remove("hidden");
-      });
-  };
-
-  window.criarConta = function() {
-    const email = document.getElementById("login-email").value.trim().toLowerCase();
-    const senha = document.getElementById("login-senha").value.trim();
-    const erroEl = document.getElementById("login-erro");
-    erroEl.classList.add("hidden");
-
-    if (!email || !email.includes("@") || !email.includes(".")) {
-      erroEl.innerText = "Por favor, digite um e-mail válido (ex: seu@email.com).";
-      erroEl.classList.remove("hidden");
-      return;
-    }
-
-    if (senha.length < 6) {
-      erroEl.innerText = "A senha deve ter pelo menos 6 caracteres.";
-      erroEl.classList.remove("hidden");
-      return;
-    }
-
-    createUserWithEmailAndPassword(auth, email, senha)
-      .then(() => alert("Conta criada com sucesso!"))
-      .catch((error) => {
-        let mensagem = "Erro ao criar conta: " + error.message;
-        if (error.code === 'auth/email-already-in-use') mensagem = "Este e-mail já está cadastrado!";
-        if (error.code === 'auth/invalid-email') mensagem = "Formato de e-mail inválido. Verifique o que foi digitado.";
-        if (error.code === 'auth/weak-password') mensagem = "A senha deve ter pelo menos 6 caracteres.";
-        
-        erroEl.innerText = mensagem;
-        erroEl.classList.remove("hidden");
-      });
-  };
-
-  window.fazerLogout = function() {
-    signOut(auth);
-  };
-
-  window.salvarOrcamentoFirebase = async function(dados) {
-    if (!auth.currentUser) return;
-    try {
-      await addDoc(collection(db, "orcamentos"), {
-        ...dados,
-        uid: auth.currentUser.uid,
-        criadoEm: new Date()
-      });
-      alert("Orçamento salvo com sucesso na nuvem Firebase!");
-      carregarOrcamentosSalvosFirebase();
-    } catch (e) {
-      console.error("Erro ao salvar no Firestore: ", e);
-      alert("Erro ao salvar no banco de dados.");
-    }
-  };
-
-  window.carregarOrcamentosSalvosFirebase = async function() {
-    if (!auth.currentUser) return;
-    const container = document.getElementById("listaSalvos");
-    container.innerHTML = `<div class="text-center py-4 text-slate-400 text-sm">Carregando...</div>`;
-
-    try {
-      const q = query(collection(db, "orcamentos"), where("uid", "==", auth.currentUser.uid));
-      const querySnapshot = await getDocs(q);
-      
-      if (querySnapshot.empty) {
-        container.innerHTML = `<div class="text-center py-8 text-slate-400 text-sm">Nenhum orçamento salvo na nuvem.</div>`;
-        return;
-      }
-
-      container.innerHTML = "";
-      querySnapshot.forEach((docSnap) => {
-        const item = docSnap.data();
-        const docId = docSnap.id;
-        const div = document.createElement("div");
-        div.className = "bg-slate-50 border border-slate-200 p-3 sm:p-4 rounded-xl flex justify-between items-center hover:bg-slate-100/80 transition gap-2";
-        div.innerHTML = `
-          <div>
-            <h4 class="font-bold text-slate-800 text-sm sm:text-base">${item.produto}</h4>
-            <p class="text-xs text-slate-500">Cliente: ${item.cliente} • Data: ${item.data}</p>
-            <span class="inline-block mt-1 text-xs sm:text-sm font-bold text-emerald-600">R$ ${item.precoFinal.toFixed(2).replace(".",",")}</span>
-          </div>
-          <div>
-            <button onclick="excluirOrcamentoFirebase('${docId}')" class="bg-red-500 hover:bg-red-600 text-white p-2 rounded-lg text-xs font-bold transition flex items-center gap-1">
-              <i class="fa-solid fa-trash"></i>
-            </button>
-          </div>
-        `;
-        container.appendChild(div);
-      });
-    } catch (e) {
-      console.error("Erro ao buscar dados: ", e);
-    }
-  };
-
-  window.excluirOrcamentoFirebase = async function(docId) {
-    if (confirm("Deseja realmente excluir este orçamento da nuvem?")) {
-      await deleteDoc(doc(db, "orcamentos", docId));
-      carregarOrcamentosSalvosFirebase();
-    }
-  };
-</script>
-
-<script>
-let catalogoPadrao = [
-  { id: 1, nome: "PVC Cristal 0,30", unidade: "m2", valor: 18.00 },
-  { id: 2, nome: "Zíper de Metro N5", unidade: "metro", valor: 5.00 },
-  { id: 3, nome: "Cursor N5", unidade: "unidade", valor: 0.60 },
-  { id: 4, nome: "Viés de Borda", unidade: "metro", valor: 2.50 }
-];
-
-let catalogo = JSON.parse(localStorage.getItem("catalogo_materiais")) || catalogoPadrao;
-let ultimoResultadoCalculado = null;
-let modoEstrategiaEncaixe = 0;
-let nivelZoom = 1;
-
-window.onload = function() {
-  renderTabelaPrecos();
-  addParteVazia();
-  addSuplementoVazia();
-  atualizaSelectsCatalogo();
-  renderizarBobinaInicial();
-};
-
-function trocarAba(nomeAba) {
-  ['orcamento', 'catalogo', 'historico', 'backup'].forEach(aba => {
-    document.getElementById(`aba-${aba}`).classList.add('hidden');
-    let btn = document.getElementById(`tab-btn-${aba}`);
-    btn.classList.remove('border-blue-600', 'text-blue-600');
-    btn.classList.add('border-transparent', 'text-slate-500');
-  });
-
-  document.getElementById(`aba-${nomeAba}`).classList.remove('hidden');
-  let btnAtivo = document.getElementById(`tab-btn-${nomeAba}`);
-  btnAtivo.classList.remove('border-transparent', 'text-slate-500');
-  btnAtivo.classList.add('border-blue-600', 'text-blue-600');
-}
-
-function salvarCatalogoLocalStorage(){
-  localStorage.setItem("catalogo_materiais", JSON.stringify(catalogo));
-}
-
-function remover(btn){ btn.closest("tr").remove(); }
-
-function addParteVazia(){
-  const tr = document.createElement("tr");
-  tr.className = "hover:bg-slate-50 transition";
-  tr.innerHTML = `
-    <td class="p-2"><input class="nomeParte w-full border border-slate-300 rounded px-2 py-1.5 text-sm outline-none focus:border-blue-500" placeholder="Ex: Painel Frontal"></td>
-    <td class="p-2"><select class="materialParte w-full border border-slate-300 rounded px-2 py-1.5 text-sm outline-none focus:border-blue-500"><option value="">Selecione...</option></select></td>
-    <td class="p-2"><input class="lado1 w-full border border-slate-300 rounded px-2 py-1.5 text-sm outline-none focus:border-blue-500" type="number" inputmode="decimal" placeholder="Lado 1" min="0" step="0.01"></td>
-    <td class="p-2"><input class="lado2 w-full border border-slate-300 rounded px-2 py-1.5 text-sm outline-none focus:border-blue-500" type="number" inputmode="decimal" placeholder="Lado 2" min="0" step="0.01"></td>
-    <td class="p-2"><input class="qtdParte w-full border border-slate-300 rounded px-2 py-1.5 text-sm outline-none focus:border-blue-500" type="number" inputmode="numeric" placeholder="Qtd" min="0" step="1"></td>
-    <td class="p-2"><input class="perdaParte w-full border border-slate-300 rounded px-2 py-1.5 text-sm outline-none focus:border-blue-500" type="number" inputmode="decimal" min="0" step="0.01" placeholder="0"></td>
-    <td class="p-2 text-center"><button class="bg-red-500 hover:bg-red-600 text-white p-2 rounded-lg text-xs font-bold transition" type="button" onclick="remover(this)"><i class="fa-solid fa-xmark"></i></button></td>
-  `;
-  document.getElementById("partes").appendChild(tr);
-  atualizaSelectsCatalogo();
-}
-
-function addParte(){ addParteVazia(); }
-
-function addSuplementoVazia(){
-  const tr = document.createElement("tr");
-  tr.className = "hover:bg-slate-50 transition";
-  tr.innerHTML = `
-    <td class="p-2"><input class="nomeSup w-full border border-slate-300 rounded px-2 py-1.5 text-sm outline-none focus:border-indigo-500" placeholder="Ex: Zíper principal"></td>
-    <td class="p-2"><select class="materialSup w-full border border-slate-300 rounded px-2 py-1.5 text-sm outline-none focus:border-indigo-500"><option value="">Selecione...</option></select></td>
-    <td class="p-2"><input class="medidaSup w-full border border-slate-300 rounded px-2 py-1.5 text-sm outline-none focus:border-indigo-500" type="number" inputmode="decimal" placeholder="Ex: 30" min="0" step="0.01"></td>
-    <td class="p-2">
-      <select class="unidadeMedidaSup w-full border border-slate-300 rounded px-2 py-1.5 text-sm outline-none focus:border-indigo-500">
-        <option value="cm">cm</option><option value="metro">m</option><option value="unidade">Un</option>
-      </select>
-    </td>
-    <td class="p-2"><input class="qtdSup w-full border border-slate-300 rounded px-2 py-1.5 text-sm outline-none focus:border-indigo-500" type="number" inputmode="numeric" placeholder="Qtd" min="0" step="1"></td>
-    <td class="p-2"><input class="perdaSup w-full border border-slate-300 rounded px-2 py-1.5 text-sm outline-none focus:border-indigo-500" type="number" inputmode="decimal" min="0" step="0.01" placeholder="0"></td>
-    <td class="p-2 text-center"><button class="bg-red-500 hover:bg-red-600 text-white p-2 rounded-lg text-xs font-bold transition" type="button" onclick="remover(this)"><i class="fa-solid fa-xmark"></i></button></td>
-  `;
-  document.getElementById("suplementos").appendChild(tr);
-  atualizaSelectsCatalogo();
-}
-
-function addSuplemento(){ addSuplementoVazia(); }
-
-function renderTabelaPrecos(){
-  const tbody = document.getElementById("tabelaPrecos");
-  tbody.innerHTML = "";
-  catalogo.forEach((s,idx)=>{
-    const tr = document.createElement("tr");
-    tr.id = `linhaPreco_${idx}`;
-    tr.className = "hover:bg-slate-50 transition";
-    tr.innerHTML = `
-      <td class="p-3 font-medium">${s.nome}</td>
-      <td class="p-3 uppercase text-xs font-bold text-slate-500">${s.unidade}</td>
-      <td class="p-3 font-semibold text-emerald-600">R$ ${s.valor.toFixed(2).replace('.',',')}</td>
-      <td class="p-3 text-center space-x-1 whitespace-nowrap">
-        <button class="bg-red-500 hover:bg-red-600 text-white px-2.5 py-1.5 rounded-lg text-xs font-bold transition" type="button" onclick="removerPreco(${idx})"><i class="fa-solid fa-trash"></i></button>
-      </td>
-    `;
-    tbody.appendChild(tr);
-  });
-  salvarCatalogoLocalStorage();
-  atualizaSelectsCatalogo();
-}
-
-function atualizaSelectsCatalogo(){
-  const selectsPartes = document.querySelectorAll(".materialParte");
-  const selectsSups = document.querySelectorAll(".materialSup");
-  const opts = catalogo.map(s => `<option value="${s.id}">${s.nome} (${s.unidade}) - R$ ${s.valor.toFixed(2).replace('.',',')}</option>`).join("");
-
-  selectsPartes.forEach(sel => { const val = sel.value; sel.innerHTML = '<option value="">Selecione...</option>' + opts; sel.value = val; });
-  selectsSups.forEach(sel => { const val = sel.value; sel.innerHTML = '<option value="">Selecione...</option>' + opts; sel.value = val; });
-}
-
-function removerPreco(idx){ catalogo.splice(idx,1); renderTabelaPrecos(); }
-
-document.getElementById("formPreco").addEventListener("submit", function(e){
-  e.preventDefault();
-  const nome = document.getElementById("nomePreco").value.trim();
-  const unidade = document.getElementById("unidadePreco").value;
-  const valor = parseFloat(document.getElementById("valorPreco").value);
-  if(!nome || isNaN(valor)) return;
-
-  catalogo.push({id:Date.now(), nome, unidade, valor});
-  renderTabelaPrecos();
-  this.reset();
-});
-
-function dinheiro(v){ return "R$ " + v.toFixed(2).replace(".",","); }
-
-function renderizarBobinaInicial() {
-  const nomeBobina = document.getElementById("nomeBobina").value.trim() || "Bobina Padrão";
-  const larguraBobinaCm = parseFloat(document.getElementById("larguraBobina").value) || 140;
-  const comprimentoBobinaM = parseFloat(document.getElementById("comprimentoBobina").value) || 50;
-
-  let htmlDesenho = gerarHTMLPlotter(nomeBobina, larguraBobinaCm, comprimentoBobinaM, 300, []);
-  
-  document.getElementById("resultado").innerHTML = `
-    <div class="mb-4 bg-blue-50 border border-blue-200 text-blue-800 p-3 sm:p-4 rounded-xl flex items-center justify-between">
-      <div>
-        <h4 class="font-bold text-xs sm:text-sm">🌀 Bobina Pronta para Uso</h4>
-        <p class="text-xs text-blue-600">${nomeBobina} (${larguraBobinaCm} cm x ${comprimentoBobinaM} m)</p>
-      </div>
-      <span class="text-xs bg-blue-200 text-blue-800 font-bold px-2 py-1 rounded-md whitespace-nowrap">Aguardando Cálculo</span>
+            <div id="tab-backup" class="tab-content">
+                <h3>Backup & Nuvem</h3>
+                <p>Seus dados estão sincronizados em tempo real com o Firestore.</p>
+            </div>
+        </main>
     </div>
-    ${htmlDesenho}
-  `;
-}
 
-function atualizarBobinaEstatica() {
-  if (!ultimoResultadoCalculado) renderizarBobinaInicial();
-}
+    <!-- SCRIPT DE CONFIGURAÇÃO E LÓGICA -->
+    <script>
+        // CONFIGURAÇÃO DO FIREBASE (Substitua pelos dados do seu Console se necessário)
+        const firebaseConfig = {
+            apiKey: "SUA_API_KEY",
+            authDomain: "calculo-pro.firebaseapp.com",
+            projectId: "calculo-pro",
+            storageBucket: "calculo-pro.appspot.com",
+            messagingSenderId: "SEU_MESSAGING_SENDER_ID",
+            appId: "SEU_APP_ID"
+        };
 
-function gerarHTMLPlotter(nomeBobina, larguraBobinaCm, comprimentoBobinaM, maxYTotal, pecasPosicionadas) {
-  const pxPorCm = 3.5;
-  const larguraCanvasPx = larguraBobinaCm * pxPorCm;
-  const alturaCanvasPx = maxYTotal * pxPorCm;
-
-  let htmlReguaH = '';
-  for(let c = 0; c <= larguraBobinaCm; c++) {
-    let leftPos = c * pxPorCm;
-    let isDez = c % 10 === 0;
-    htmlReguaH += `
-      <div style="position:absolute; left:${leftPos}px; bottom:0; display:flex; flex-direction:column; align-items:center; transform: translateX(-50%);">
-        ${isDez ? `<span style="font-size:9px; font-weight:700; color:#1e293b; margin-bottom:2px;">${c}</span>` : ''}
-        <div style="width:1px; height:${isDez ? '14px' : '6px'}; background:${isDez ? '#334155' : '#cbd5e1'};"></div>
-      </div>`;
-  }
-
-  let htmlReguaV = '';
-  for(let c = 0; c <= maxYTotal; c++) {
-    let topPos = c * pxPorCm;
-    let isDez = c % 10 === 0;
-    if (!isDez && maxYTotal > 1500) continue;
-    htmlReguaV += `
-      <div style="position:absolute; top:${topPos}px; right:0; display:flex; align-items:center; transform: translateY(-50%);">
-        ${isDez ? `<span style="font-size:9px; font-weight:600; color:#475569; margin-right:4px;">${c}</span>` : ''}
-        <div style="height:1px; width:${isDez ? '10px' : '6px'}; background:${isDez ? '#334155' : '#cbd5e1'};"></div>
-      </div>`;
-  }
-
-  let html = `
-    <div class="mt-4 bg-slate-50 border border-slate-200 rounded-2xl p-3 sm:p-4 shadow-sm">
-      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-3 no-print">
-        <span class="text-xs font-bold text-slate-700 uppercase tracking-wide">🧵 Arranjo na Bobina: ${nomeBobina} (${larguraBobinaCm}cm x ${comprimentoBobinaM}m)</span>
-      </div>
-      <div class="plotter-viewport">
-        <div id="plotterWorkspace" class="plotter-workspace" style="width:${larguraCanvasPx + 45}px; height:${alturaCanvasPx + 30}px; transform: scale(${nivelZoom});">
-          <div class="regua-horizontal" style="width:${larguraCanvasPx}px; left:45px;">${htmlReguaH}</div>
-          <div class="regua-vertical" style="height:${alturaCanvasPx}px; top:30px;">${htmlReguaV}</div>
-          <div class="canvas-bobina" style="width:${larguraCanvasPx}px; height:${alturaCanvasPx}px;">
-  `;
-
-  pecasPosicionadas.forEach(item => {
-    let leftPx = item.x * pxPorCm;
-    let topPx = item.y * pxPorCm;
-    let widthPx = item.w * pxPorCm;
-    let heightPx = item.h * pxPorCm;
-    let tagRot = item.rotacionada ? " 🔄" : "";
-    html += `
-      <div class="peca-plotter" style="left:${leftPx}px; top:${topPx}px; width:${widthPx}px; height:${heightPx}px;" title="${item.nome}: ${item.w}x${item.h}cm${tagRot}">
-        <span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:100%;">${item.nome}${tagRot}</span>
-        <span style="font-size:9px; font-weight:normal;">${item.w}×${item.h}cm</span>
-      </div>
-    `;
-  });
-
-  html += `</div></div></div></div>`;
-  return html;
-}
-
-function executarMaxRects(listaPecasBrutas, larguraBobinaCm) {
-  let freeRectangles = [{ x: 0, y: 0, w: larguraBobinaCm, h: 100000 }];
-  let pecasPosicionadas = [];
-  let maxYTotal = 0;
-
-  listaPecasBrutas.forEach(p => {
-    let w1 = p.w, h1 = p.h;
-    let w2 = p.h, h2 = p.w;
-
-    let bestRectIdx = -1;
-    let bestScoreY = Infinity;
-    let bestScoreX = Infinity;
-    let finalW = 0, finalH = 0;
-
-    for (let i = 0; i < freeRectangles.length; i++) {
-      let r = freeRectangles[i];
-
-      if (w1 <= r.w + 0.05 && h1 <= r.h + 0.05) {
-        let topAfter = r.y + h1;
-        if (topAfter < bestScoreY || (Math.abs(topAfter - bestScoreY) < 0.1 && r.x < bestScoreX)) {
-          bestScoreY = topAfter;
-          bestScoreX = r.x;
-          bestRectIdx = i;
-          finalW = w1;
-          finalH = h1;
+        // Inicializar Firebase
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
         }
-      }
+        const auth = firebase.auth();
+        const db = firebase.firestore();
 
-      if (p.podeRotacionar && (w2 !== w1 || h2 !== h1)) {
-        if (w2 <= r.w + 0.05 && h2 <= r.h + 0.05) {
-          let topAfter = r.y + h2;
-          if (topAfter < bestScoreY || (Math.abs(topAfter - bestScoreY) < 0.1 && r.x < bestScoreX)) {
-            bestScoreY = topAfter;
-            bestScoreX = r.x;
-            bestRectIdx = i;
-            finalW = w2;
-            finalH = h2;
-          }
+        // Variáveis de controle de tela de Login/Cadastro
+        let isRegisterMode = false;
+        const authForm = document.getElementById('auth-form');
+        const authTitle = document.getElementById('auth-title');
+        const authSubtitle = document.getElementById('auth-subtitle');
+        const btnSubmit = document.getElementById('btn-submit');
+        const switchText = document.getElementById('switch-text');
+        const switchModeBtn = document.getElementById('switch-mode-btn');
+        const emailInput = document.getElementById('email');
+        const passwordInput = document.getElementById('password');
+        const emailError = document.getElementById('email-error');
+
+        // Alternar entre Entrar e Criar Conta
+        switchModeBtn.addEventListener('click', () => {
+            isRegisterMode = !isRegisterMode;
+            if (isRegisterMode) {
+                authTitle.textContent = "Criar Conta";
+                authSubtitle.textContent = "Cadastre-se para começar a usar";
+                btnSubmit.textContent = "Cadastrar";
+                switchText.textContent = "Já tem uma conta?";
+                switchModeBtn.textContent = "Entrar";
+            } else {
+                authTitle.textContent = "CalculaJá Pro";
+                authSubtitle.textContent = "Acesse sua conta para utilizar o sistema";
+                btnSubmit.textContent = "Entrar";
+                switchText.textContent = "Não tem uma conta?";
+                switchModeBtn.textContent = "Criar Conta";
+            }
+        });
+
+        // Validação básica de e-mail ao digitar
+        emailInput.addEventListener('input', () => {
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (emailInput.value && !emailRegex.test(emailInput.value)) {
+                emailError.style.display = 'block';
+            } else {
+                emailError.style.display = 'none';
+            }
+        });
+
+        // Submissão do Formulário de E-mail/Senha
+        authForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const email = emailInput.value;
+            const password = passwordInput.value;
+
+            if (isRegisterMode) {
+                // Criar Conta
+                auth.createUserWithEmailAndPassword(email, password)
+                    .then((userCredential) => {
+                        console.log("Conta criada com sucesso:", userCredential.user.email);
+                    })
+                    .catch((error) => {
+                        alert("Erro ao criar conta: " + error.message);
+                    });
+            } else {
+                // Fazer Login
+                auth.signInWithEmailAndPassword(email, password)
+                    .then((userCredential) => {
+                        console.log("Login efetuado:", userCredential.user.email);
+                    })
+                    .catch((error) => {
+                        alert("Erro ao entrar: Verifique seu e-mail e senha.");
+                    });
+            }
+        });
+
+        // Login com Google
+        const btnGoogle = document.getElementById('btn-google');
+        btnGoogle.addEventListener('click', () => {
+            const provider = new firebase.auth.GoogleAuthProvider();
+            auth.signInWithPopup(provider)
+                .then((result) => {
+                    console.log("Logado com Google:", result.user.email);
+                })
+                .catch((error) => {
+                    alert("Erro ao entrar com o Google: " + error.message);
+                });
+        });
+
+        // Monitorar Estado de Autenticação (Sessão)
+        auth.onAuthStateChanged((user) => {
+            const authScreen = document.getElementById('auth-screen');
+            const appScreen = document.getElementById('app-screen');
+            const userDisplayEmail = document.getElementById('user-display-email');
+
+            if (user) {
+                authScreen.style.display = 'none';
+                appScreen.style.display = 'flex';
+                userDisplayEmail.textContent = user.email;
+                carregarHistorico(user.uid);
+            } else {
+                authScreen.style.display = 'flex';
+                appScreen.style.display = 'none';
+            }
+        });
+
+        // Botão de Sair (Logout)
+        document.getElementById('btn-logout').addEventListener('click', () => {
+            auth.signOut().then(() => {
+                console.log("Deslogado com sucesso");
+            });
+        });
+
+        // Sistema de Abas do App
+        function switchTab(evt, tabId) {
+            const contents = document.querySelectorAll('.tab-content');
+            contents.forEach(c => c.classList.remove('active'));
+
+            const buttons = document.querySelectorAll('.tab-btn');
+            buttons.forEach(b => b.classList.remove('active'));
+
+            document.getElementById(tabId).classList.add('active');
+            evt.currentTarget.classList.add('active');
         }
-      }
-    }
 
-    if (bestRectIdx !== -1) {
-      let r = freeRectangles[bestRectIdx];
-      let placedX = r.x;
-      let placedY = r.y;
-
-      pecasPosicionadas.push({
-        nome: p.nome,
-        x: placedX,
-        y: placedY,
-        w: finalW,
-        h: finalH,
-        rotacionada: (finalW !== p.w)
-      });
-
-      if (placedY + finalH > maxYTotal) maxYTotal = placedY + finalH;
-
-      let newFreeRects = [];
-      for (let f = 0; f < freeRectangles.length; f++) {
-        let fr = freeRectangles[f];
-        if (placedX < fr.x + fr.w && placedX + finalW > fr.x && placedY < fr.y + fr.h && placedY + finalH > fr.y) {
-          if (placedX > fr.x) newFreeRects.push({ x: fr.x, y: fr.y, w: placedX - fr.x, h: fr.h });
-          if (placedX + finalW < fr.x + fr.w) newFreeRects.push({ x: placedX + finalW, y: fr.y, w: (fr.x + fr.w) - (placedX + finalW), h: fr.h });
-          if (placedY > fr.y) newFreeRects.push({ x: fr.x, y: fr.y, w: fr.w, h: placedY - fr.y });
-          if (placedY + finalH < fr.y + fr.h) newFreeRects.push({ x: fr.x, y: placedY + finalH, w: fr.w, h: (fr.y + fr.h) - (placedY + finalH) });
-        } else {
-          newFreeRects.push(fr);
+        // Função de carregar Histórico do Firestore
+        function carregarHistorico(uid) {
+            const historyList = document.getElementById('history-list');
+            
+            db.collection('orcamentos')
+              .where('userId', '==', uid)
+              .get()
+              .then((querySnapshot) => {
+                  historyList.innerHTML = '';
+                  if (querySnapshot.empty) {
+                      historyList.innerHTML = '<li class="history-item">Nenhum orçamento salvo na nuvem ainda.</li>';
+                      return;
+                  }
+                  querySnapshot.forEach((doc) => {
+                      const data = doc.data();
+                      const li = document.createElement('li');
+                      li.className = 'history-item';
+                      li.innerHTML = `<span>Cliente: <strong>${data.cliente || 'Sem Nome'}</strong></span><span>R$ ${data.total || '0,00'}</span>`;
+                      historyList.appendChild(li);
+                  });
+              })
+              .catch((error) => {
+                  console.error("Erro ao carregar histórico: ", error);
+              });
         }
-      }
-
-      freeRectangles = newFreeRects;
-    }
-  });
-
-  return { pecasPosicionadas, maxYTotal };
-}
-
-function calcular(){
-  const nomeBobina = document.getElementById("nomeBobina").value.trim() || "Bobina Padrão";
-  const larguraBobinaCm = parseFloat(document.getElementById("larguraBobina").value) || 140;
-  const comprimentoBobinaM = parseFloat(document.getElementById("comprimentoBobina").value) || 50;
-
-  const cliente = document.getElementById("cliente").value.trim() || "Cliente Geral";
-  const produto = document.getElementById("produto").value.trim() || "Produto";
-  const mao = parseFloat(document.getElementById("mao").value) || 0;
-  const outros = parseFloat(document.getElementById("outros").value) || 0;
-  const lucroPct = parseFloat(document.getElementById("lucro").value) || 0;
-  const impostoPct = parseFloat(document.getElementById("imposto").value) || 0;
-  const resultadoEl = document.getElementById("resultado");
-
-  let custoTotalItens = 0;
-  let detalhes = "";
-  let listaPecasBrutas = [];
-
-  let dadosPartesSalvar = [];
-  let dadosSuplementosSalvar = [];
-
-  document.querySelectorAll("#partes tr").forEach(tr => {
-    const nome = tr.querySelector(".nomeParte").value.trim() || "Parte";
-    const supId = tr.querySelector(".materialParte").value;
-    const lado1 = parseFloat(tr.querySelector(".lado1").value) || 0;
-    const lado2 = parseFloat(tr.querySelector(".lado2").value) || 0;
-    const qtd = parseFloat(tr.querySelector(".qtdParte").value) || 0;
-    const perdaInput = tr.querySelector(".perdaParte").value.trim();
-    const perdaPct = perdaInput === "" ? 0 : (parseFloat(perdaInput) || 0);
-
-    if(!supId || lado1 <= 0 || lado2 <= 0 || qtd <= 0) return;
-
-    dadosPartesSalvar.push({ nome, supId, lado1, lado2, qtd, perdaPct });
-
-    const sup = catalogo.find(x => x.id == supId);
-    if(sup){
-      let custoItem = 0;
-      if(sup.unidade === 'm2'){
-        const areaBase = ((lado1 * lado2) / 10000) * qtd;
-        custoItem = areaBase * (1 + (perdaPct / 100)) * sup.valor;
-      } else if(sup.unidade === 'metro'){
-        const metrosBase = (lado1 / 100) * qtd;
-        custoItem = metrosBase * (1 + (perdaPct / 100)) * sup.valor;
-      } else {
-        custoItem = sup.valor * (qtd * (1 + (perdaPct / 100)));
-      }
-
-      custoTotalItens += custoItem;
-      detalhes += `<li class="text-xs sm:text-sm border-b border-slate-100 py-2 flex justify-between gap-2"><span><strong>${nome}</strong> (${sup.nome}) - ${qtd}x (${lado1}×${lado2}cm)</span> <span class="font-bold text-slate-700 whitespace-nowrap">${dinheiro(custoItem)}</span></li>`;
-
-      for(let q=0; q<qtd; q++){
-        listaPecasBrutas.push({ nome, w: lado1, h: lado2, podeRotacionar: true });
-      }
-    }
-  });
-
-  document.querySelectorAll("#suplementos tr").forEach(tr => {
-    const nome = tr.querySelector(".nomeSup").value.trim() || "Suplemento";
-    const supId = tr.querySelector(".materialSup").value;
-    const medida = parseFloat(tr.querySelector(".medidaSup").value) || 0;
-    const unidadeMedida = tr.querySelector(".unidadeMedidaSup").value;
-    const qtdPecas = parseFloat(tr.querySelector(".qtdSup").value) || 0;
-    const perdaInput = tr.querySelector(".perdaSup").value.trim();
-    const perdaPct = perdaInput === "" ? 0 : (parseFloat(perdaInput) || 0);
-
-    if(!supId || medida <= 0 || qtdPecas <= 0) return;
-
-    dadosSuplementosSalvar.push({ nome, supId, medida, unidadeMedida, qtdPecas, perdaPct });
-
-    const sup = catalogo.find(x => x.id == supId);
-    if(sup){
-      let custoItem = 0;
-      let qtdUsada = medida * qtdPecas;
-
-      if(unidadeMedida === 'cm' && sup.unidade === 'metro') qtdUsada = (medida / 100) * qtdPecas;
-
-      custoItem = qtdUsada * (1 + (perdaPct / 100)) * sup.valor;
-      custoTotalItens += custoItem;
-      detalhes += `<li class="text-xs sm:text-sm border-b border-slate-100 py-2 flex justify-between gap-2"><span><strong>${nome}</strong> (${sup.nome}) - ${qtdPecas}x ${medida}${unidadeMedida}</span> <span class="font-bold text-slate-700 whitespace-nowrap">${dinheiro(custoItem)}</span></li>`;
-    }
-  });
-
-  listaPecasBrutas.sort((a,b) => (b.w * b.h) - (a.w * a.h));
-
-  const arranjo = executarMaxRects(listaPecasBrutas, larguraBobinaCm);
-  const metrosUsados = arranjo.maxYTotal / 100;
-
-  const subtotal = custoTotalItens + mao + outros;
-  const valorLucro = subtotal * (lucroPct / 100);
-  const valorImposto = (subtotal + valorLucro) * (impostoPct / 100);
-  const precoFinal = subtotal + valorLucro + valorImposto;
-
-  let htmlPlotter = gerarHTMLPlotter(nomeBobina, larguraBobinaCm, comprimentoBobinaM, Math.max(300, arranjo.maxYTotal), arranjo.pecasPosicionadas);
-
-  resultadoEl.innerHTML = `
-    <div class="border-b border-slate-200 pb-4 mb-4 flex flex-col md:flex-row justify-between md:items-center gap-3">
-      <div>
-        <h3 class="text-lg sm:text-xl font-black text-slate-800">📊 Resumo do Orçamento: ${produto}</h3>
-        <p class="text-xs sm:text-sm font-medium text-slate-500">Cliente: ${cliente}</p>
-      </div>
-      <div class="bg-emerald-50 text-emerald-800 border border-emerald-200 p-3 sm:p-4 rounded-xl text-left md:text-right">
-        <span class="text-xs uppercase font-bold text-emerald-600 block">Preço Final Sugerido</span>
-        <span class="text-xl sm:text-2xl font-black">${dinheiro(precoFinal)}</span>
-      </div>
-    </div>
-
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 mb-6">
-      <div>
-        <h4 class="font-bold text-xs uppercase text-slate-400 mb-2">Composição dos Materiais</h4>
-        <ul class="divide-y divide-slate-100">${detalhes}</ul>
-      </div>
-
-      <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-2 text-xs sm:text-sm">
-        <h4 class="font-bold text-xs uppercase text-slate-400 mb-2">Resumo Financeiro & Corte</h4>
-        <p class="flex justify-between"><span>Mão de Obra:</span> <strong>${dinheiro(mao)}</strong></p>
-        <p class="flex justify-between"><span>Outros Custos:</span> <strong>${dinheiro(outros)}</strong></p>
-        <p class="flex justify-between"><span>Margem de Lucro (${lucroPct}%):</span> <strong>${dinheiro(valorLucro)}</strong></p>
-        <p class="flex justify-between"><span>Impostos (${impostoPct}%):</span> <strong>${dinheiro(valorImposto)}</strong></p>
-        <hr class="my-2 border-slate-200">
-        <p class="flex justify-between text-blue-700 font-bold">
-          <span>Uso do Rolo:</span> 
-          <span>${metrosUsados.toFixed(2)} m lineares (${arranjo.pecasPosicionadas.length}/${listaPecasBrutas.length} peças)</span>
-        </p>
-      </div>
-    </div>
-
-    ${htmlPlotter}
-  `;
-
-  ultimoResultadoCalculado = {
-    cliente, produto, nomeBobina, larguraBobinaCm, comprimentoBobinaM, mao, outros, lucroPct, impostoPct, precoFinal,
-    partes: dadosPartesSalvar, suplementos: dadosSuplementosSalvar, data: new Date().toLocaleString()
-  };
-}
-
-function salvarOrcamentoLocal() {
-  if(!ultimoResultadoCalculado) {
-    alert("Realize o cálculo antes de salvar.");
-    return;
-  }
-  if(window.salvarOrcamentoFirebase) {
-    window.salvarOrcamentoFirebase(ultimoResultadoCalculado);
-  }
-}
-
-function baixarBackupPasta() {
-  const dados = {
-    catalogo: catalogo,
-    ultimoCalculo: ultimoResultadoCalculado,
-    dataExportacao: new Date().toISOString()
-  };
-  const jsonStr = JSON.stringify(dados, null, 2);
-  const blob = new Blob([jsonStr], { type: "application/json" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = `calculaja_backup_${new Date().toISOString().slice(0,10)}.json`;
-  a.click();
-  URL.revokeObjectURL(url);
-}
-
-function importarBackupPasta(event) {
-  const file = event.target.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = function(e) {
-    try {
-      const dados = JSON.parse(e.target.result);
-      if (dados.catalogo && Array.isArray(dados.catalogo)) {
-        catalogo = dados.catalogo;
-        renderTabelaPrecos();
-        alert("Backup importado com sucesso!");
-      } else {
-        alert("Arquivo de backup inválido.");
-      }
-    } catch (err) {
-      alert("Erro ao ler arquivo JSON.");
-    }
-  };
-  reader.readAsText(file);
-}
-</script>
+    </script>
 </body>
 </html>
