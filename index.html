@@ -45,7 +45,7 @@
       <div class="text-center space-y-2">
         <i class="fa-solid fa-print text-3xl text-emerald-600"></i>
         <h2 class="text-xl font-bold text-slate-800">CalculaJá Pro</h2>
-        <p class="text-xs text-slate-500">RIP de Impressão com Régua de Avanço Contínuo HP Latex (v1.4.7)</p>
+        <p class="text-xs text-slate-500">RIP de Impressão com Régua de Avanço Contínuo HP Latex (v1.4.8)</p>
       </div>
       <button onclick="loginComGoogle()" class="w-full bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 font-bold py-2.5 rounded-xl text-sm flex items-center justify-center space-x-2 transition shadow-sm cursor-pointer">
         <i class="fa-brands fa-google text-red-500"></i>
@@ -169,7 +169,7 @@
 
         <!-- Bloco de Resultado & Visualizador Tipo HP Latex RIP -->
         <div id="resultado" class="border-t pt-4 space-y-4">
-          <div class="text-center py-6 text-slate-400 text-sm">Preencha as peças e clique em <b>Processar Cálculo & RIP HP Latex</b> para simular o avanço linear proporcional do rolo.</div>
+          <div class="text-center py-6 text-slate-400 text-sm">Preencha as peças e clique em <b>Processar Cálculo & RIP HP Latex</b> para simular o avanço linear proporcional do rolo com réguas a cada 5cm.</div>
         </div>
 
       </div>
@@ -351,9 +351,9 @@
     });
   </script>
 
-  <!-- LÓGICA DE RIP HP LATEX COM MESMA ESCALA PROPORCIONAL EIXO X / Y -->
+  <!-- LÓGICA DE RIP HP LATEX COM ESCALA 0, 5, 10... EM X E Y -->
   <script>
-    const VERSAO_ATUAL = "v1.4.7";
+    const VERSAO_ATUAL = "v1.4.8";
 
     function verificarAtualizacaoApp() {
       const versaoSalva = localStorage.getItem("app_versao_calculaja");
@@ -372,7 +372,7 @@
         <i class="fa-solid fa-rocket text-emerald-400 text-xl"></i>
         <div>
           <p class="text-xs font-bold">App Atualizado!</p>
-          <p class="text-[10px] text-slate-400">Versão ${novaVersao} com Escala 1:1 Proporcional (Eixos X e Y Iguais).</p>
+          <p class="text-[10px] text-slate-400">Versão ${novaVersao} com Escala de 5 em 5 cm (0cm, 5cm, 10cm...) em X e Y.</p>
         </div>
         <button onclick="this.parentElement.remove()" class="ml-3 text-slate-400 hover:text-white text-xs font-bold">✕</button>
       `;
@@ -398,7 +398,7 @@
       { id: 1, nome: "Ilhós NBR", unidade: "un", valor: 0.15 }
     ];
     let bobinas = JSON.parse(localStorage.getItem("bobinas_v8")) || [
-      { id: 1, nome: "Bobina Lona 140cm x 5000cm", largura: 140, comprimentoRolo: 5000, preco: 38.00, regra: "RIP HP Latex Avanço Proporcional" }
+      { id: 1, nome: "Bobina Lona 140cm x 5000cm", largura: 140, comprimentoRolo: 5000, preco: 38.00, regra: "RIP HP Latex Escala 5cm" }
     ];
     let projetosSalvos = JSON.parse(localStorage.getItem("projetos_v8")) || [];
 
@@ -463,7 +463,7 @@
         largura: parseFloat(document.getElementById("larguraBobina").value), 
         comprimentoRolo: parseFloat(document.getElementById("comprimentoBobina").value) || 5000,
         preco: parseFloat(document.getElementById("precoBobina").value), 
-        regra: document.getElementById("regraBobina").value || "RIP HP Latex Avanço Proporcional" 
+        regra: document.getElementById("regraBobina").value || "RIP HP Latex Escala 5cm" 
       });
       salvarLocal(); renderTudo(); this.reset();
     });
@@ -573,7 +573,7 @@
       });
     }
 
-    // ALGORITMO RIP PROFISSIONAL HP LATEX (Shelf Packing com correção precisa de comprimento e margem de avanço)
+    // ALGORITMO RIP PROFISSIONAL HP LATEX
     function executarNestingHPLatex(pecasIn, larguraBobina) {
       let itens = [];
       pecasIn.forEach(p => {
@@ -706,37 +706,33 @@
         const larguraBobina = dados.obj.largura; 
         const alturaConsumidaReal = Math.max(50, dados.alturaTotalCm);
 
-        // ESCALA 1:1 REAL EM TELA (Exatamente a mesma proporção em pixels por centímetro nos eixos X e Y)
-        // Definimos uma base fixa de 4 pixels por centímetro (4px = 1cm real na tela para X e Y)
+        // ESCALA 1:1 REAL EM TELA (4px por cm)
         const PIXELS_POR_CM = 4.0;
         const larguraContainerPx = larguraBobina * PIXELS_POR_CM;
         const alturaContainerPx = alturaConsumidaReal * PIXELS_POR_CM;
 
-        // Régua Superior X (Marcações de 10 em 10 cm baseadas na largura exata proporcional)
+        // Régua Superior X (De 5 em 5 cm: 0cm, 5cm, 10cm...)
         let reguaXHtml = '';
-        for(let x = 0; x <= larguraBobina; x += 10) {
+        for(let x = 0; x <= larguraBobina; x += 5) {
           let posX = x * PIXELS_POR_CM;
-          reguaXHtml += `<div class="absolute flex flex-col items-center" style="left: ${posX}px; transform: translateX(-50%);"><span class="text-[9px] text-cyan-400 font-mono">${x}cm</span><div class="h-2 w-0.5 bg-cyan-500"></div></div>`;
+          let rotulo = `${x}cm`;
+          reguaXHtml += `<div class="absolute flex flex-col items-center" style="left: ${posX}px; transform: translateX(-50%);"><span class="text-[9px] text-cyan-400 font-mono whitespace-nowrap">${rotulo}</span><div class="h-2 w-0.5 bg-cyan-500"></div></div>`;
         }
 
-        // Régua Lateral Y (Avanço Contínuo proporcional em cm com a mesma escala exata)
+        // Régua Lateral Y (De 5 em 5 cm: 0cm, 5cm, 10cm...)
         let reguaYHtml = '';
-        let passoY = 20;
-        if(alturaConsumidaReal > 200) passoY = 50;
-        if(alturaConsumidaReal > 500) passoY = 100;
-        if(alturaConsumidaReal > 1500) passoY = 500;
-
-        for(let y = 0; y <= alturaConsumidaReal; y += passoY) {
+        for(let y = 0; y <= alturaConsumidaReal; y += 5) {
           let posY = y * PIXELS_POR_CM;
-          reguaYHtml += `<div class="absolute flex items-center w-full" style="top: ${posY}px; transform: translateY(-50%);"><span class="text-[9px] text-cyan-400 font-mono w-14 text-right pr-1">${y}cm</span><div class="w-3 h-0.5 bg-cyan-500"></div></div>`;
+          let rotulo = `${y}cm`;
+          reguaYHtml += `<div class="absolute flex items-center w-full" style="top: ${posY}px; transform: translateY(-50%);"><span class="text-[9px] text-cyan-400 font-mono w-16 text-right pr-1 whitespace-nowrap">${rotulo}</span><div class="w-3 h-0.5 bg-cyan-500"></div></div>`;
         }
 
         htmlPaineis += `
           <div class="bg-slate-900 border border-slate-700 rounded-xl p-4 space-y-3">
             <div class="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-slate-700 pb-3 gap-3">
               <div>
-                <h5 class="font-bold text-white text-sm"><i class="fa-solid fa-print text-cyan-400 mr-1"></i> RIP HP Latex Escala Real 1:1 (Eixos X = Y) — ${bNome}</h5>
-                <p class="text-xs text-slate-400">Largura Bobina: <b>${larguraBobina} cm</b> | Comprimento Total RIP: <b class="text-cyan-300">${alturaConsumidaReal.toFixed(1)} cm</b> (Mesma Escala Proporcional)</p>
+                <h5 class="font-bold text-white text-sm"><i class="fa-solid fa-print text-cyan-400 mr-1"></i> RIP HP Latex Escala 5cm (0cm, 5cm, 10cm...) — ${bNome}</h5>
+                <p class="text-xs text-slate-400">Largura Bobina: <b>${larguraBobina} cm</b> | Comprimento Total RIP: <b class="text-cyan-300">${alturaConsumidaReal.toFixed(1)} cm</b></p>
               </div>
               <div class="flex items-center gap-2">
                 <span class="text-xs font-bold bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 px-2.5 py-1 rounded-lg">R$ ${(dados.metrosLineares * dados.obj.preco).toFixed(2)}</span>
@@ -751,18 +747,18 @@
             <div class="overflow-x-auto overflow-y-auto max-h-[600px] border border-slate-800 rounded-xl p-2 bg-slate-950 shadow-inner" id="bloco-exportavel-rip">
               <div class="container-rip-visual bg-slate-950 p-2 transition-transform duration-200" style="width: fit-content;">
                 
-                <!-- REGUA SUPERIOR X (LARGURA NA MESMA ESCALA) -->
+                <!-- REGUA SUPERIOR X (ESCALA DE 5 EM 5 CM) -->
                 <div class="relative h-8 ml-16 mr-2 border-b-2 border-cyan-500 select-none bg-slate-900 rounded-t pt-1" style="width: ${larguraContainerPx}px;">
                   ${reguaXHtml}
                 </div>
 
                 <div class="flex">
-                  <!-- REGUA LATERAL Y (AVANÇO DO ROLO NA MESMA ESCALA) -->
+                  <!-- REGUA LATERAL Y (ESCALA DE 5 EM 5 CM) -->
                   <div class="relative w-16 border-r-2 border-cyan-500 select-none bg-slate-900" style="height: ${alturaContainerPx}px;">
                     ${reguaYHtml}
                   </div>
 
-                  <!-- AREA DE IMPRESSÃO / NESTING COM COORDENADAS PROPORCIONAIS EXATAS (X e Y com a mesma proporção visual) -->
+                  <!-- AREA DE IMPRESSÃO / NESTING -->
                   <div class="flex-grow pl-0 bg-slate-950">
                     <div class="relative bg-slate-900 border border-slate-800 overflow-hidden m-0" style="width: ${larguraContainerPx}px; height: ${alturaContainerPx}px;">
         `;
@@ -791,8 +787,8 @@
                 </div>
 
                 <div class="flex justify-between text-[10px] text-slate-400 font-mono mt-2 pt-1 px-1 border-t border-slate-800" style="width: ${larguraContainerPx + 64}px;">
-                  <span>Origem 0,0 (Início do Job RIP)</span>
-                  <span class="text-cyan-400 font-bold">Escala 1:1 Proporcional Ativa (Eixo X e Y com a mesma proporção visual)</span>
+                  <span>Origem 0cm, 0cm</span>
+                  <span class="text-cyan-400 font-bold">Escala X e Y ativa (0cm, 5cm, 10cm...)</span>
                   <span>Avanço Total: ${(alturaConsumidaReal/100).toFixed(2)}m</span>
                 </div>
               </div>
@@ -822,7 +818,7 @@
             </div>
           </div>
           <div class="space-y-3 pt-2">
-            <h4 class="font-bold text-slate-700 text-sm">Simulador RIP Proporcional (Mesma Escala Eixo X e Y)</h4>
+            <h4 class="font-bold text-slate-700 text-sm">Simulador RIP com Escala de 5 em 5 cm (X e Y)</h4>
             ${htmlPaineis || '<p class="text-xs text-slate-400">Nenhum material selecionado.</p>'}
           </div>
         </div>
