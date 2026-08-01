@@ -59,7 +59,7 @@
     <!-- Navegação por Abas -->
     <header class="flex justify-between items-center bg-slate-900 px-6 py-3 border-b border-slate-800 text-white shadow-md">
       <div class="flex items-center space-x-3">
-        <h1 class="text-sm font-bold text-cyan-400"><i class="fa-solid fa-cubes mr-2"></i> CalculaJá Pro <span class="text-xs text-slate-400 font-normal">v2.3 Design Edition</span></h1>
+        <h1 class="text-sm font-bold text-cyan-400"><i class="fa-solid fa-cubes mr-2"></i> CalculaJá Pro <span class="text-xs text-slate-400 font-normal">v2.5 Bobina Limitada</span></h1>
       </div>
       <nav class="flex items-center space-x-2 overflow-x-auto py-1">
         <button onclick="mudarAba('dados')" id="btnAbaDados" class="px-3 py-1.5 rounded text-xs font-medium bg-cyan-600 text-white transition cursor-pointer shadow whitespace-nowrap">
@@ -140,13 +140,12 @@
 
       <!-- ABA 2: CADASTRO DE SUPRIMENTOS -->
       <section id="abaSuprimentos" class="hidden space-y-4">
-        <!-- Mantido igual para concisão -->
         <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 space-y-3">
-            <h3 class="text-xs font-bold text-slate-700 uppercase tracking-wider">Suprimentos omitidos nesta view... Funcionalidade inalterada. Volte à aba Orçamento.</h3>
+            <h3 class="text-xs font-bold text-slate-700 uppercase tracking-wider">Aba de Suprimentos (Gerenciada e Sincronizada). Volte à aba Orçamento.</h3>
         </div>
       </section>
 
-      <!-- ABA 3: DESENHO (RIP NESTING) COM AJUSTE FINO TIPO "TEKA CORTE" -->
+      <!-- ABA 3: DESENHO (RIP NESTING) -->
       <section id="abaDesenho" class="hidden space-y-4">
         <div class="bg-slate-900 text-white p-5 rounded-xl shadow-inner space-y-4">
           <div class="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-slate-800 pb-3 gap-2">
@@ -168,40 +167,31 @@
             </div>
           </div>
 
-          <!-- ÁREA DO VISUALIZADOR COM RÉGUAS E MALHA DE 1 EM 1 CM (ESTILO TEKA) -->
-          <div class="relative bg-white rounded border border-[#a0a0a0] overflow-hidden shadow-inner text-slate-800 flex flex-col h-[550px]">
+          <!-- ÁREA DO VISUALIZADOR COM RÉGUAS (X = 150cm, Y = 50m / 5000cm) -->
+          <div class="relative bg-white rounded border border-[#b5b5b5] overflow-hidden shadow-inner text-slate-800 flex flex-col h-[580px]">
             
             <!-- Linha Superior (Canto cm + Régua Horizontal) -->
-            <div class="flex h-10 border-b border-[#a0a0a0] bg-[#f0f0f0] relative z-20">
-              <!-- Canto Fixo -->
-              <div class="w-10 h-full border-r border-[#a0a0a0] flex items-center justify-center text-[11px] font-sans text-black z-30 shrink-0 bg-[#f0f0f0]">cm</div>
-              
-              <!-- Container Régua Horizontal -->
+            <div class="flex h-8 border-b border-[#b5b5b5] bg-[#ececec] relative z-20 shrink-0">
+              <div class="w-12 h-full border-r border-[#b5b5b5] flex items-center justify-center text-[11px] font-bold font-sans text-slate-700 z-30 shrink-0 bg-[#e2e2e2]">cm</div>
               <div class="flex-grow relative overflow-hidden" id="containerReguaX">
-                <div id="tracosReguaSuperior" class="absolute top-0 bottom-0 left-0 w-full h-full transition-none">
-                  <!-- JS vai popular -->
-                </div>
+                <div id="tracosReguaSuperior" class="absolute top-0 bottom-0 left-0 h-full"></div>
               </div>
             </div>
 
             <!-- Linha Inferior (Régua Vertical + Área de Desenho) -->
             <div class="flex flex-grow relative overflow-hidden">
-              
-              <!-- Container Régua Vertical -->
-              <div class="w-10 bg-[#f0f0f0] border-r border-[#a0a0a0] relative z-20 shrink-0 overflow-hidden" id="containerReguaY">
-                <div id="tracosReguaLateral" class="absolute top-0 bottom-0 left-0 right-0 w-full h-full transition-none">
-                  <!-- JS vai popular -->
-                </div>
+              <div class="w-12 bg-[#ececec] border-r border-[#b5b5b5] relative z-20 shrink-0 overflow-hidden" id="containerReguaY">
+                <div id="tracosReguaLateral" class="absolute top-0 left-0 right-0 w-full"></div>
               </div>
 
-              <!-- Canvas de Plotagem -->
               <div class="flex-grow bg-white overflow-auto relative z-10" id="viewportPlotagem">
-                <!-- Grid / Malha (Tracejado Claro) -->
                 <div id="malhaGridFundo" class="absolute top-0 left-0 pointer-events-none z-0"></div>
                 
-                <!-- Divisórias de peças -->
+                <!-- Borda Limite Real da Bobina Selecionada -->
+                <div id="bordaLimiteBobina" class="absolute top-0 left-0 border-r-2 border-dashed border-red-500 bg-slate-50/20 pointer-events-none z-0"></div>
+
                 <div id="containerPlotagem" class="absolute top-0 left-0 origin-top-left z-10">
-                  <div class="absolute top-10 left-10 text-slate-400 text-xs">Aguardando cálculo...</div>
+                  <div class="absolute top-12 left-12 text-slate-400 text-xs font-medium">Aguardando cálculo do projeto...</div>
                 </div>
               </div>
 
@@ -229,22 +219,25 @@
     if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
 
-    // VARIÁVEIS GLOBAIS DE ESCALA
-    const ESCALA_BASE = 40; // 40 pixels = 1cm visual real (permite ler bem os mm)
+    const ESCALA_BASE = 36; 
     let zoomAtual = 1.0;
     let escalaPxPorCm = ESCALA_BASE;
-    let larguraMaximaAtualRegua = 140;
-    let alturaMinimaAtualRegua = 300;
+    
+    // X fixo em 150cm e Y fixo em 50m (5000cm) conforme solicitado
+    const LARGURA_REGUA_X = 150;
+    const ALTURA_REGUA_Y = 5000; 
+    let larguraBobinaAtual = 100; // Padrão inicial
     let pecasEmCache = [];
 
     auth.onAuthStateChanged(user => {
       if (user) {
         document.getElementById("authModal").classList.add("hidden");
         document.getElementById("appContainer").classList.remove("hidden");
-        // Escuta o scroll do canvas para mover as réguas sincronizadamente
-        document.getElementById('viewportPlotagem').addEventListener('scroll', function(e) {
-            document.getElementById('tracosReguaSuperior').style.left = `-${e.target.scrollLeft}px`;
-            document.getElementById('tracosReguaLateral').style.top = `-${e.target.scrollTop}px`;
+        
+        const viewport = document.getElementById('viewportPlotagem');
+        viewport.addEventListener('scroll', function() {
+            document.getElementById('tracosReguaSuperior').style.transform = `translateX(-${viewport.scrollLeft}px)`;
+            document.getElementById('tracosReguaLateral').style.transform = `translateY(-${viewport.scrollTop}px)`;
         });
       } else {
         document.getElementById("authModal").classList.remove("hidden");
@@ -254,89 +247,88 @@
 
     function ajustarZoom(delta) {
       zoomAtual += delta;
-      if (zoomAtual < 0.3) zoomAtual = 0.3;
-      if (zoomAtual > 3.0) zoomAtual = 3.0;
+      if (zoomAtual < 0.2) zoomAtual = 0.2;
+      if (zoomAtual > 2.5) zoomAtual = 2.5;
       
       document.getElementById("labelZoom").innerText = Math.round(zoomAtual * 100) + "%";
-      escalaPxPorCm = ESCALA_BASE * zoomAtual; // Recalcula vetor
+      escalaPxPorCm = ESCALA_BASE * zoomAtual;
       
       if(pecasEmCache.length > 0) {
         renderizarPecasNoCanvas();
       } else {
-        gerarDimensoesReguas(larguraMaximaAtualRegua, alturaMinimaAtualRegua);
+        gerarDimensoesReguas();
       }
     }
 
-    function gerarDimensoesReguas(limiteX, limiteY) {
-      larguraMaximaAtualRegua = Math.max(limiteX, 100);
-      alturaMinimaAtualRegua = Math.max(limiteY, 300);
-
-      // --- RÉGUA X (Superior) ---
+    function gerarDimensoesReguas() {
+      // --- RÉGUA X (Superior - Fixa em 150cm) ---
       const sup = document.getElementById("tracosReguaSuperior");
       let htmlSup = "";
-      for(let cm = 0; cm <= larguraMaximaAtualRegua; cm++) {
-        // Alinhamento inteligente do texto para o zero não ser cortado
-        let alignText = cm === 0 ? 'translateX(4px)' : 'translateX(-50%)';
+      for(let cm = 0; cm <= LARGURA_REGUA_X; cm++) {
+        let leftPx = cm * escalaPxPorCm;
+        let numLabel = cm > 0 && cm % 10 === 0 ? `<span class="absolute bottom-[11px] text-[10px] text-black font-bold font-sans" style="transform: translateX(-50%);">${cm}</span>` : '';
         
         htmlSup += `
-          <div class="absolute bottom-0 h-full" style="left: ${cm * escalaPxPorCm}px; width: 1px;">
-            <span class="absolute bottom-[16px] text-[12px] text-black font-sans leading-none" style="transform: ${alignText};">${cm}</span>
-            <div class="absolute bottom-0 w-[1px] bg-black h-[12px]" style="transform: translateX(-50%);"></div>
+          <div class="absolute bottom-0 h-full" style="left: ${leftPx}px; width: 1px;">
+            ${numLabel}
+            <div class="absolute bottom-0 w-[1px] bg-black h-[10px]" style="transform: translateX(-50%);"></div>
           </div>
         `;
-        
-        if (cm < larguraMaximaAtualRegua) {
+        if (cm < LARGURA_REGUA_X) {
           for(let mm = 1; mm < 10; mm++) {
-            let hTick = (mm === 5) ? 'h-[8px]' : 'h-[4px]';
-            htmlSup += `<div class="absolute bottom-0 w-[1px] bg-[#666] ${hTick}" style="left: ${cm * escalaPxPorCm + mm * (escalaPxPorCm / 10)}px; transform: translateX(-50%);"></div>`;
+            let mmLeft = leftPx + mm * (escalaPxPorCm / 10);
+            let hTick = (mm === 5) ? 'h-[6px]' : 'h-[3px]';
+            let cTick = (mm === 5) ? 'bg-[#555]' : 'bg-[#888]';
+            htmlSup += `<div class="absolute bottom-0 w-[1px] ${cTick} ${hTick}" style="left: ${mmLeft}px; transform: translateX(-50%);"></div>`;
           }
         }
       }
-      sup.style.width = (larguraMaximaAtualRegua * escalaPxPorCm + 50) + "px";
+      sup.style.width = (LARGURA_REGUA_X * escalaPxPorCm + 100) + "px";
       sup.innerHTML = htmlSup;
 
-      // --- RÉGUA Y (Lateral) ---
+      // --- RÉGUA Y (Lateral - Fixa em 50m / 5000cm) ---
       const lat = document.getElementById("tracosReguaLateral");
       let htmlLat = "";
-      for(let cm = 0; cm <= alturaMinimaAtualRegua; cm++) {
-        let alignTextY = cm === 0 ? 'translateY(4px)' : 'translateY(-50%)';
+      for(let cm = 0; cm <= ALTURA_REGUA_Y; cm += 10) { // Marca de 10 em 10cm para otimizar renderização de 50 metros
+        let topPx = cm * escalaPxPorCm;
+        let numLabelY = cm > 0 ? `<span class="absolute right-[11px] text-[10px] text-black font-bold font-sans" style="transform: translateY(-50%);">${cm}</span>` : '';
         
         htmlLat += `
-          <div class="absolute right-0 w-full" style="top: ${cm * escalaPxPorCm}px; height: 1px;">
-            <span class="absolute right-[16px] text-[12px] text-black font-sans leading-none" style="transform: ${alignTextY};">${cm}</span>
-            <div class="absolute right-0 h-[1px] bg-black w-[12px]" style="transform: translateY(-50%);"></div>
+          <div class="absolute right-0 w-full" style="top: ${topPx}px; height: 1px;">
+            ${numLabelY}
+            <div class="absolute right-0 h-[1px] bg-black w-[10px]" style="transform: translateY(-50%);"></div>
           </div>
         `;
-        
-        if (cm < alturaMinimaAtualRegua) {
-          for(let mm = 1; mm < 10; mm++) {
-            let wTick = (mm === 5) ? 'w-[8px]' : 'w-[4px]';
-            htmlLat += `<div class="absolute right-0 h-[1px] bg-[#666] ${wTick}" style="top: ${cm * escalaPxPorCm + mm * (escalaPxPorCm / 10)}px; transform: translateY(-50%);"></div>`;
-          }
-        }
       }
-      lat.style.height = (alturaMinimaAtualRegua * escalaPxPorCm + 50) + "px";
+      lat.style.height = (ALTURA_REGUA_Y * escalaPxPorCm + 100) + "px";
       lat.innerHTML = htmlLat;
 
-      // --- MALHA DE GRID (Tracejado) ---
+      // --- MALHA DE GRID E LIMITE DA BOBINA ---
       const malhaGrid = document.getElementById("malhaGridFundo");
       let htmlMalha = "";
-      for(let x = 0; x <= larguraMaximaAtualRegua; x++) {
-        htmlMalha += `<div class="absolute top-0 bottom-0 border-l border-[#e5e5e5] border-dashed" style="left: ${x * escalaPxPorCm}px; height: ${alturaMinimaAtualRegua * escalaPxPorCm}px;"></div>`;
+      for(let x = 0; x <= LARGURA_REGUA_X; x += 10) {
+        htmlMalha += `<div class="absolute top-0 bottom-0 border-l border-[#dfdfdf] border-dashed" style="left: ${x * escalaPxPorCm}px; height: ${ALTURA_REGUA_Y * escalaPxPorCm}px;"></div>`;
       }
-      for(let y = 0; y <= alturaMinimaAtualRegua; y++) {
-        htmlMalha += `<div class="absolute left-0 right-0 border-t border-[#e5e5e5] border-dashed" style="top: ${y * escalaPxPorCm}px; width: ${larguraMaximaAtualRegua * escalaPxPorCm}px;"></div>`;
-      }
-      malhaGrid.style.width = (larguraMaximaAtualRegua * escalaPxPorCm) + "px";
-      malhaGrid.style.height = (alturaMinimaAtualRegua * escalaPxPorCm) + "px";
+      malhaGrid.style.width = (LARGURA_REGUA_X * escalaPxPorCm) + "px";
+      malhaGrid.style.height = (ALTURA_REGUA_Y * escalaPxPorCm) + "px";
       malhaGrid.innerHTML = htmlMalha;
+
+      // Marca o limite visual exato da largura da bobina ativa
+      const bordaBobina = document.getElementById("bordaLimiteBobina");
+      bordaBobina.style.left = "0px";
+      bordaBobina.style.width = (larguraBobinaAtual * escalaPxPorCm) + "px";
+      bordaBobina.style.height = (ALTURA_REGUA_Y * escalaPxPorCm) + "px";
     }
 
-    let bobinas = [{ nome: "Vinil Brilho 1.00m", largura: 100, preco: 15.00 }, { nome: "Lona 1.40m", largura: 140, preco: 18.50 }];
+    let bobinas = [
+      { nome: "Vinil Brilho 1.00m", largura: 100, preco: 15.00 }, 
+      { nome: "Lona Frontlight 1.35m", largura: 135, preco: 18.50 },
+      { nome: "Lona Heavy 1.50m", largura: 150, preco: 22.00 }
+    ];
 
     window.onload = function() {
-      addParteVazia("Adesivo 1", "Bobina: Vinil Brilho 1.00m", "45", "60", 4);
-      addParteVazia("Adesivo 2", "Bobina: Vinil Brilho 1.00m", "25", "30", 2);
+      addParteVazia("Painel Fachada", "Bobina: Lona Frontlight 1.35m", "120", "80", 1);
+      addParteVazia("Adesivo Vitrine", "Bobina: Vinil Brilho 1.00m", "40", "50", 2);
     };
 
     function mudarAba(aba) {
@@ -348,7 +340,7 @@
       if (aba === 'suprimentos') document.getElementById("abaSuprimentos").classList.remove("hidden");
       if (aba === 'desenho') {
         document.getElementById("abaDesenho").classList.remove("hidden");
-        if(pecasEmCache.length === 0) gerarDimensoesReguas(140, 100);
+        if(pecasEmCache.length === 0) gerarDimensoesReguas();
       }
     }
 
@@ -358,40 +350,57 @@
       tr.innerHTML = `
         <td class="p-2"><input type="text" value="${nome}" class="nomeParte w-full border rounded px-2 py-1 text-xs"></td>
         <td class="p-2">
-          <select class="materialParte w-full border rounded px-2 py-1 text-xs">
-            ${bobinas.map(b => `<option value="Bobina: ${b.nome}" ${material===('Bobina: '+b.nome)?'selected':''}>${b.nome} (${b.largura}cm)</option>`).join('')}
+          <select class="materialParte w-full border rounded px-2 py-1 text-xs" onchange="atualizarLarguraBobinaSelect(this)">
+            ${bobinas.map(b => `<option value="Bobina: ${b.nome}" data-largura="${b.largura}" ${material===('Bobina: '+b.nome)?'selected':''}>${b.nome} (${b.largura}cm)</option>`).join('')}
           </select>
         </td>
         <td class="p-2"><input type="number" value="${w}" class="larguraParte w-16 border rounded px-2 py-1 text-xs"></td>
         <td class="p-2"><input type="number" value="${h}" class="comprimentoParte w-16 border rounded px-2 py-1 text-xs"></td>
         <td class="p-2"><input type="number" value="${q}" class="qtdParte w-12 border rounded px-2 py-1 text-xs"></td>
-        <td class="p-2 text-center"><button onclick="this.closest('tr').remove()" class="text-red-500"><i class="fa-solid fa-trash"></i></button></td>
+        <td class="p-2 text-center"><button onclick="this.closest('tr').remove()" class="text-red-500 cursor-pointer"><i class="fa-solid fa-trash"></i></button></td>
       `;
       tbody.appendChild(tr);
+      atualizarLarguraBobinaSelect(tr.querySelector('.materialParte'));
+    }
+
+    function atualizarLarguraBobinaSelect(selectEl) {
+      const selectedOption = selectEl.options[selectEl.selectedIndex];
+      if (selectedOption) {
+        larguraBobinaAtual = parseFloat(selectedOption.getAttribute('data-largura')) || 100;
+      }
     }
 
     function processarECalcular() {
       const linhas = document.querySelectorAll("#partes tr");
       pecasEmCache = [];
-      let maiorLargura = 100;
+      let larguraMaxEncontrada = 100;
 
       linhas.forEach((tr, index) => {
         const nome = tr.querySelector(".nomeParte").value || `P ${index+1}`;
         const w = parseFloat(tr.querySelector(".larguraParte").value) || 0;
         const h = parseFloat(tr.querySelector(".comprimentoParte").value) || 0;
         const q = parseInt(tr.querySelector(".qtdParte").value) || 1;
-        const mat = tr.querySelector(".materialParte").value;
+        const selectEl = tr.querySelector(".materialParte");
+        const selectedOption = selectEl.options[selectEl.selectedIndex];
+        const larguraBobinaItem = parseFloat(selectedOption.getAttribute('data-largura')) || 100;
 
-        if (w>0 && h>0 && mat.startsWith("Bobina:")) {
-          const bObj = bobinas.find(b => mat.includes(b.nome));
-          if(bObj && bObj.largura > maiorLargura) maiorLargura = bObj.largura;
-          
+        if (w > larguraBobinaItem) {
+          alert(`A peça "${nome}" (${w}cm) excede a largura da bobina selecionada (${larguraBobinaItem}cm)! Ajuste o tamanho.`);
+          return;
+        }
+
+        if (larguraBobinaItem > larguraMaxEncontrada) {
+          larguraMaxEncontrada = larguraBobinaItem;
+        }
+
+        if (w>0 && h>0) {
           for(let i=0; i<q; i++) {
-            pecasEmCache.push({ nome, largura: w, comprimento: h, cor: `#${Math.floor(Math.abs(Math.sin(index+i+1)*16777215)).toString(16).padStart(6,'0')}` });
+            pecasEmCache.push({ nome, largura: w, comprimento: h, larguraBobina: larguraBobinaItem, cor: `#${Math.floor(Math.abs(Math.sin(index+i+1)*16777215)).toString(16).padStart(6,'0')}` });
           }
         }
       });
-      larguraMaximaAtualRegua = maiorLargura;
+
+      larguraBobinaAtual = larguraMaxEncontrada;
       renderizarPecasNoCanvas();
       mudarAba('desenho');
     }
@@ -402,8 +411,11 @@
       let cursorX = 0, cursorY = 0, alturaLinha = 0;
       
       pecasEmCache.forEach(p => {
-        if (cursorX + p.largura > larguraMaximaAtualRegua) {
-          cursorX = 0; cursorY += alturaLinha; alturaLinha = 0;
+        // Se a peça estourar a largura útil da bobina atual, quebra a linha verticalmente
+        if (cursorX + p.largura > larguraBobinaAtual) {
+          cursorX = 0; 
+          cursorY += alturaLinha; 
+          alturaLinha = 0;
         }
         
         let xPx = cursorX * escalaPxPorCm;
@@ -413,9 +425,9 @@
 
         html += `
           <div style="position: absolute; left: ${xPx}px; top: ${yPx}px; width: ${wPx}px; height: ${hPx}px; background-color: ${p.cor};" 
-               class="border border-white/50 flex flex-col items-center justify-center text-[11px] text-white overflow-hidden shadow">
+               class="border border-white/60 flex flex-col items-center justify-center text-[11px] text-white overflow-hidden shadow-sm">
             <span class="bg-black/60 px-1 rounded truncate shadow">${p.nome}</span>
-            <span class="bg-black/40 px-1 rounded mt-1 font-mono text-[9px]">${p.largura}x${p.comprimento}</span>
+            <span class="bg-black/40 px-1 rounded mt-0.5 font-mono text-[9px]">${p.largura}x${p.comprimento}cm</span>
           </div>
         `;
         
@@ -423,17 +435,13 @@
         if (p.comprimento > alturaLinha) alturaLinha = p.comprimento;
       });
 
-      let alturaFinal = cursorY + alturaLinha + 10; // +10cm de folga no fundo
-      
-      // Gera grid e réguas sincronizados com o novo tamanho total
-      gerarDimensoesReguas(larguraMaximaAtualRegua, alturaFinal);
+      gerarDimensoesReguas();
 
-      container.style.width = (larguraMaximaAtualRegua * escalaPxPorCm) + "px";
-      container.style.height = (alturaFinal * escalaPxPorCm) + "px";
+      container.style.width = (LARGURA_REGUA_X * escalaPxPorCm) + "px";
+      container.style.height = (ALTURA_REGUA_Y * escalaPxPorCm) + "px";
       container.innerHTML = html;
     }
     
-    // Auth stubs vazios para não bloquear click (já logado no Firebase)
     function fazerLoginEmail() {}
     function fazerLoginGoogle() {}
     function fazerLogout() {}
