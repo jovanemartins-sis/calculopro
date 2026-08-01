@@ -195,7 +195,7 @@
         </div>
       </section>
 
-      <!-- ABA 3: DESENHO (RIP HP LATEX / NESTING) COM RÉGUA COMPACTA E PEÇAS COLADAS -->
+      <!-- ABA 3: DESENHO (RIP HP LATEX / NESTING) COM RÉGUA TÉCNICA E ZOOM -->
       <section id="abaDesenho" class="hidden space-y-4">
         <div class="bg-slate-900 text-white p-5 rounded-xl shadow-inner space-y-4">
           <div class="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-slate-800 pb-3 gap-2">
@@ -203,38 +203,46 @@
               <h3 class="text-xs font-bold text-cyan-400 uppercase tracking-widest"><i class="fa-solid fa-network-wired mr-1"></i> Simulação RIP HP Latex (Nesting Contínuo)</h3>
               <p id="infoClienteDesenho" class="text-[11px] text-slate-400">Aguardando processamento de dados...</p>
             </div>
-            <div class="text-left md:text-right bg-slate-950 px-4 py-2 rounded-lg border border-slate-800 w-full md:w-auto">
-              <span id="valorFinalDesenho" class="text-sm font-bold text-emerald-400">R$ 0.00</span>
-              <p id="custoTotalDesenho" class="text-[10px] text-slate-400">Custo Total: R$ 0.00</p>
+            <div class="flex items-center space-x-3">
+              <!-- CONTROLES DE ZOOM -->
+              <div class="flex items-center bg-slate-950 rounded-lg border border-slate-800 px-2 py-1 space-x-1">
+                <span class="text-[10px] text-slate-400 font-mono mr-1">Zoom:</span>
+                <button type="button" onclick="ajustarZoom(-0.2)" class="text-slate-300 hover:text-white px-1.5 py-0.5 text-xs font-bold cursor-pointer" title="Diminuir Zoom"><i class="fa-solid fa-magnifying-glass-minus"></i></button>
+                <span id="labelZoom" class="text-xs font-mono text-cyan-400 w-10 text-center">100%</span>
+                <button type="button" onclick="ajustarZoom(0.2)" class="text-slate-300 hover:text-white px-1.5 py-0.5 text-xs font-bold cursor-pointer" title="Aumentar Zoom"><i class="fa-solid fa-magnifying-glass-plus"></i></button>
+              </div>
+              <div class="text-left md:text-right bg-slate-950 px-4 py-2 rounded-lg border border-slate-800">
+                <span id="valorFinalDesenho" class="text-sm font-bold text-emerald-400">R$ 0.00</span>
+                <p id="custoTotalDesenho" class="text-[10px] text-slate-400">Custo Total: R$ 0.00</p>
+              </div>
             </div>
           </div>
 
-          <!-- RÉGUA TÉCNICA MENOR / ESCALA DE REFERÊNCIA CAD -->
-          <div class="bg-slate-950 p-2.5 rounded-lg border border-slate-800 space-y-1">
-            <div class="flex justify-between items-center text-[10px] text-slate-400 font-mono">
-              <span class="font-bold text-cyan-400"><i class="fa-solid fa-ruler-combined mr-1"></i> Escala de Referência (Régua Térmica / CAD)</span>
-              <span>10cm por marcação</span>
+          <!-- ÁREA DO VISUALIZADOR COM RÉGUA TÉCNICA LATERAL E SUPERIOR -->
+          <div class="relative bg-white rounded-lg border border-slate-700 overflow-hidden shadow-inner text-slate-800">
+            
+            <!-- Régua Superior (Horizontal com marcações de cm) -->
+            <div class="h-7 bg-slate-100 border-b border-slate-300 flex items-end font-mono text-[9px] text-slate-600 select-none overflow-x-hidden relative" id="reguaSuperior">
+              <div class="absolute left-0 w-6 h-full bg-slate-200 border-r border-slate-300 flex items-center justify-center font-bold text-[10px]">cm</div>
+              <div id="tracosReguaSuperior" class="flex pl-8 relative w-full">
+                <!-- Preenchido via JS -->
+              </div>
             </div>
-            <!-- Régua menor compacta com marcações finas -->
-            <div class="relative h-3 w-full bg-slate-900 rounded border border-slate-800 flex items-center px-1 font-mono text-[8px] text-slate-500 justify-between">
-              <span>|0</span>
-              <span>|10</span>
-              <span>|20</span>
-              <span>|30</span>
-              <span>|40</span>
-              <span>|50</span>
-              <span>|60</span>
-              <span>|70</span>
-              <span>|80</span>
-              <span>|90</span>
-              <span>|100cm</span>
-            </div>
-          </div>
 
-          <!-- ÁREA DE PLOTAGEM COM NESTING CONTÍNUO (PEÇAS COLADAS, SEM GAP) -->
-          <div class="overflow-x-auto bg-slate-950 p-3 rounded-lg border border-slate-800 min-h-[260px] flex items-center shadow-inner">
-            <div id="containerPlotagem" class="relative border-l border-cyan-500 pl-2 flex flex-row items-center gap-0 flex-nowrap">
-              <div class="text-slate-500 text-xs py-8 w-full text-center">Nenhuma peça processada. Vá para a aba "Orçamento" e clique em calcular.</div>
+            <div class="flex">
+              <!-- Régua Lateral (Vertical com marcações de cm) -->
+              <div class="w-6 bg-slate-100 border-r border-slate-300 flex flex-col font-mono text-[9px] text-slate-600 select-none overflow-y-hidden relative" id="reguaLateral" style="height: 350px;">
+                <div id="tracosReguaLateral" class="relative w-full">
+                  <!-- Preenchido via JS -->
+                </div>
+              </div>
+
+              <!-- Canvas / Área de Plotagem com Grid Quadriculado Estilo CAD -->
+              <div class="flex-grow bg-slate-50 overflow-auto h-[350px] p-2 relative" id="viewportPlotagem">
+                <div id="containerPlotagem" class="relative flex flex-row items-center gap-0 flex-nowrap transition-transform duration-200 origin-top-left" style="transform: scale(1);">
+                  <div class="text-slate-400 text-xs py-16 w-full text-center">Nenhuma peça processada. Vá para a aba "Orçamento" e clique em calcular.</div>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -264,6 +272,7 @@
       firebase.initializeApp(firebaseConfig);
     }
     const auth = firebase.auth();
+    let zoomAtual = 1.0;
 
     auth.onAuthStateChanged(user => {
       const modal = document.getElementById("authModal");
@@ -271,11 +280,54 @@
       if (user) {
         modal.classList.add("hidden");
         app.classList.remove("hidden");
+        gerarDimensoesReguas();
       } else {
         modal.classList.remove("hidden");
         app.classList.add("hidden");
       }
     });
+
+    function ajustarZoom(delta) {
+      zoomAtual += delta;
+      if (zoomAtual < 0.4) zoomAtual = 0.4;
+      if (zoomAtual > 2.5) zoomAtual = 2.5;
+      
+      document.getElementById("labelZoom").innerText = Math.round(zoomAtual * 100) + "%";
+      const container = document.getElementById("containerPlotagem");
+      container.style.transform = `scale(${zoomAtual})`;
+    }
+
+    function gerarDimensoesReguas() {
+      const sup = document.getElementById("tracosReguaSuperior");
+      let htmlSup = "";
+      for(let i=0; i<=150; i++) {
+        const isDez = i % 10 === 0;
+        const isCinco = i % 5 === 0;
+        const alturaTraco = isDez ? 'h-3' : (isCinco ? 'h-2' : 'h-1');
+        htmlSup += `<div class="absolute flex flex-col items-center" style="left: ${i * 20}px;">
+          <div class="w-[1px] bg-slate-400 ${alturaTraco}"></div>`;
+        if(isDez) {
+          htmlSup += `<span class="text-[8px] mt-0.5">${i}</span>`;
+        }
+        htmlSup += `</div>`;
+      }
+      sup.innerHTML = htmlSup;
+
+      const lat = document.getElementById("tracosReguaLateral");
+      let htmlLat = "";
+      for(let i=0; i<=100; i++) {
+        const isDez = i % 10 === 0;
+        const isCinco = i % 5 === 0;
+        const larguraTraco = isDez ? 'w-3' : (isCinco ? 'w-2' : 'w-1');
+        htmlLat += `<div class="absolute flex items-center" style="top: ${i * 20}px;">
+          <div class="h-[1px] bg-slate-400 ${larguraTraco}"></div>`;
+        if(isDez) {
+          htmlLat += `<span class="text-[8px] ml-1">${i}</span>`;
+        }
+        htmlLat += `</div>`;
+      }
+      lat.innerHTML = htmlLat;
+    }
 
     function fazerLoginEmail() {
       const email = document.getElementById("loginEmail").value;
@@ -352,6 +404,7 @@
       } else {
         secDesenho.classList.remove("hidden");
         btnDesenho.className = "px-3 py-1.5 rounded text-xs font-medium bg-cyan-600 text-white transition cursor-pointer shadow whitespace-nowrap";
+        setTimeout(gerarDimensoesReguas, 50);
       }
     }
 
@@ -607,22 +660,22 @@
 
       if (pecasParaProcessar.length > 0) {
         pecasParaProcessar.forEach(p => {
-          // ESCALA MENOR E COMPACTA: Peças coladas lado a lado sem margens externas excessivas (Nesting Contínuo)
-          const wPx = Math.max(35, p.largura * 0.7);
-          const hPx = Math.max(45, p.comprimento * 0.5);
+          // ESCALA PROPORCIONAL COM BASE NAS RÉGUAS (2px por cm)
+          const wPx = p.largura * 2;
+          const hPx = p.comprimento * 2;
           
           visualizadorHtml += `
             <div style="width: ${wPx}px; height: ${hPx}px; background-color: ${p.cor}; margin-right: 0px;" 
-                 class="border border-white/20 p-1 flex flex-col justify-between text-[9px] text-white font-bold overflow-hidden relative shadow-sm shrink-0">
+                 class="border border-white/30 p-1 flex flex-col justify-between text-[9px] text-white font-bold overflow-hidden relative shadow-sm shrink-0">
               <span class="truncate bg-black/60 px-1 py-0.2 rounded">${p.nome}</span>
               <div class="text-[8px] bg-black/40 px-1 py-0.2 rounded self-start font-mono">
-                ${p.largura}x${p.comprimento}
+                ${p.largura}x${p.comprimento}cm
               </div>
             </div>
           `;
         });
       } else {
-        visualizadorHtml = `<div class="text-slate-500 text-xs py-8 w-full text-center">Nenhuma peça vinculada a bobinas para simulação gráfica proporcional.</div>`;
+        visualizadorHtml = `<div class="text-slate-400 text-xs py-16 w-full text-center">Nenhuma peça vinculada a bobinas para simulação gráfica proporcional.</div>`;
       }
 
       containerPlotagem.innerHTML = visualizadorHtml;
