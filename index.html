@@ -195,7 +195,7 @@
         </div>
       </section>
 
-      <!-- ABA 3: DESENHO (RIP HP LATEX / NESTING) -->
+      <!-- ABA 3: DESENHO (RIP HP LATEX / NESTING) COM RÉGUA TÉCNICA ESCALONADA -->
       <section id="abaDesenho" class="hidden space-y-4">
         <div class="bg-slate-900 text-white p-5 rounded-xl shadow-inner space-y-4">
           <div class="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-slate-800 pb-3 gap-2">
@@ -209,19 +209,27 @@
             </div>
           </div>
 
-          <div class="bg-slate-800 p-2 rounded text-[10px] text-slate-300 flex justify-between items-center border border-slate-700">
-            <span class="font-semibold">Escala de Referência (Régua Térmica / CAD):</span>
-            <div class="flex space-x-6 font-mono text-cyan-300">
-              <span>0 cm</span>
-              <span>50 cm</span>
-              <span>100 cm</span>
-              <span>150 cm</span>
-              <span>200 cm+</span>
+          <!-- RÉGUA TÉCNICA PROPORCIONAL DE CORTE / CAD -->
+          <div class="bg-slate-950 p-3 rounded-lg border border-slate-800 space-y-1">
+            <div class="flex justify-between items-center text-[10px] text-slate-400 font-mono">
+              <span class="font-bold text-cyan-400"><i class="fa-solid fa-ruler mr-1"></i> Régua Técnica Proporcional (Escala Real de Plotagem)</span>
+              <span id="escalaMetricaInfo">Escala: 1 px = 1 cm</span>
+            </div>
+            <!-- Divisor milimetrado visual -->
+            <div class="relative h-4 w-full bg-slate-900 rounded border border-slate-800 flex items-center px-1 font-mono text-[9px] text-slate-400 justify-between">
+              <span>| 0cm</span>
+              <span>| 25cm</span>
+              <span>| 50cm</span>
+              <span>| 75cm</span>
+              <span>| 100cm</span>
+              <span>| 125cm</span>
+              <span>| 150cm+</span>
             </div>
           </div>
 
-          <div class="overflow-x-auto bg-slate-950 p-4 rounded-lg border border-slate-800 min-h-[250px] flex items-center shadow-inner">
-            <div id="containerPlotagem" class="relative border-l-2 border-dashed border-cyan-500 pl-3 flex gap-1 items-center">
+          <!-- ÁREA DE PLOTAGEM COM ESCALA PROPORCIONAL -->
+          <div class="overflow-x-auto bg-slate-950 p-4 rounded-lg border border-slate-800 min-h-[300px] flex items-center shadow-inner">
+            <div id="containerPlotagem" class="relative border-l-2 border-dashed border-cyan-500 pl-4 flex gap-3 items-center flex-wrap">
               <div class="text-slate-500 text-xs py-8 w-full text-center">Nenhuma peça processada. Vá para a aba "Orçamento" e clique em calcular.</div>
             </div>
           </div>
@@ -237,11 +245,8 @@
     </main>
   </div>
 
-  <!-- Script JavaScript Integrado com suas Chaves do Firebase -->
+  <!-- Script JavaScript Integrado -->
   <script>
-    // ==========================================
-    // SUAS CREDENCIAIS REAIS DO FIREBASE
-    // ==========================================
     const firebaseConfig = {
       apiKey: "AIzaSyBK2M_6YeHCV_mNOrh2v8FO8g6BcOFBlFw",
       authDomain: "calculo-pro.firebaseapp.com",
@@ -598,16 +603,22 @@
 
       if (pecasParaProcessar.length > 0) {
         pecasParaProcessar.forEach(p => {
+          // ESCALA REAL PROPORCIONAL: 1cm = 1.2px para largura e 0.8px para comprimento mantendo proporção visual de plotter
+          const wPx = Math.max(50, p.largura * 1.2);
+          const hPx = Math.max(60, p.comprimento * 0.8);
+          
           visualizadorHtml += `
-            <div style="width: ${Math.max(40, p.largura * 1.2)}px; height: ${Math.max(50, p.comprimento * 0.8)}px; background-color: ${p.cor};" 
-                 class="rounded border border-white/20 p-1 flex flex-col justify-between text-[10px] text-white shadow font-bold overflow-hidden">
-              <span class="truncate bg-black/50 px-1 rounded">${p.nome}</span>
-              <span class="text-[9px] opacity-90">${p.largura}x${p.comprimento}cm</span>
+            <div style="width: ${wPx}px; height: ${hPx}px; background-color: ${p.cor};" 
+                 class="rounded border border-white/30 p-1.5 flex flex-col justify-between text-[10px] text-white shadow-md font-bold overflow-hidden relative">
+              <span class="truncate bg-black/60 px-1 py-0.5 rounded">${p.nome}</span>
+              <div class="text-[9px] bg-black/40 px-1 py-0.5 rounded self-start font-mono">
+                ${p.largura} x ${p.comprimento} cm
+              </div>
             </div>
           `;
         });
       } else {
-        visualizadorHtml = `<div class="text-slate-500 text-xs py-8 w-full text-center">Nenhuma peça vinculada a bobinas para simulação gráfica.</div>`;
+        visualizadorHtml = `<div class="text-slate-500 text-xs py-8 w-full text-center">Nenhuma peça vinculada a bobinas para simulação gráfica proporcional.</div>`;
       }
 
       containerPlotagem.innerHTML = visualizadorHtml;
