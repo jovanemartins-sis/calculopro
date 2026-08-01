@@ -195,7 +195,7 @@
         </div>
       </section>
 
-      <!-- ABA 3: DESENHO (RIP HP LATEX / NESTING) COM RÉGUA TÉCNICA E ZOOM COMPACTO -->
+      <!-- ABA 3: DESENHO (RIP HP LATEX / NESTING) COM MALHA DE RÉGUAS COMPLETA -->
       <section id="abaDesenho" class="hidden space-y-4">
         <div class="bg-slate-900 text-white p-5 rounded-xl shadow-inner space-y-4">
           <div class="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-slate-800 pb-3 gap-2">
@@ -218,10 +218,10 @@
             </div>
           </div>
 
-          <!-- ÁREA DO VISUALIZADOR COM RÉGUA TÉCNICA LATERAL E SUPERIOR -->
+          <!-- ÁREA DO VISUALIZADOR COM MALHA DE RÉGUAS CRUZADA (SUPERIOR + LATERAL + GRID DE LINHAS DE CORTE) -->
           <div class="relative bg-white rounded-lg border border-slate-700 overflow-hidden shadow-inner text-slate-800">
             
-            <!-- Régua Superior (Eixo X - Compacta) -->
+            <!-- Régua Superior (Eixo X) -->
             <div class="h-6 bg-slate-100 border-b border-slate-300 flex items-end font-mono text-[9px] text-slate-600 select-none overflow-x-hidden relative" id="reguaSuperior">
               <div class="absolute left-0 w-8 h-full bg-slate-200 border-r border-slate-300 flex items-center justify-center font-bold text-[8px] z-10">cm</div>
               <div id="tracosReguaSuperior" class="flex pl-8 relative w-full">
@@ -230,16 +230,19 @@
             </div>
 
             <div class="flex">
-              <!-- Régua Lateral (Eixo Y - Compacta) -->
+              <!-- Régua Lateral (Eixo Y) -->
               <div class="w-8 bg-slate-100 border-r border-slate-300 flex flex-col font-mono text-[9px] text-slate-600 select-none overflow-y-hidden relative shrink-0" id="reguaLateral" style="height: 320px;">
                 <div id="tracosReguaLateral" class="relative w-full">
                   <!-- Preenchido dinamicamente via JS -->
                 </div>
               </div>
 
-              <!-- Canvas / Área de Plotagem com Grid Compacto -->
+              <!-- Canvas / Área de Plotagem com Malha Quadriculada (Grid Técnico) -->
               <div class="flex-grow bg-slate-50 overflow-auto h-[320px] p-2 relative" id="viewportPlotagem">
-                <div id="containerPlotagem" class="relative flex flex-row flex-wrap items-start gap-1 transition-transform duration-200 origin-top-left" style="transform: scale(0.6);">
+                <!-- Malha de Fundo em Grid Cruzado -->
+                <div id="malhaGridFundo" class="absolute inset-0 pointer-events-none opacity-40"></div>
+                
+                <div id="containerPlotagem" class="relative flex flex-row flex-wrap items-start gap-1 transition-transform duration-200 origin-top-left z-10" style="transform: scale(0.6);">
                   <div class="text-slate-400 text-xs py-16 w-full text-center">Nenhuma peça processada. Vá para a aba "Orçamento" e clique em calcular.</div>
                 </div>
               </div>
@@ -272,7 +275,7 @@
       firebase.initializeApp(firebaseConfig);
     }
     const auth = firebase.auth();
-    let zoomAtual = 0.6; // Inicializa com zoom menor para encaixar na tela
+    let zoomAtual = 0.6;
     let larguraMaximaAtualRegua = 140;
 
     auth.onAuthStateChanged(user => {
@@ -300,7 +303,7 @@
 
     function gerarDimensoesReguas(limiteX = 140) {
       larguraMaximaAtualRegua = Math.max(limiteX, 100);
-      const escalaPx = 0.7; // Escala compacta (0.7px por cm) para caber na tela
+      const escalaPx = 0.7; // Escala compacta
 
       // Régua Superior (Eixo X)
       const sup = document.getElementById("tracosReguaSuperior");
@@ -329,6 +332,19 @@
         htmlLat += `</div>`;
       }
       lat.innerHTML = htmlLat;
+
+      // Malha de Fundo Cruzada (Grid Técnico no viewport)
+      const malhaGrid = document.getElementById("malhaGridFundo");
+      let htmlMalha = "";
+      // Linhas verticais da malha a cada 10cm
+      for(let x = 0; x <= larguraMaximaAtualRegua; x += 10) {
+        htmlMalha += `<div class="absolute top-0 bottom-0 border-l border-slate-300" style="left: ${x * escalaPx}px;"></div>`;
+      }
+      // Linhas horizontais da malha a cada 10cm
+      for(let y = 0; y <= 200; y += 10) {
+        htmlMalha += `<div class="absolute left-0 right-0 border-t border-slate-300" style="top: ${y * escalaPx}px;"></div>`;
+      }
+      malhaGrid.innerHTML = htmlMalha;
     }
 
     function fazerLoginEmail() {
