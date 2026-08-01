@@ -59,7 +59,7 @@
     <!-- Navegação por Abas -->
     <header class="flex justify-between items-center bg-slate-900 px-6 py-3 border-b border-slate-800 text-white shadow-md">
       <div class="flex items-center space-x-3">
-        <h1 class="text-sm font-bold text-cyan-400"><i class="fa-solid fa-cubes mr-2"></i> CalculaJá Pro <span class="text-xs text-slate-400 font-normal">v2.6 Bobina Dinâmica</span></h1>
+        <h1 class="text-sm font-bold text-cyan-400"><i class="fa-solid fa-cubes mr-2"></i> CalculaJá Pro <span class="text-xs text-slate-400 font-normal">v2.7 Completo</span></h1>
       </div>
       <nav class="flex items-center space-x-2 overflow-x-auto py-1">
         <button onclick="mudarAba('dados')" id="btnAbaDados" class="px-3 py-1.5 rounded text-xs font-medium bg-cyan-600 text-white transition cursor-pointer shadow whitespace-nowrap">
@@ -138,10 +138,32 @@
         </div>
       </section>
 
-      <!-- ABA 2: CADASTRO DE SUPRIMENTOS -->
+      <!-- ABA 2: CADASTRO DE SUPRIMENTOS (RESTAURADA E FUNCIONAL) -->
       <section id="abaSuprimentos" class="hidden space-y-4">
-        <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 space-y-3">
-            <h3 class="text-xs font-bold text-slate-700 uppercase tracking-wider">Aba de Suprimentos (Gerenciada e Sincronizada). Volte à aba Orçamento.</h3>
+        <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 space-y-4">
+          <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+            <div>
+              <h2 class="text-xs font-bold text-slate-700 uppercase tracking-wider"><i class="fa-solid fa-boxes-stacked mr-1 text-cyan-600"></i> Gerenciamento de Bobinas e Papéis</h2>
+              <p class="text-[11px] text-slate-400">Cadastre a largura e os custos dos materiais disponíveis para impressão.</p>
+            </div>
+            <button type="button" onclick="abrirModalSuprimento()" class="bg-cyan-600 hover:bg-cyan-700 text-white px-3 py-1.5 rounded text-xs font-bold transition cursor-pointer">
+              <i class="fa-solid fa-plus mr-1"></i> Nova Bobina / Material
+            </button>
+          </div>
+
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse text-xs">
+              <thead>
+                <tr class="bg-slate-100 text-slate-600 border-b border-slate-200">
+                  <th class="p-2">Nome do Material / Bobina</th>
+                  <th class="p-2">Largura (cm) [Máx 150cm]</th>
+                  <th class="p-2">Preço por m² (R$)</th>
+                  <th class="p-2 text-center">Ações</th>
+                </tr>
+              </thead>
+              <tbody id="tabelaSuprimentos" class="divide-y divide-slate-100"></tbody>
+            </table>
+          </div>
         </div>
       </section>
 
@@ -209,6 +231,31 @@
     </main>
   </div>
 
+  <!-- MODAL DE CADASTRO DE SUPRIMENTO -->
+  <div id="modalSuprimento" class="hidden fixed inset-0 bg-slate-900/80 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-xl shadow-xl max-w-sm w-full p-6 space-y-4 border border-slate-200">
+      <h3 class="text-xs font-bold text-slate-800 uppercase"><i class="fa-solid fa-plus-circle text-cyan-600 mr-1"></i> Adicionar Nova Bobina</h3>
+      <div class="space-y-3 text-xs">
+        <div>
+          <label class="block font-bold text-slate-600 mb-1">Nome do Material</label>
+          <input type="text" id="novoNomeSup" placeholder="Ex: Lona Fosca" class="w-full border rounded px-3 py-1.5 outline-none focus:border-cyan-500">
+        </div>
+        <div>
+          <label class="block font-bold text-slate-600 mb-1">Largura em cm (Máximo 150cm)</label>
+          <input type="number" id="novaLarguraSup" value="135" min="10" max="150" class="w-full border rounded px-3 py-1.5 outline-none focus:border-cyan-500">
+        </div>
+        <div>
+          <label class="block font-bold text-slate-600 mb-1">Preço por m² (R$)</label>
+          <input type="number" id="novoPrecoSup" value="20.00" step="0.5" class="w-full border rounded px-3 py-1.5 outline-none focus:border-cyan-500">
+        </div>
+      </div>
+      <div class="flex justify-end space-x-2 pt-2">
+        <button type="button" onclick="fecharModalSuprimento()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 px-3 py-1.5 rounded text-xs font-bold cursor-pointer">Cancelar</button>
+        <button type="button" onclick="salvarNovoSuprimento()" class="bg-cyan-600 hover:bg-cyan-700 text-white px-3 py-1.5 rounded text-xs font-bold cursor-pointer">Salvar</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Script JavaScript Integrado -->
   <script>
     const firebaseConfig = {
@@ -223,13 +270,18 @@
     let zoomAtual = 1.0;
     let escalaPxPorCm = ESCALA_BASE;
     
-    // Limite máximo fixo de X da régua em 150cm e Y contínuo de até 50m (5000cm)
     const LARGURA_REGUA_X_MAX = 150; 
     const ALTURA_REGUA_Y_MAX = 5000; 
     
-    let larguraBobinaAtual = 100; // Largura do papel/bobina dinamicamente definida
-    let alturaTotalLayout = 300;  // Altura total calculada pelo nesting das peças
+    let larguraBobinaAtual = 100; 
+    let alturaTotalLayout = 300;  
     let pecasEmCache = [];
+
+    let bobinas = [
+      { id: 1, nome: "Vinil Brilho 1.00m (100cm)", largura: 100, preco: 15.00 }, 
+      { id: 2, nome: "Lona Frontlight 1.35m (135cm)", largura: 135, preco: 18.50 },
+      { id: 3, nome: "Lona Heavy 1.50m (150cm)", largura: 150, preco: 22.00 }
+    ];
 
     auth.onAuthStateChanged(user => {
       if (user) {
@@ -241,6 +293,8 @@
             document.getElementById('tracosReguaSuperior').style.transform = `translateX(-${viewport.scrollLeft}px)`;
             document.getElementById('tracosReguaLateral').style.transform = `translateY(-${viewport.scrollTop}px)`;
         });
+
+        renderizarTabelaSuprimentos();
       } else {
         document.getElementById("authModal").classList.remove("hidden");
         document.getElementById("appContainer").classList.add("hidden");
@@ -263,7 +317,6 @@
     }
 
     function gerarDimensoesReguas() {
-      // --- RÉGUA X (Superior - Limitada exatamente à largura da bobina/papel selecionada, até o máx de 150cm) ---
       const larguraReguaX = Math.min(LARGURA_REGUA_X_MAX, larguraBobinaAtual);
       const sup = document.getElementById("tracosReguaSuperior");
       let htmlSup = "";
@@ -289,7 +342,6 @@
       sup.style.width = (larguraReguaX * escalaPxPorCm + 100) + "px";
       sup.innerHTML = htmlSup;
 
-      // --- RÉGUA Y (Lateral - Ajustada dinamicamente à altura gerada pelo nesting das peças, até 50m / 5000cm) ---
       const alturaReguaY = Math.max(200, Math.min(ALTURA_REGUA_Y_MAX, alturaTotalLayout + 50));
       const lat = document.getElementById("tracosReguaLateral");
       let htmlLat = "";
@@ -307,7 +359,6 @@
       lat.style.height = (alturaReguaY * escalaPxPorCm + 100) + "px";
       lat.innerHTML = htmlLat;
 
-      // --- MALHA DE GRID E LIMITE DA BOBINA CONFORME CONFIGURAÇÃO DO PAPEL ---
       const malhaGrid = document.getElementById("malhaGridFundo");
       let htmlMalha = "";
       for(let x = 0; x <= larguraBobinaAtual; x += 10) {
@@ -317,18 +368,11 @@
       malhaGrid.style.height = (alturaReguaY * escalaPxPorCm) + "px";
       malhaGrid.innerHTML = htmlMalha;
 
-      // Marca o limite visual exato da largura do papel/bobina ativa
       const bordaBobina = document.getElementById("bordaLimiteBobina");
       bordaBobina.style.left = "0px";
       bordaBobina.style.width = (larguraBobinaAtual * escalaPxPorCm) + "px";
       bordaBobina.style.height = (alturaReguaY * escalaPxPorCm) + "px";
     }
-
-    let bobinas = [
-      { nome: "Vinil Brilho 1.00m (100cm)", largura: 100, preco: 15.00 }, 
-      { nome: "Lona Frontlight 1.35m (135cm)", largura: 135, preco: 18.50 },
-      { nome: "Lona Heavy 1.50m (150cm)", largura: 150, preco: 22.00 }
-    ];
 
     window.onload = function() {
       addParteVazia("Painel Fachada", "Bobina: Lona Frontlight 1.35m (135cm)", "120", "80", 1);
@@ -341,11 +385,73 @@
       document.getElementById("abaDesenho").classList.add("hidden");
 
       if (aba === 'dados') document.getElementById("abaDados").classList.remove("hidden");
-      if (aba === 'suprimentos') document.getElementById("abaSuprimentos").classList.remove("hidden");
+      if (aba === 'suprimentos') {
+        document.getElementById("abaSuprimentos").classList.remove("hidden");
+        renderizarTabelaSuprimentos();
+      }
       if (aba === 'desenho') {
         document.getElementById("abaDesenho").classList.remove("hidden");
         if(pecasEmCache.length === 0) gerarDimensoesReguas();
       }
+    }
+
+    function renderizarTabelaSuprimentos() {
+      const tbody = document.getElementById("tabelaSuprimentos");
+      tbody.innerHTML = bobinas.map(b => `
+        <tr class="hover:bg-slate-50">
+          <td class="p-2 font-medium">${b.nome}</td>
+          <td class="p-2">${b.largura} cm</td>
+          <td class="p-2">R$ ${b.preco.toFixed(2)}</td>
+          <td class="p-2 text-center">
+            <button onclick="removerSuprimento(${b.id})" class="text-red-500 hover:text-red-700 cursor-pointer" title="Remover"><i class="fa-solid fa-trash"></i></button>
+          </td>
+        </tr>
+      `).join('');
+      atualizarSelectsPecasNasAbas();
+    }
+
+    function atualizarSelectsPecasNasAbas() {
+      const selects = document.querySelectorAll(".materialParte");
+      selects.forEach(selectEl => {
+        let valorAtual = selectEl.value;
+        selectEl.innerHTML = bobinas.map(b => `<option value="Bobina: ${b.nome}" data-largura="${b.largura}" ${('Bobina: '+b.nome)===valorAtual?'selected':''}>${b.nome}</option>`).join('');
+      });
+    }
+
+    function abrirModalSuprimento() {
+      document.getElementById("modalSuprimento").classList.remove("hidden");
+    }
+
+    function fecharModalSuprimento() {
+      document.getElementById("modalSuprimento").classList.add("hidden");
+    }
+
+    function salvarNovoSuprimento() {
+      const nome = document.getElementById("novoNomeSup").value.trim();
+      let largura = parseFloat(document.getElementById("novaLarguraSup").value) || 100;
+      const preco = parseFloat(document.getElementById("novoPrecoSup").value) || 15.00;
+
+      if(!nome) {
+        alert("Insira um nome para o suprimento.");
+        return;
+      }
+      if(largura > 150) {
+        largura = 150;
+        alert("A largura máxima permitida pela régua/limite é de 150cm.");
+      }
+
+      bobinas.push({ id: Date.now(), nome: `${nome} (${largura}cm)`, largura, preco });
+      fecharModalSuprimento();
+      renderizarTabelaSuprimentos();
+    }
+
+    function removerSuprimento(id) {
+      if(bobinas.length <= 1) {
+        alert("É necessário manter pelo menos uma bobina cadastrada.");
+        return;
+      }
+      bobinas = bobinas.filter(b => b.id !== id);
+      renderizarTabelaSuprimentos();
     }
 
     function addParteVazia(nome="", material="", w="", h="", q=1) {
@@ -427,7 +533,7 @@
       });
 
       larguraBobinaAtual = larguraMaxEncontrada;
-      alturaTotalLayout = maxAlturaAtingida + 50; // Margem inferior de respiro
+      alturaTotalLayout = maxAlturaAtingida + 50; 
       
       renderizarPecasNoCanvas();
       mudarAba('desenho');
