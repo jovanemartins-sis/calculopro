@@ -35,6 +35,11 @@
         <div>
           <label class="block text-xs font-bold text-slate-600 mb-1">Senha</label>
           <input type="password" id="loginSenha" placeholder="••••••••" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-xs text-slate-900 outline-none focus:border-cyan-500">
+          <div class="text-right mt-1.5">
+            <button type="button" onclick="esqueciSenha()" class="text-[11px] text-cyan-600 hover:text-cyan-800 font-medium cursor-pointer">
+              Esqueci minha senha
+            </button>
+          </div>
         </div>
         <button type="button" onclick="fazerLoginEmail()" class="w-full bg-cyan-600 hover:bg-cyan-700 text-white py-2.5 rounded-lg text-xs font-bold transition shadow cursor-pointer">
           Entrar no Sistema
@@ -47,23 +52,23 @@
   <!-- APLICATIVO PRINCIPAL -->
   <div id="appContainer" class="hidden min-h-screen flex flex-col">
     
-    <!-- Navegação por Abas -->
-    <header class="flex justify-between items-center bg-slate-900 px-6 py-3 border-b border-slate-800 text-white shadow-md">
+    <!-- Navegação por Abas (Alinhada à Esquerda) -->
+    <header class="flex flex-col md:flex-row justify-between items-start md:items-center bg-slate-900 px-6 py-3 border-b border-slate-800 text-white shadow-md gap-3">
       <div class="flex items-center space-x-3">
         <h1 class="text-sm font-bold text-cyan-400"><i class="fa-solid fa-cubes mr-2"></i> CalculaJá Pro <span class="text-xs text-slate-400 font-normal">v3.0 Master</span></h1>
       </div>
-      <nav class="flex items-center space-x-2 overflow-x-auto py-1">
-        <button onclick="mudarAba('dados')" id="btnAbaDados" class="px-3 py-1.5 rounded text-xs font-medium bg-cyan-600 text-white transition cursor-pointer shadow whitespace-nowrap">
-          <i class="fa-solid fa-list-check mr-1"></i> Orçamento
+      <nav class="flex items-center space-x-2 overflow-x-auto py-1 justify-start w-full md:w-auto">
+        <button onclick="mudarAba('dados')" id="btnAbaDados" class="px-3 py-1.5 rounded text-xs font-medium bg-cyan-600 text-white transition cursor-pointer shadow whitespace-nowrap flex items-center">
+          <i class="fa-solid fa-list-check mr-1.5"></i> Orçamento
         </button>
-        <button onclick="mudarAba('suprimentos')" id="btnAbaSuprimentos" class="px-3 py-1.5 rounded text-xs font-medium bg-slate-800 text-slate-300 hover:bg-slate-700 transition cursor-pointer whitespace-nowrap">
-          <i class="fa-solid fa-boxes-stacked mr-1"></i> Cadastro de Suprimentos
+        <button onclick="mudarAba('suprimentos')" id="btnAbaSuprimentos" class="px-3 py-1.5 rounded text-xs font-medium bg-slate-800 text-slate-300 hover:bg-slate-700 transition cursor-pointer whitespace-nowrap flex items-center">
+          <i class="fa-solid fa-boxes-stacked mr-1.5"></i> Cadastro de Suprimentos
         </button>
-        <button onclick="mudarAba('desenho')" id="btnAbaDesenho" class="px-3 py-1.5 rounded text-xs font-medium bg-slate-800 text-slate-300 hover:bg-slate-700 transition cursor-pointer whitespace-nowrap">
-          <i class="fa-solid fa-network-wired mr-1"></i> Desenho ()
+        <button onclick="mudarAba('desenho')" id="btnAbaDesenho" class="px-3 py-1.5 rounded text-xs font-medium bg-slate-800 text-slate-300 hover:bg-slate-700 transition cursor-pointer whitespace-nowrap flex items-center">
+          <i class="fa-solid fa-network-wired mr-1.5"></i> Desenho ()
         </button>
-        <button onclick="fazerLogout()" class="text-slate-400 hover:text-red-400 text-xs px-2 py-1 transition cursor-pointer" title="Sair">
-          <i class="fa-solid fa-power-off"></i> Sair
+        <button onclick="fazerLogout()" class="text-slate-400 hover:text-red-400 text-xs px-3 py-1.5 rounded bg-slate-800 hover:bg-slate-700 transition cursor-pointer whitespace-nowrap flex items-center" title="Sair">
+          <i class="fa-solid fa-power-off mr-1.5"></i> Sair
         </button>
       </nav>
     </header>
@@ -632,6 +637,25 @@
           } else {
             erroEl.textContent = error.message;
           }
+        });
+    }
+
+    function esqueciSenha() {
+      const email = document.getElementById("loginEmail").value.trim();
+      const erroEl = document.getElementById("authError");
+      erroEl.textContent = "";
+
+      if (!email) {
+        erroEl.textContent = "Digite seu e-mail no campo acima para recuperar a senha.";
+        return;
+      }
+
+      auth.sendPasswordResetEmail(email)
+        .then(() => {
+          alert("E-mail de redefinição de senha enviado com sucesso! Verifique sua caixa de entrada.");
+        })
+        .catch((error) => {
+          erroEl.textContent = "Erro ao enviar e-mail: " + error.message;
         });
     }
 
