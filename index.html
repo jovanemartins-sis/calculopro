@@ -3,636 +3,423 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ProCut — Sistema Completo de Gestão e Corte</title>
+    <title>ProCut — Gestão, Corte, Desenho e Custos</title>
     <style>
         :root {
-            --bg-color: #0f172a;
-            --panel-bg: #1e293b;
-            --border-color: #334155;
-            --text-main: #f8fafc;
-            --text-muted: #94a3b8;
-            --accent: #38bdf8;
-            --accent-hover: #0284c7;
-            --piece-bg: #ffffff;
-            --piece-border: #0f172a;
-            --success: #22c55e;
+            --bg-color: #f8fafc;
+            --panel-bg: #ffffff;
+            --border-color: #cbd5e1;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --accent: #0284c7;
+            --accent-hover: #0369a1;
+            --piece-bg: #e0f2fe;
+            --piece-border: #0284c7;
             --danger: #ef4444;
+            --success: #16a34a;
         }
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: var(--bg-color); color: var(--text-main); padding: 20px; }
+        .container { max-width: 1450px; margin: 0 auto; }
 
-        body {
-            background-color: var(--bg-color);
-            color: var(--text-main);
-            min-height: 100vh;
-        }
+        /* TELA DE LOGIN */
+        #login-screen { position: fixed; inset: 0; background: #e2e8f0; display: flex; align-items: center; justify-content: center; z-index: 999; }
+        .login-card { background: var(--panel-bg); padding: 35px; border-radius: 12px; border: 1px solid var(--border-color); width: 100%; max-width: 400px; box-shadow: 0 10px 25px rgba(0,0,0,0.08); text-align: center; }
+        .login-card h2 { font-size: 1.6rem; color: var(--accent); margin-bottom: 5px; }
+        .login-card p { color: var(--text-muted); font-size: 0.85rem; margin-bottom: 20px; }
 
-        /* --- TELA DE LOGIN (E-mail + Google) --- */
-        #login-screen {
-            position: fixed;
-            inset: 0;
-            background: var(--bg-color);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 999;
-        }
+        .form-group { margin-bottom: 12px; text-align: left; }
+        .form-group label { display: block; margin-bottom: 4px; font-size: 0.8rem; font-weight: 600; color: var(--text-muted); }
+        .form-group input, .form-group select { width: 100%; padding: 9px; border-radius: 6px; border: 1px solid var(--border-color); background: #f8fafc; color: var(--text-main); outline: none; }
 
-        .login-card {
-            background: var(--panel-bg);
-            padding: 30px;
-            border-radius: 10px;
-            border: 1px solid var(--border-color);
-            width: 100%;
-            max-width: 400px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
-            text-align: center;
-        }
+        button { background: var(--accent); color: white; border: none; padding: 9px 16px; border-radius: 6px; font-weight: 600; cursor: pointer; transition: background 0.2s; }
+        button:hover { background: var(--accent-hover); }
+        .btn-google { width: 100%; background: #ffffff; color: #334155; border: 1px solid var(--border-color); display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 10px; }
 
-        .login-card h2 {
-            margin-bottom: 8px;
-            font-size: 1.6rem;
-            color: var(--accent);
-        }
-
-        .login-card p {
-            color: var(--text-muted);
-            font-size: 0.85rem;
-            margin-bottom: 20px;
-        }
-
-        .form-group {
-            margin-bottom: 15px;
-            text-align: left;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 5px;
-            font-size: 0.8rem;
-            color: var(--text-muted);
-        }
-
-        .form-group input, .form-group select {
-            width: 100%;
-            padding: 10px;
-            border-radius: 6px;
-            border: 1px solid var(--border-color);
-            background: #090d16;
-            color: var(--text-main);
-            outline: none;
-        }
-
-        .btn {
-            width: 100%;
-            padding: 10px;
-            background: #0284c7;
-            color: white;
-            border: none;
-            border-radius: 6px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background 0.2s;
-        }
-
-        .btn:hover { background: #0369a1; }
-
-        .btn-google {
-            background: #ffffff;
-            color: #000000;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            margin-top: 10px;
-        }
-
-        .btn-google:hover { background: #e2e8f0; }
-
-        .divider {
-            margin: 15px 0;
-            font-size: 0.75rem;
-            color: var(--text-muted);
-        }
-
-        /* --- LAYOUT PRINCIPAL DO SISTEMA --- */
-        #app {
-            display: none;
-            flex-direction: column;
-            min-height: 100vh;
-        }
-
-        header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: var(--panel-bg);
-            padding: 15px 30px;
-            border-bottom: 1px solid var(--border-color);
-            flex-wrap: wrap;
-            gap: 10px;
-        }
-
-        .nav-tabs {
-            display: flex;
-            gap: 8px;
-        }
-
-        .tab-btn {
-            background: transparent;
-            border: 1px solid transparent;
-            color: var(--text-muted);
-            padding: 8px 16px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: 600;
-            transition: 0.2s;
-        }
-
-        .tab-btn:hover {
-            border-color: var(--border-color);
-            color: var(--text-main);
-        }
-
-        .tab-btn.active {
-            background: #0284c7;
-            color: white;
-        }
-
-        .user-info {
-            font-size: 0.85rem;
-            color: var(--text-muted);
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-
-        .logout-btn {
-            background: transparent;
-            color: var(--danger);
-            border: 1px solid var(--danger);
-            padding: 4px 10px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 0.8rem;
-        }
-
-        main {
-            padding: 25px;
-            flex-grow: 1;
-            max-width: 1450px;
-            margin: 0 auto;
-            width: 100%;
-        }
+        /* PAINEL PRINCIPAL */
+        #app { display: none; }
+        header { display: flex; justify-content: space-between; align-items: center; background: var(--panel-bg); padding: 15px 25px; border-radius: 8px; border: 1px solid var(--border-color); margin-bottom: 20px; flex-wrap: wrap; gap: 15px; }
+        h1 { font-size: 1.3rem; font-weight: 700; color: var(--accent); }
+        .nav-tabs { display: flex; gap: 8px; }
+        .tab-btn { background: #f1f5f9; border: 1px solid var(--border-color); color: var(--text-muted); padding: 8px 16px; border-radius: 6px; font-weight: 600; }
+        .tab-btn.active { background: var(--accent); color: white; border-color: var(--accent); }
 
         .tab-content { display: none; }
         .tab-content.active { display: block; }
 
-        /* --- TELA DE CORTE (Escala Precisa 1cm = 4px) --- */
-        .controls-panel {
-            background: var(--panel-bg);
-            border: 1px solid var(--border-color);
-            padding: 15px 20px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            display: flex;
-            gap: 15px;
-            align-items: flex-end;
-            flex-wrap: wrap;
-        }
+        /* SIMULADOR DE CORTE */
+        .controls-bar { background: var(--panel-bg); border: 1px solid var(--border-color); padding: 15px 20px; border-radius: 8px; margin-bottom: 20px; display: flex; gap: 15px; align-items: flex-end; flex-wrap: wrap; }
+        .simulator-wrapper { background: var(--panel-bg); border: 1px solid var(--border-color); border-radius: 8px; padding: 25px; overflow-x: auto; }
 
-        .simulator-wrapper {
-            background: var(--panel-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            padding: 25px;
-            overflow-x: auto;
-        }
+        /* ESCALA: 1cm = 4px -> 140cm = 560px */
+        .canvas-container { position: relative; background: #f8fafc; border: 2px solid var(--border-color); margin-top: 35px; margin-left: 45px; width: 560px; height: 200px; transition: width 0.3s; }
+        .ruler-top { position: absolute; top: -28px; left: 0; width: 100%; height: 25px; background: #e2e8f0; border-bottom: 1px solid var(--border-color); }
+        .ruler-top-mark { position: absolute; font-size: 10px; color: var(--text-muted); transform: translateX(-50%); top: 5px; width: 30px; text-align: center; }
+        .ruler-left { position: absolute; top: 0; left: -45px; width: 40px; height: 200px; background: #e2e8f0; border-right: 1px solid var(--border-color); }
+        .ruler-left-mark { position: absolute; font-size: 10px; color: var(--text-muted); transform: translateY(-50%); right: 5px; text-align: right; width: 35px; }
 
-        /* 140cm x 4px/cm = 560px de largura | 50cm x 4px/cm = 200px de altura */
-        .canvas-container {
-            position: relative;
-            background: #090d16;
-            border: 2px solid var(--border-color);
-            margin-top: 30px;
-            margin-left: 45px;
-            width: 560px;
-            height: 200px;
-        }
+        /* PEÇAS NO CANVAS */
+        .piece { position: absolute; background: var(--piece-bg); border: 1px solid var(--piece-border); color: #0369a1; display: flex; flex-direction: column; justify-content: space-between; padding: 3px 5px; font-size: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); overflow: hidden; }
+        .piece-header { display: flex; justify-content: space-between; font-weight: bold; border-bottom: 1px solid #bae6fd; padding-bottom: 2px; font-size: 9px; }
+        .piece-body { text-align: center; font-weight: 700; margin: auto 0; font-size: 10px; }
+        .piece-footer { font-size: 8px; color: #0284c7; text-align: right; }
 
-        .ruler-top {
-            position: absolute;
-            top: -25px;
-            left: 0;
-            width: 560px;
-            height: 25px;
-            background: #111827;
-            border-bottom: 1px solid var(--border-color);
-        }
+        /* ESTRUTURA DE COLUNAS (SIMULADOR + RESUMO) */
+        .grid-2 { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; }
+        .card-panel { background: var(--panel-bg); border: 1px solid var(--border-color); border-radius: 8px; padding: 20px; margin-bottom: 20px; }
+        .cost-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px dashed var(--border-color); font-size: 0.9rem; }
+        .cost-row.total { border-bottom: none; font-weight: bold; font-size: 1.1rem; color: var(--accent); margin-top: 5px; }
 
-        .ruler-top-mark {
-            position: absolute;
-            font-size: 9px;
-            color: var(--text-muted);
-            transform: translateX(-50%);
-            top: 5px;
-            width: 30px;
-            text-align: center;
-        }
-
-        .ruler-left {
-            position: absolute;
-            top: 0;
-            left: -45px;
-            width: 40px;
-            height: 200px;
-            background: #111827;
-            border-right: 1px solid var(--border-color);
-        }
-
-        .ruler-left-mark {
-            position: absolute;
-            font-size: 9px;
-            color: var(--text-muted);
-            transform: translateY(-50%);
-            right: 5px;
-            text-align: right;
-            width: 35px;
-        }
-
-        .piece {
-            position: absolute;
-            background: var(--piece-bg);
-            border: 1px solid var(--piece-border);
-            color: #000;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            padding: 2px 4px;
-            font-size: 9px;
-            font-weight: bold;
-            box-shadow: inset 0 0 0 1px rgba(0,0,0,0.1);
-            overflow: hidden;
-        }
-
-        .piece-header {
-            display: flex;
-            justify-content: space-between;
-            color: #334155;
-            border-bottom: 1px solid #cbd5e1;
-            font-size: 8px;
-        }
-
-        .piece-body {
-            text-align: center;
-            color: #0f172a;
-            margin: auto 0;
-        }
-
-        /* --- TABELAS E CADASTROS INTERNOS --- */
-        .card-panel {
-            background: var(--panel-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            padding: 20px;
-            margin-bottom: 20px;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            background: var(--panel-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            overflow: hidden;
-        }
-
-        th, td {
-            padding: 12px 15px;
-            text-align: left;
-            border-bottom: 1px solid var(--border-color);
-            font-size: 0.85rem;
-        }
-
-        th { background: #111827; color: var(--text-muted); }
-        tr:hover { background: rgba(255,255,255,0.02); }
-
-        .form-row {
-            display: flex;
-            gap: 15px;
-            margin-bottom: 15px;
-            flex-wrap: wrap;
-        }
+        table { width: 100%; border-collapse: collapse; background: var(--panel-bg); border: 1px solid var(--border-color); border-radius: 8px; overflow: hidden; }
+        th, td { padding: 12px 15px; text-align: left; border-bottom: 1px solid var(--border-color); font-size: 0.85rem; }
+        th { background: #f8fafc; color: var(--text-muted); font-weight: 600; }
     </style>
 </head>
 <body>
 
-    <!-- 1. LOGIN (E-mail + Google) -->
+    <!-- 1. TELA DE LOGIN -->
     <div id="login-screen">
         <div class="login-card">
-            <h2>ProCut</h2>
-            <p>Acesse o painel para gerenciar cortes e estoque</p>
-            
+            <h2>ProCut System</h2>
+            <p>Entre para calcular cortes, desenhar e gerenciar custos</p>
+
             <form id="login-form">
                 <div class="form-group">
-                    <label>E-mail</label>
+                    <label>E-mail corporativo</label>
                     <input type="email" id="user-email" placeholder="seu@email.com" required>
                 </div>
                 <div class="form-group">
-                    <label>Perfil de Acesso</label>
+                    <label>Perfil</label>
                     <select id="user-role">
                         <option value="Operador de Corte">Operador de Corte</option>
                         <option value="Administrador">Administrador</option>
                     </select>
                 </div>
-                <button type="submit" class="btn">Entrar com E-mail</button>
+                <button type="submit" style="width: 100%;">Entrar no Sistema</button>
             </form>
 
-            <div class="divider">OU</div>
+            <div style="margin: 15px 0; font-size: 0.75rem; color: var(--text-muted);">OU</div>
 
-            <button class="btn btn-google" onclick="loginGoogle()">
+            <button class="btn-google" onclick="loginGoogle()">
                 <svg width="16" height="16" viewBox="0 0 24 24"><path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17z"/><path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.11-6.72-4.96H1.29v3.15C3.26 21.3 7.33 24 12 24z"/><path fill="#FBBC05" d="M5.28 14.24c-.25-.72-.38-1.49-.38-2.24s.13-1.52.38-2.24V6.61H1.29C.47 8.24 0 10.06 0 12s.47 3.76 1.29 5.39l3.99-3.15z"/><path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.33 0 3.26 2.7 1.29 6.61l3.99 3.15c.95-2.85 3.6-4.96 6.72-4.96z"/></svg>
                 Entrar com Google
             </button>
         </div>
     </div>
 
-    <!-- 2. PLATAFORMA / SISTEMA PRINCIPAL -->
-    <div id="app">
+    <!-- 2. SISTEMA PRINCIPAL -->
+    <div id="app" class="container">
         <header>
-            <h1 style="font-size: 1.2rem;">ProCut — Gestão de Corte</h1>
-            
+            <h1>ProCut System</h1>
+
             <div class="nav-tabs">
-                <button class="tab-btn active" onclick="switchTab('corte')">Tela de Corte</button>
-                <button class="tab-btn" onclick="switchTab('bobinas')">Estoque de Bobinas</button>
-                <button class="tab-btn" onclick="switchTab('ordens')">Ordens de Serviço</button>
+                <button class="tab-btn active" onclick="switchTab('corte')">Cálculo, Desenho e Custos</button>
+                <button class="tab-btn" onclick="switchTab('bobinas')">Cadastro de Rolo/Bobina</button>
+                <button class="tab-btn" onclick="switchTab('planos')">Planos Salvos</button>
             </div>
 
-            <div class="user-info">
-                <span id="display-user">usuario@email.com</span> 
-                (<span id="display-role">Operador</span>)
-                <button class="logout-btn" onclick="logout()">Sair</button>
+            <div style="font-size:0.85rem; color:var(--text-muted);">
+                <span id="display-user">usuario@email.com</span>
+                <button onclick="logout()" style="background:transparent; border:1px solid var(--danger); color:var(--danger); padding:3px 8px; margin-left:10px;">Sair</button>
             </div>
         </header>
 
-        <main>
-            <!-- ABA 1: TELA DE CORTE -->
-            <section id="tab-corte" class="tab-content active">
-                <div class="controls-panel">
-                    <div class="form-group" style="margin:0; width: 120px;">
-                        <label>Largura (cm)</label>
-                        <input type="number" id="piece-w" value="130">
-                    </div>
-                    <div class="form-group" style="margin:0; width: 120px;">
-                        <label>Altura (cm)</label>
-                        <input type="number" id="piece-h" value="20">
-                    </div>
-                    <button class="btn" style="width: auto;" onclick="adicionarPeca()">Desenhar Peça</button>
-                    <button class="btn" style="width: auto; background: var(--danger);" onclick="limparTela()">Limpar</button>
-                    
-                    <div style="font-size: 0.8rem; color: var(--text-muted); margin-left: auto;">
-                        Bobina: 140cm | Escala Precisa: 1cm = 4px
-                    </div>
+        <!-- ABA 1: TELA DE CORTE, CÁLCULO E DESENHO -->
+        <section id="tab-corte" class="tab-content active">
+            
+            <!-- ENTRADA DO ROLO BASE E PEÇAS -->
+            <div class="controls-bar">
+                <div class="form-group" style="margin:0; width: 220px;">
+                    <label>Selecionar Rolo/Bobina</label>
+                    <select id="sel-bobina" onchange="carregarDadosBobina()">
+                        <option value="140|50|25.00">Vinil Brilho (140cm x 50m) - R$25/m²</option>
+                        <option value="100|50|20.00">Vinil Fosco (100cm x 50m) - R$20/m²</option>
+                    </select>
                 </div>
+                <div class="form-group" style="margin:0; width: 110px;">
+                    <label>Peça Larg. (cm)</label>
+                    <input type="number" id="piece-w" value="130">
+                </div>
+                <div class="form-group" style="margin:0; width: 110px;">
+                    <label>Peça Alt. (cm)</label>
+                    <input type="number" id="piece-h" value="20">
+                </div>
+                <button onclick="adicionarPecaManual()">+ Desenhar Peça</button>
+                <button onclick="limparCanvas()" style="background: var(--danger);">Limpar Tela</button>
+            </div>
 
+            <div class="grid-2">
+                <!-- CANVAS DO DESENHO DA BOBINA -->
                 <div class="simulator-wrapper">
+                    <div style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 10px;">
+                        Desenho e alinhamento em escala ($1\text{ cm} = 4\text{ px}$). As peças vão se ajustando na régua do rolo.
+                    </div>
+
                     <div class="canvas-container" id="canvas">
                         <div class="ruler-top" id="rulerTop"></div>
                         <div class="ruler-left" id="rulerLeft"></div>
                     </div>
                 </div>
-            </section>
 
-            <!-- ABA 2: CADASTRO DE BOBINAS -->
-            <section id="tab-bobinas" class="tab-content">
+                <!-- DETALHES DE MEDIDAS E CUSTOS -->
                 <div class="card-panel">
-                    <h3 style="margin-bottom: 15px;">Cadastrar Nova Bobina</h3>
-                    <div class="form-row">
-                        <div class="form-group" style="flex:1;">
-                            <label>Descrição/Material</label>
-                            <input type="text" id="bob-name" placeholder="Ex: Vinil Brilho">
-                        </div>
-                        <div class="form-group" style="width: 150px;">
-                            <label>Largura (cm)</label>
-                            <input type="number" id="bob-width" value="140">
-                        </div>
-                        <div class="form-group" style="width: 150px;">
-                            <label>Metragem (m)</label>
-                            <input type="number" id="bob-meters" value="50">
-                        </div>
-                        <div class="form-group" style="width: 150px; display:flex; align-items:flex-end;">
-                            <button class="btn" onclick="cadastrarBobina()">Cadastrar</button>
-                        </div>
+                    <h3 style="margin-bottom: 15px; color: var(--accent);">Detalhamento de Medidas & Custos</h3>
+                    
+                    <div class="cost-row"><span>Largura do Rolo:</span> <strong id="c-largura">140 cm</strong></div>
+                    <div class="cost-row"><span>Largura Ocupada:</span> <strong id="c-usado">0 cm</strong></div>
+                    <div class="cost-row"><span>Sobra/Retalho:</span> <strong id="c-sobra" style="color:var(--success)">140 cm</strong></div>
+                    <div class="cost-row"><span>Área Útil Cortada:</span> <strong id="c-area">0.00 m²</strong></div>
+                    
+                    <hr style="margin: 10px 0; border: none; border-top: 1px dashed var(--border-color);">
+
+                    <div class="cost-row"><span>Custo Peças Úteis:</span> <strong id="c-custo-peca">R$ 0,00</strong></div>
+                    <div class="cost-row"><span>Custo da Perda (Fita/Sobra):</span> <strong id="c-custo-perda">R$ 0,00</strong></div>
+                    <div class="cost-row total"><span>Custo Total do Corte:</span> <strong id="c-total">R$ 0,00</strong></div>
+
+                    <button onclick="salvarPlanoCorte()" style="width: 100%; margin-top: 15px; background: var(--success);">💾 Salvar Plano de Corte</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- ABA 2: CADASTRO DE BOBINA/ROLO -->
+        <section id="tab-bobinas" class="tab-content">
+            <div class="card-panel">
+                <h3 style="margin-bottom: 15px;">Entrar com Bobina / Rolo</h3>
+                <div style="display:flex; gap:15px; flex-wrap:wrap;">
+                    <div class="form-group" style="flex:1;">
+                        <label>Material / Descrição</label>
+                        <input type="text" id="bob-mat" placeholder="Ex: Lona Frontlight 440g">
+                    </div>
+                    <div class="form-group" style="width: 130px;">
+                        <label>Largura (cm)</label>
+                        <input type="number" id="bob-w" value="140">
+                    </div>
+                    <div class="form-group" style="width: 130px;">
+                        <label>Metragem (m)</label>
+                        <input type="number" id="bob-m" value="50">
+                    </div>
+                    <div class="form-group" style="width: 150px;">
+                        <label>Custo p/ m² (R$)</label>
+                        <input type="number" id="bob-custo" value="25.00">
+                    </div>
+                    <div class="form-group" style="display:flex; align-items:flex-end;">
+                        <button onclick="cadastrarBobina()">Salvar Rolo</button>
                     </div>
                 </div>
+            </div>
 
-                <table>
-                    <thead>
-                        <tr><th>ID</th><th>Material</th><th>Largura</th><th>Estoque Total</th><th>Status</th></tr>
-                    </thead>
-                    <tbody id="table-bobinas">
-                        <tr><td>#BOB-01</td><td>Adesivo Vinil Brilho</td><td>140 cm</td><td>50.0 m</td><td style="color:var(--success)">Ativa</td></tr>
-                        <tr><td>#BOB-02</td><td>Lona Frontlight 440g</td><td>140 cm</td><td>32.5 m</td><td style="color:var(--success)">Ativa</td></tr>
-                    </tbody>
-                </table>
-            </section>
+            <table>
+                <thead>
+                    <tr><th>ID</th><th>Material</th><th>Largura Total</th><th>Metragem Rolo</th><th>Custo/m²</th><th>Status</th></tr>
+                </thead>
+                <tbody id="tbl-bobinas">
+                    <tr><td>#BOB-01</td><td>Vinil Calandrado Brilho</td><td>140 cm</td><td>50.0 m</td><td>R$ 25,00</td><td style="color:var(--success); font-weight:bold;">Ativo</td></tr>
+                </tbody>
+            </table>
+        </section>
 
-            <!-- ABA 3: ORDENS DE SERVIÇO -->
-            <section id="tab-ordens" class="tab-content">
-                <div class="card-panel">
-                    <h3 style="margin-bottom: 15px;">Nova Ordem de Serviço</h3>
-                    <div class="form-row">
-                        <div class="form-group" style="flex:1;">
-                            <label>Cliente</label>
-                            <input type="text" id="os-client" placeholder="Nome do cliente">
-                        </div>
-                        <div class="form-group" style="width: 140px;">
-                            <label>Largura (cm)</label>
-                            <input type="number" id="os-w" placeholder="100">
-                        </div>
-                        <div class="form-group" style="width: 140px;">
-                            <label>Altura (cm)</label>
-                            <input type="number" id="os-h" placeholder="30">
-                        </div>
-                        <div class="form-group" style="width: 150px; display:flex; align-items:flex-end;">
-                            <button class="btn" onclick="cadastrarOS()">Criar OS</button>
-                        </div>
-                    </div>
-                </div>
+        <!-- ABA 3: PLANOS SALVOS E DETALHES -->
+        <section id="tab-planos" class="tab-content">
+            <div class="card-panel">
+                <h3>Histórico de Planos de Corte Salvos</h3>
+            </div>
 
-                <table>
-                    <thead>
-                        <tr><th>OS #</th><th>Cliente</th><th>Medidas</th><th>Status</th><th>Ação</th></tr>
-                    </thead>
-                    <tbody id="table-os">
-                        <tr>
-                            <td>#1001</td>
-                            <td>Comércio Local</td>
-                            <td>130 x 20 cm</td>
-                            <td>Pendente</td>
-                            <td><button class="btn" style="padding: 4px 8px; font-size: 0.75rem;" onclick="carregarOSNaTela(130, 20)">Simular Corte</button></td>
-                        </tr>
-                    </tbody>
-                </table>
-            </section>
-        </main>
+            <table>
+                <thead>
+                    <tr><th>Data</th><th>Rolo Usado</th><th>Peças</th><th>Aproveitamento</th><th>Área Corte</th><th>Custo Total</th></tr>
+                </thead>
+                <tbody id="tbl-planos">
+                    <tr><td>01/08/2026</td><td>Vinil Brilho (140cm)</td><td>2 peças</td><td>130 cm de 140 cm</td><td>0.26 m²</td><td>R$ 7,00</td></tr>
+                </tbody>
+            </table>
+        </section>
     </div>
 
     <script>
-        // Escala Precisa para Encaixe de Tela: 1cm = 4px
-        const SCALE = 4;
-        const BOBINA_MAX_CM = 140;
+        const scale = 4; // 1cm = 4px na tela
+        let maxWidth = 140;
+        let metragamRolo = 50;
+        let custoM2 = 25.00;
+        
         let currentX = 0;
-        let pieceCount = 0;
+        let maxH = 0;
+        let pieceIdCounter = 0;
+        let listaPecas = [];
 
-        // Login por E-mail
+        // LOGIN
         document.getElementById('login-form').addEventListener('submit', (e) => {
             e.preventDefault();
-            const email = document.getElementById('user-email').value;
-            const role = document.getElementById('user-role').value;
-            iniciarSistema(email, role);
+            entrarNoSistema(document.getElementById('user-email').value);
         });
 
-        // Login Google
-        function loginGoogle() {
-            iniciarSistema("operador.google@gmail.com", "Administrador");
-        }
+        function loginGoogle() { entrarNoSistema("usuario.google@gmail.com"); }
 
-        function iniciarSistema(user, role) {
-            document.getElementById('display-user').innerText = user;
-            document.getElementById('display-role').innerText = role;
+        function entrarNoSistema(email) {
+            document.getElementById('display-user').innerText = email;
             document.getElementById('login-screen').style.display = 'none';
-            document.getElementById('app').style.display = 'flex';
-            renderRulers();
+            document.getElementById('app').style.display = 'block';
+            carregarDadosBobina();
         }
 
         function logout() {
             document.getElementById('login-screen').style.display = 'flex';
             document.getElementById('app').style.display = 'none';
-            limparTela();
         }
 
         function switchTab(tabId) {
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
             document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-
             event.target.classList.add('active');
             document.getElementById(`tab-${tabId}`).classList.add('active');
         }
 
-        // Renderização exata das réguas X e Y
+        // CARREGAR DADOS DO ROLO SELECIONADO
+        function carregarDadosBobina() {
+            const val = document.getElementById('sel-bobina').value.split('|');
+            maxWidth = parseFloat(val[0]);
+            metragamRolo = parseFloat(val[1]);
+            custoM2 = parseFloat(val[2]);
+
+            // Redimensiona o Canvas na tela conforme a largura real do rolo
+            document.getElementById('canvas').style.width = (maxWidth * scale) + 'px';
+            document.getElementById('rulerTop').style.width = (maxWidth * scale) + 'px';
+
+            limparCanvas();
+            renderRulers();
+        }
+
         function renderRulers() {
             const rulerTop = document.getElementById('rulerTop');
             const rulerLeft = document.getElementById('rulerLeft');
-            rulerTop.innerHTML = '';
-            rulerLeft.innerHTML = '';
+            rulerTop.innerHTML = ''; rulerLeft.innerHTML = '';
 
-            // Eixo X: Marcas a cada 10cm
-            for (let cm = 0; cm <= BOBINA_MAX_CM; cm += 10) {
+            for (let i = 0; i <= maxWidth; i += 10) {
                 const mark = document.createElement('div');
                 mark.className = 'ruler-top-mark';
-                mark.style.left = (cm * SCALE) + 'px';
-                mark.innerText = cm;
+                mark.style.left = (i * scale) + 'px';
+                mark.innerText = i;
                 rulerTop.appendChild(mark);
             }
 
-            // Eixo Y: Marcas a cada 10cm
-            for (let cm = 0; cm <= 50; cm += 10) {
+            for (let i = 0; i <= 50; i += 10) {
                 const mark = document.createElement('div');
                 mark.className = 'ruler-left-mark';
-                mark.style.top = (cm * SCALE) + 'px';
-                mark.innerText = cm;
+                mark.style.top = (i * scale) + 'px';
+                mark.innerText = i;
                 rulerLeft.appendChild(mark);
             }
         }
 
-        // Desenhar peça no Canvas com posição e escala matemática exatas
-        function adicionarPeca(wCustom, hCustom) {
-            const w = wCustom || parseFloat(document.getElementById('piece-w').value);
-            const h = hCustom || parseFloat(document.getElementById('piece-h').value);
-
-            if (currentX + w > BOBINA_MAX_CM) {
-                alert(`A peça (${w}cm) ultrapassa a bobina! Restante livre: ${BOBINA_MAX_CM - currentX}cm.`);
+        // DESENHAR E CALCULAR AS PARTES
+        function renderizarPeca(p) {
+            if (currentX + p.width > maxWidth) {
+                alert(`A peça de ${p.width}cm excede a largura disponível! Restante no rolo: ${maxWidth - currentX}cm`);
                 return;
             }
 
-            pieceCount++;
             const canvas = document.getElementById('canvas');
-            const el = document.createElement('div');
-            el.className = 'piece';
+            const piece = document.createElement('div');
+            piece.className = 'piece';
+            piece.style.left = (currentX * scale) + 'px';
+            piece.style.top = (p.y * scale) + 'px';
+            piece.style.width = (p.width * scale) + 'px';
+            piece.style.height = (p.height * scale) + 'px';
 
-            el.style.left = (currentX * SCALE) + 'px';
-            el.style.top = '0px';
-            el.style.width = (w * SCALE) + 'px';
-            el.style.height = (h * SCALE) + 'px';
-
-            el.innerHTML = `
-                <div class="piece-header">
-                    <span>#${pieceCount}</span>
-                    <span>${w}x${h}cm</span>
-                </div>
+            piece.innerHTML = `
+                <div class="piece-header"><span>#${p.id}</span><span>${p.width}x${p.height}cm</span></div>
                 <div class="piece-body">Corte</div>
+                <div class="piece-footer">X:${currentX}</div>
             `;
 
-            canvas.appendChild(el);
-            currentX += w;
+            canvas.appendChild(piece);
+
+            currentX += p.width;
+            if (p.height > maxH) maxH = p.height;
+            listaPecas.push(p);
+
+            calcularResumo();
         }
 
-        function limparTela() {
+        function adicionarPecaManual() {
+            const w = parseFloat(document.getElementById('piece-w').value);
+            const h = parseFloat(document.getElementById('piece-h').value);
+
+            if(!w || !h) return alert("Informe a largura e altura da parte!");
+            pieceIdCounter++;
+            renderizarPeca({ id: pieceIdCounter, width: w, height: h, y: 0 });
+        }
+
+        function calcularResumo() {
+            const sobra = maxWidth - currentX;
+            const areaUsadaM2 = (currentX * maxH) / 10000;
+            const areaTotalM2 = (maxWidth * maxH) / 10000;
+            const areaPerdaM2 = (sobra * maxH) / 10000;
+
+            const custoPeca = areaUsadaM2 * custoM2;
+            const custoPerda = areaPerdaM2 * custoM2;
+            const custoTotal = areaTotalM2 * custoM2;
+
+            document.getElementById('c-largura').innerText = `${maxWidth} cm`;
+            document.getElementById('c-usado').innerText = `${currentX} cm`;
+            document.getElementById('c-sobra').innerText = `${sobra} cm`;
+            document.getElementById('c-area').innerText = `${areaUsadaM2.toFixed(2)} m²`;
+
+            document.getElementById('c-custo-peca').innerText = `R$ ${custoPeca.toFixed(2).replace('.', ',')}`;
+            document.getElementById('c-custo-perda').innerText = `R$ ${custoPerda.toFixed(2).replace('.', ',')}`;
+            document.getElementById('c-total').innerText = `R$ ${custoTotal.toFixed(2).replace('.', ',')}`;
+        }
+
+        function limparCanvas() {
             document.querySelectorAll('.piece').forEach(p => p.remove());
-            currentX = 0;
-            pieceCount = 0;
+            currentX = 0; maxH = 0; pieceIdCounter = 0; listaPecas = [];
+            calcularResumo();
         }
 
-        // Cadastros Internos
+        // CADASTRO DE ROLO E SALVAR PLANOS DE CORTE
         function cadastrarBobina() {
-            const name = document.getElementById('bob-name').value;
-            const width = document.getElementById('bob-width').value;
-            const meters = document.getElementById('bob-meters').value;
+            const mat = document.getElementById('bob-mat').value;
+            const w = document.getElementById('bob-w').value;
+            const m = document.getElementById('bob-m').value;
+            const c = document.getElementById('bob-custo').value;
 
-            if(!name) return alert('Informe a descrição do material');
+            if(!mat) return alert('Digite o nome/material do rolo');
 
-            const tbody = document.getElementById('table-bobinas');
+            const sel = document.getElementById('sel-bobina');
+            const opt = document.createElement('option');
+            opt.value = `${w}|${m}|${c}`;
+            opt.innerText = `${mat} (${w}cm x ${m}m) - R$${c}/m²`;
+            sel.appendChild(opt);
+
+            const tbody = document.getElementById('tbl-bobinas');
             const row = document.createElement('tr');
-            row.innerHTML = `<td>#BOB-0${tbody.children.length + 1}</td><td>${name}</td><td>${width} cm</td><td>${meters}.0 m</td><td style="color:var(--success)">Ativa</td>`;
+            row.innerHTML = `<td>#BOB-0${tbody.children.length + 1}</td><td>${mat}</td><td>${w} cm</td><td>${m}.0 m</td><td>R$ ${c}</td><td style="color:var(--success); font-weight:bold;">Ativo</td>`;
             tbody.appendChild(row);
 
-            document.getElementById('bob-name').value = '';
+            alert('Novo rolo gravado e pronto para uso!');
         }
 
-        function cadastrarOS() {
-            const client = document.getElementById('os-client').value;
-            const w = document.getElementById('os-w').value;
-            const h = document.getElementById('os-h').value;
+        function salvarPlanoCorte() {
+            if (listaPecas.length === 0) return alert('Insira peças na tela antes de salvar!');
 
-            if(!client || !w || !h) return alert('Preencha os dados da OS');
-
-            const tbody = document.getElementById('table-os');
+            const tbody = document.getElementById('tbl-planos');
             const row = document.createElement('tr');
-            const osNum = 1000 + tbody.children.length + 1;
+            const hoje = new Date().toLocaleDateString('pt-BR');
+            const areaCorte = document.getElementById('c-area').innerText;
+            const totalCusto = document.getElementById('c-total').innerText;
+
             row.innerHTML = `
-                <td>#${osNum}</td>
-                <td>${client}</td>
-                <td>${w} x ${h} cm</td>
-                <td>Pendente</td>
-                <td><button class="btn" style="padding: 4px 8px; font-size: 0.75rem;" onclick="carregarOSNaTela(${w}, ${h})">Simular Corte</button></td>
+                <td>${hoje}</td>
+                <td>Rolo ${maxWidth}cm</td>
+                <td>${listaPecas.length} parte(s)</td>
+                <td>${currentX}cm de ${maxWidth}cm</td>
+                <td>${areaCorte}</td>
+                <td><strong>${totalCusto}</strong></td>
             `;
+
             tbody.appendChild(row);
-
-            document.getElementById('os-client').value = '';
-        }
-
-        function carregarOSNaTela(w, h) {
-            switchTab('corte');
-            document.querySelectorAll('.tab-btn')[0].classList.add('active');
-            document.getElementById('piece-w').value = w;
-            document.getElementById('piece-h').value = h;
-            adicionarPeca(w, h);
+            alert('Plano de corte e memória de custos salvos!');
+            switchTab('planos');
         }
     </script>
 </body>
