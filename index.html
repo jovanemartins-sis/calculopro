@@ -67,6 +67,9 @@
         <button onclick="mudarAba('desenho')" id="btnAbaDesenho" class="px-3 py-1.5 rounded text-xs font-medium bg-slate-800 text-slate-300 hover:bg-slate-700 transition cursor-pointer whitespace-nowrap flex items-center">
           <i class="fa-solid fa-network-wired mr-1.5"></i> Desenho ()
         </button>
+        <button onclick="mudarAba('backup')" id="btnAbaBackup" class="px-3 py-1.5 rounded text-xs font-medium bg-slate-800 text-slate-300 hover:bg-slate-700 transition cursor-pointer whitespace-nowrap flex items-center">
+          <i class="fa-solid fa-database mr-1.5"></i> Backup / Dados
+        </button>
         <button onclick="fazerLogout()" class="text-slate-400 hover:text-red-400 text-xs px-3 py-1.5 rounded bg-slate-800 hover:bg-slate-700 transition cursor-pointer whitespace-nowrap flex items-center" title="Sair">
           <i class="fa-solid fa-power-off mr-1.5"></i> Sair
         </button>
@@ -230,10 +233,50 @@
             </div>
           </div>
 
-          <div class="flex justify-between pt-2">
+          <!-- BOTÕES DE EXPORTAÇÃO E AÇÕES -->
+          <div class="flex flex-wrap justify-between items-center pt-2 gap-2">
             <button type="button" onclick="mudarAba('dados')" class="bg-slate-800 hover:bg-slate-700 text-slate-300 px-4 py-2 rounded text-xs transition cursor-pointer flex items-center">
               <i class="fa-solid fa-arrow-left mr-2"></i> Voltar para Orçamento
             </button>
+            <div class="flex items-center space-x-2">
+              <button type="button" onclick="exportarCSV()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded text-xs font-bold transition cursor-pointer flex items-center shadow">
+                <i class="fa-solid fa-file-excel mr-2"></i> Exportar CSV / Dados
+              </button>
+              <button type="button" onclick="salvarPDF()" class="bg-cyan-600 hover:bg-cyan-700 text-white px-4 py-2 rounded text-xs font-bold transition cursor-pointer flex items-center shadow">
+                <i class="fa-solid fa-file-pdf mr-2"></i> Salvar / Imprimir PDF
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ABA 4: BACKUP E GERENCIAMENTO DE DADOS -->
+      <section id="abaBackup" class="hidden space-y-4">
+        <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 space-y-6">
+          <div class="border-b border-slate-100 pb-3">
+            <h2 class="text-xs font-bold text-slate-700 uppercase tracking-wider"><i class="fa-solid fa-database mr-1 text-cyan-600"></i> Central de Backup e Restauração</h2>
+            <p class="text-[11px] text-slate-400">Exporte ou importe todos os dados do sistema (suprimentos e configurações) em formato JSON.</p>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Fazer Backup -->
+            <div class="bg-slate-50 border border-slate-200 p-4 rounded-xl space-y-3">
+              <h3 class="text-xs font-bold text-slate-800"><i class="fa-solid fa-download mr-1 text-emerald-600"></i> Fazer Backup do Sistema</h3>
+              <p class="text-[11px] text-slate-500">Baixe um arquivo contendo todas as configurações de bobinas e dados cadastrados no seu navegador.</p>
+              <button type="button" onclick="fazerBackupJSON()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded text-xs font-bold transition cursor-pointer flex items-center">
+                <i class="fa-solid fa-file-arrow-down mr-2"></i> Baixar Arquivo de Backup (.json)
+              </button>
+            </div>
+
+            <!-- Restaurar Backup -->
+            <div class="bg-slate-50 border border-slate-200 p-4 rounded-xl space-y-3">
+              <h3 class="text-xs font-bold text-slate-800"><i class="fa-solid fa-upload mr-1 text-cyan-600"></i> Restaurar Dados</h3>
+              <p class="text-[11px] text-slate-500">Selecione um arquivo de backup (.json) gerado anteriormente para restaurar as informações.</p>
+              <input type="file" id="inputArquivoBackup" accept=".json" class="block w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-cyan-50 file:text-cyan-700 hover:file:bg-cyan-100 cursor-pointer">
+              <button type="button" onclick="restaurarBackupJSON()" class="bg-cyan-600 hover:bg-cyan-700 text-white px-4 py-2 rounded text-xs font-bold transition cursor-pointer flex items-center">
+                <i class="fa-solid fa-file-arrow-up mr-2"></i> Carregar e Restaurar Backup
+              </button>
+            </div>
           </div>
         </div>
       </section>
@@ -286,6 +329,7 @@
     let larguraBobinaAtual = 150; 
     let alturaTotalLayout = 300;  
     let pecasEmCache = [];
+    let valorOrcamentoCalculado = 0;
 
     let bobinas = [
       { id: 1, nome: "Vinil Brilho 1.00m", largura: 100, preco: 15.00 }, 
@@ -413,6 +457,7 @@
       document.getElementById("abaDados").classList.add("hidden");
       document.getElementById("abaSuprimentos").classList.add("hidden");
       document.getElementById("abaDesenho").classList.add("hidden");
+      document.getElementById("abaBackup").classList.add("hidden");
 
       if (aba === 'dados') document.getElementById("abaDados").classList.remove("hidden");
       if (aba === 'suprimentos') {
@@ -423,6 +468,9 @@
         document.getElementById("abaDesenho").classList.remove("hidden");
         calcularEscalaFit150();
         if(pecasEmCache.length === 0) gerarDimensoesReguas();
+      }
+      if (aba === 'backup') {
+        document.getElementById("abaBackup").classList.remove("hidden");
       }
     }
 
@@ -543,10 +591,20 @@
     }
 
     function processarECalcular() {
+      const cliente = document.getElementById("cliente").value || "Cliente Geral";
+      const produto = document.getElementById("produto").value || "Serviço";
+      const maoObra = parseFloat(document.getElementById("mao").value) || 0;
+      const margemLucro = parseFloat(document.getElementById("lucro").value) || 30;
+      const imposto = parseFloat(document.getElementById("imposto").value) || 0;
+
+      const bobinaSelecionadaObj = bobinas.find(b => b.largura === larguraBobinaAtual) || bobinas[0];
+      const precoPorM2 = bobinaSelecionadaObj ? bobinaSelecionadaObj.preco : 20.00;
+
       const linhas = document.querySelectorAll("#partes tr");
       pecasEmCache = [];
       let cursorX = 0, cursorY = 0, alturaLinha = 0;
       let maxAlturaAtingida = 100;
+      let areaTotalM2 = 0;
 
       linhas.forEach((tr, index) => {
         const nome = tr.querySelector(".nomeParte").value || `P ${index+1}`;
@@ -577,6 +635,8 @@
               cor: `#${Math.floor(Math.abs(Math.sin(index+i+1)*16777215)).toString(16).padStart(6,'0')}` 
             });
 
+            areaTotalM2 += (w / 100) * (h / 100);
+
             cursorX += w;
             if (h > alturaLinha) alturaLinha = h;
             let fimPecaY = cursorY + h;
@@ -587,6 +647,17 @@
 
       alturaTotalLayout = maxAlturaAtingida + 50; 
       
+      // Cálculo do Preço Total do Orçamento
+      const custoMaterial = areaTotalM2 * precoPorM2;
+      const subtotal = custoMaterial + maoObra;
+      const fatorLucro = 1 + (margemLucro / 100);
+      const fatorImposto = 1 - (imposto / 100);
+      
+      valorOrcamentoCalculado = fatorImposto > 0 ? (subtotal * fatorLucro) / fatorImposto : subtotal * fatorLucro;
+
+      document.getElementById("infoClienteDesenho").innerText = `Cliente: ${cliente} | Produto: ${produto} | Bobina: ${larguraBobinaAtual}cm`;
+      document.getElementById("valorFinalDesenho").innerText = `R$ ${valorOrcamentoCalculado.toFixed(2)}`;
+
       renderizarPecasNoCanvas();
       mudarAba('desenho');
     }
@@ -616,6 +687,77 @@
       container.style.width = (larguraBobinaAtual * escalaPxPorCm) + "px";
       container.style.height = (alturaReguaY * escalaPxPorCm) + "px";
       container.innerHTML = html;
+    }
+
+    // Funções de Exportação, CSV e PDF
+    function exportarCSV() {
+      if(pecasEmCache.length === 0) {
+        alert("Nenhum dado calculado para exportar.");
+        return;
+      }
+      const cliente = document.getElementById("cliente").value || "Cliente";
+      const produto = document.getElementById("produto").value || "Produto";
+      
+      let csvContent = "data:text/csv;charset=utf-8,";
+      csvContent += "Cliente,Produto,Peca,Largura(cm),Comprimento(cm),PosX(cm),PosY(cm),ValorTotal\n";
+      
+      pecasEmCache.forEach(p => {
+        csvContent += `"${cliente}","${produto}","${p.nome}",${p.largura},${p.comprimento},${p.posX},${p.posY},"${valorOrcamentoCalculado.toFixed(2)}"\n`;
+      });
+
+      const encodedUri = encodeURI(csvContent);
+      const link = document.createElement("a");
+      link.setAttribute("href", encodedUri);
+      link.setAttribute("download", `orcamento_${cliente.replace(/\s+/g, '_')}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
+    function salvarPDF() {
+      window.print();
+    }
+
+    // Funções de Backup e Restauração em JSON
+    function fazerBackupJSON() {
+      const dadosBackup = {
+        bobinas: bobinas,
+        versao: "3.0 Master",
+        data: new Date().toISOString()
+      };
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(dadosBackup, null, 2));
+      const downloadAnchor = document.createElement('a');
+      downloadAnchor.setAttribute("href", dataStr);
+      downloadAnchor.setAttribute("download", `backup_calculajapro_${new Date().toISOString().slice(0,10)}.json`);
+      document.body.appendChild(downloadAnchor);
+      downloadAnchor.click();
+      downloadAnchor.remove();
+    }
+
+    function restaurarBackupJSON() {
+      const fileInput = document.getElementById("inputArquivoBackup");
+      if(fileInput.files.length === 0) {
+        alert("Selecione um arquivo .json para restaurar.");
+        return;
+      }
+      const file = fileInput.files[0];
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          const dados = JSON.parse(e.target.result);
+          if(dados.bobinas && Array.isArray(dados.bobinas)) {
+            bobinas = dados.bobinas;
+            renderizarTabelaSuprimentos();
+            alert("Backup restaurado com sucesso!");
+            mudarAba('suprimentos');
+          } else {
+            alert("Arquivo de backup inválido.");
+          }
+        } catch(err) {
+          alert("Erro ao ler o arquivo JSON: " + err.message);
+        }
+      };
+      reader.readAsText(file);
     }
     
     // Função de Autenticação Firebase (Apenas credenciais do Administrador)
