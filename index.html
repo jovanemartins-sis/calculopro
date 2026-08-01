@@ -208,7 +208,7 @@
     </div>
 
     <script>
-        const scale = 3; // Escala visual exata: 1cm = 3px
+        const scale = 3;
         let posCurrentX = 0;
         let maiorH = 0;
         let listaPecas = [];
@@ -242,7 +242,6 @@
             rx.style.width = widthPx + 'px';
             ry.style.height = heightPx + 'px';
 
-            // Régua Horizontal (Marcadores de 10 em 10cm)
             for(let i = 0; i <= larguraCm; i += 10) {
                 const mark = document.createElement('div');
                 mark.className = 'ruler-x-mark';
@@ -251,7 +250,6 @@
                 rx.appendChild(mark);
             }
 
-            // Régua Vertical
             const altTotal = Math.ceil(heightPx / scale);
             for(let i = 0; i <= altTotal; i += 10) {
                 const mark = document.createElement('div');
