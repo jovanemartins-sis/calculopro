@@ -195,7 +195,7 @@
         </div>
       </section>
 
-      <!-- ABA 3: DESENHO (RIP HP LATEX / NESTING) COM RÉGUA TÉCNICA E ZOOM -->
+      <!-- ABA 3: DESENHO (RIP HP LATEX / NESTING) COM RÉGUA TÉCNICA E ZOOM COMPACTO -->
       <section id="abaDesenho" class="hidden space-y-4">
         <div class="bg-slate-900 text-white p-5 rounded-xl shadow-inner space-y-4">
           <div class="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-slate-800 pb-3 gap-2">
@@ -207,9 +207,9 @@
               <!-- CONTROLES DE ZOOM -->
               <div class="flex items-center bg-slate-950 rounded-lg border border-slate-800 px-2 py-1 space-x-1">
                 <span class="text-[10px] text-slate-400 font-mono mr-1">Zoom:</span>
-                <button type="button" onclick="ajustarZoom(-0.2)" class="text-slate-300 hover:text-white px-1.5 py-0.5 text-xs font-bold cursor-pointer" title="Diminuir Zoom"><i class="fa-solid fa-magnifying-glass-minus"></i></button>
-                <span id="labelZoom" class="text-xs font-mono text-cyan-400 w-10 text-center">100%</span>
-                <button type="button" onclick="ajustarZoom(0.2)" class="text-slate-300 hover:text-white px-1.5 py-0.5 text-xs font-bold cursor-pointer" title="Aumentar Zoom"><i class="fa-solid fa-magnifying-glass-plus"></i></button>
+                <button type="button" onclick="ajustarZoom(-0.1)" class="text-slate-300 hover:text-white px-1.5 py-0.5 text-xs font-bold cursor-pointer" title="Diminuir Zoom"><i class="fa-solid fa-magnifying-glass-minus"></i></button>
+                <span id="labelZoom" class="text-xs font-mono text-cyan-400 w-10 text-center">60%</span>
+                <button type="button" onclick="ajustarZoom(0.1)" class="text-slate-300 hover:text-white px-1.5 py-0.5 text-xs font-bold cursor-pointer" title="Aumentar Zoom"><i class="fa-solid fa-magnifying-glass-plus"></i></button>
               </div>
               <div class="text-left md:text-right bg-slate-950 px-4 py-2 rounded-lg border border-slate-800">
                 <span id="valorFinalDesenho" class="text-sm font-bold text-emerald-400">R$ 0.00</span>
@@ -221,26 +221,25 @@
           <!-- ÁREA DO VISUALIZADOR COM RÉGUA TÉCNICA LATERAL E SUPERIOR -->
           <div class="relative bg-white rounded-lg border border-slate-700 overflow-hidden shadow-inner text-slate-800">
             
-            <!-- Régua Superior (Eixo X - Baseada no comprimento/largura da bobina) -->
-            <div class="h-7 bg-slate-100 border-b border-slate-300 flex items-end font-mono text-[9px] text-slate-600 select-none overflow-x-hidden relative" id="reguaSuperior">
-              <div class="absolute left-0 w-8 h-full bg-slate-200 border-r border-slate-300 flex items-center justify-center font-bold text-[9px] z-10">cm (X)</div>
-              <div id="tracosReguaSuperior" class="flex pl-10 relative w-full">
+            <!-- Régua Superior (Eixo X - Compacta) -->
+            <div class="h-6 bg-slate-100 border-b border-slate-300 flex items-end font-mono text-[9px] text-slate-600 select-none overflow-x-hidden relative" id="reguaSuperior">
+              <div class="absolute left-0 w-8 h-full bg-slate-200 border-r border-slate-300 flex items-center justify-center font-bold text-[8px] z-10">cm</div>
+              <div id="tracosReguaSuperior" class="flex pl-8 relative w-full">
                 <!-- Preenchido dinamicamente via JS -->
               </div>
             </div>
 
             <div class="flex">
-              <!-- Régua Lateral (Eixo Y - Altura de visualização) -->
-              <div class="w-8 bg-slate-100 border-r border-slate-300 flex flex-col font-mono text-[9px] text-slate-600 select-none overflow-y-hidden relative shrink-0" id="reguaLateral" style="height: 380px;">
-                <div class="absolute top-0 w-full h-6 bg-slate-200 border-b border-slate-300 flex items-center justify-center font-bold text-[9px] z-10">Y</div>
-                <div id="tracosReguaLateral" class="relative w-full pt-6">
+              <!-- Régua Lateral (Eixo Y - Compacta) -->
+              <div class="w-8 bg-slate-100 border-r border-slate-300 flex flex-col font-mono text-[9px] text-slate-600 select-none overflow-y-hidden relative shrink-0" id="reguaLateral" style="height: 320px;">
+                <div id="tracosReguaLateral" class="relative w-full">
                   <!-- Preenchido dinamicamente via JS -->
                 </div>
               </div>
 
-              <!-- Canvas / Área de Plotagem com Grid Quadriculado -->
-              <div class="flex-grow bg-slate-50 overflow-auto h-[380px] p-2 relative" id="viewportPlotagem">
-                <div id="containerPlotagem" class="relative flex flex-row flex-wrap items-start gap-1 transition-transform duration-200 origin-top-left" style="transform: scale(1);">
+              <!-- Canvas / Área de Plotagem com Grid Compacto -->
+              <div class="flex-grow bg-slate-50 overflow-auto h-[320px] p-2 relative" id="viewportPlotagem">
+                <div id="containerPlotagem" class="relative flex flex-row flex-wrap items-start gap-1 transition-transform duration-200 origin-top-left" style="transform: scale(0.6);">
                   <div class="text-slate-400 text-xs py-16 w-full text-center">Nenhuma peça processada. Vá para a aba "Orçamento" e clique em calcular.</div>
                 </div>
               </div>
@@ -273,8 +272,8 @@
       firebase.initializeApp(firebaseConfig);
     }
     const auth = firebase.auth();
-    let zoomAtual = 1.0;
-    let larguraMaximaAtualRegua = 150; // Padrão inicial
+    let zoomAtual = 0.6; // Inicializa com zoom menor para encaixar na tela
+    let larguraMaximaAtualRegua = 140;
 
     auth.onAuthStateChanged(user => {
       const modal = document.getElementById("authModal");
@@ -291,29 +290,27 @@
 
     function ajustarZoom(delta) {
       zoomAtual += delta;
-      if (zoomAtual < 0.4) zoomAtual = 0.4;
-      if (zoomAtual > 2.5) zoomAtual = 2.5;
+      if (zoomAtual < 0.2) zoomAtual = 0.2;
+      if (zoomAtual > 2.0) zoomAtual = 2.0;
       
       document.getElementById("labelZoom").innerText = Math.round(zoomAtual * 100) + "%";
       const container = document.getElementById("containerPlotagem");
       container.style.transform = `scale(${zoomAtual})`;
     }
 
-    function gerarDimensoesReguas(limiteX = 150) {
+    function gerarDimensoesReguas(limiteX = 140) {
       larguraMaximaAtualRegua = Math.max(limiteX, 100);
-      const escalaPx = 2; // 2px por cm
+      const escalaPx = 0.7; // Escala compacta (0.7px por cm) para caber na tela
 
       // Régua Superior (Eixo X)
       const sup = document.getElementById("tracosReguaSuperior");
       let htmlSup = "";
-      for(let i = 0; i <= larguraMaximaAtualRegua; i++) {
+      for(let i = 0; i <= larguraMaximaAtualRegua; i += 5) {
         const isDez = i % 10 === 0;
-        const isCinco = i % 5 === 0;
-        const alturaTraco = isDez ? 'h-3' : (isCinco ? 'h-2' : 'h-1');
         htmlSup += `<div class="absolute flex flex-col items-center" style="left: ${i * escalaPx}px;">
-          <div class="w-[1px] bg-slate-400 ${alturaTraco}"></div>`;
+          <div class="w-[1px] bg-slate-400 ${isDez ? 'h-3' : 'h-1.5'}"></div>`;
         if(isDez) {
-          htmlSup += `<span class="text-[8px] mt-0.5">${i}</span>`;
+          htmlSup += `<span class="text-[7px] mt-0.5">${i}</span>`;
         }
         htmlSup += `</div>`;
       }
@@ -322,14 +319,12 @@
       // Régua Lateral (Eixo Y)
       const lat = document.getElementById("tracosReguaLateral");
       let htmlLat = "";
-      for(let i = 0; i <= 150; i++) {
+      for(let i = 0; i <= 200; i += 5) {
         const isDez = i % 10 === 0;
-        const isCinco = i % 5 === 0;
-        const larguraTraco = isDez ? 'w-3' : (isCinco ? 'w-2' : 'w-1');
         htmlLat += `<div class="absolute flex items-center" style="top: ${i * escalaPx}px;">
-          <div class="h-[1px] bg-slate-400 ${larguraTraco}"></div>`;
+          <div class="h-[1px] bg-slate-400 ${isDez ? 'w-3' : 'w-1.5'}"></div>`;
         if(isDez) {
-          htmlLat += `<span class="text-[8px] ml-0.5">${i}</span>`;
+          htmlLat += `<span class="text-[7px] ml-0.5">${i}</span>`;
         }
         htmlLat += `</div>`;
       }
@@ -659,7 +654,6 @@
         }
       });
 
-      // Atualiza a régua horizontal (Eixo X) com base no limite da bobina máxima utilizada (ex: 140cm)
       gerarDimensoesReguas(maiorLarguraBobinaEncontrada);
 
       const custoDiretoTotal = custoTotalMateriais + maoDeObra + outrosCustos;
@@ -672,18 +666,18 @@
 
       const containerPlotagem = document.getElementById("containerPlotagem");
       let visualizadorHtml = "";
+      const escalaPx = 0.7;
 
       if (pecasParaProcessar.length > 0) {
         pecasParaProcessar.forEach(p => {
-          // ESCALA PROPORCIONAL (2px por cm)
-          const wPx = p.largura * 2;
-          const hPx = p.comprimento * 2;
+          const wPx = p.largura * escalaPx;
+          const hPx = p.comprimento * escalaPx;
           
           visualizadorHtml += `
             <div style="width: ${wPx}px; height: ${hPx}px; background-color: ${p.cor};" 
-                 class="border border-white/40 p-1 flex flex-col justify-between text-[9px] text-white font-bold overflow-hidden relative shadow-sm shrink-0">
+                 class="border border-white/40 p-1 flex flex-col justify-between text-[8px] text-white font-bold overflow-hidden relative shadow-sm shrink-0">
               <span class="truncate bg-black/60 px-1 py-0.2 rounded">${p.nome}</span>
-              <div class="text-[8px] bg-black/40 px-1 py-0.2 rounded self-start font-mono">
+              <div class="text-[7px] bg-black/40 px-1 py-0.2 rounded self-start font-mono">
                 ${p.largura}x${p.comprimento}cm
               </div>
             </div>
