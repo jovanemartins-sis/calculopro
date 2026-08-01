@@ -23,7 +23,7 @@
         <div class="inline-flex items-center justify-center w-14 h-14 bg-cyan-600 text-white rounded-xl shadow-lg mb-2">
           <i class="fa-solid fa-cubes text-2xl"></i>
         </div>
-        <h2 class="text-xl font-bold text-slate-900">CalculaJá Pro <span class="text-xs text-cyan-600 font-normal">v3.0 Master</span></h2>
+        <h2 class="text-xl font-bold text-slate-900">CalculaJá Pro <span class="text-xs text-cyan-600 font-normal">v3.1 Master</span></h2>
         <p class="text-xs text-slate-500">Insira as credenciais fornecidas pelo administrador para acessar o sistema</p>
       </div>
 
@@ -55,9 +55,9 @@
     <!-- Navegação por Abas (Alinhada à Esquerda) -->
     <header class="flex flex-col md:flex-row justify-between items-start md:items-center bg-slate-900 px-6 py-3 border-b border-slate-800 text-white shadow-md gap-3">
       <div class="flex items-center space-x-3">
-        <h1 class="text-sm font-bold text-cyan-400"><i class="fa-solid fa-cubes mr-2"></i> CalculaJá Pro <span class="text-xs text-slate-400 font-normal">v3.0 Master</span></h1>
+        <h1 class="text-sm font-bold text-cyan-400"><i class="fa-solid fa-cubes mr-2"></i> CalculaJá Pro <span class="text-xs text-slate-400 font-normal">v3.1 Master</span></h1>
       </div>
-      <nav class="flex items-center space-x-2 overflow-x-auto py-1 justify-start w-full md:w-auto">
+      <nav class="flex items-center space-x-2 overflow-x-auto py-1 justify-start w-full">
         <button onclick="mudarAba('dados')" id="btnAbaDados" class="px-3 py-1.5 rounded text-xs font-medium bg-cyan-600 text-white transition cursor-pointer shadow whitespace-nowrap flex items-center">
           <i class="fa-solid fa-list-check mr-1.5"></i> Orçamento
         </button>
@@ -647,7 +647,6 @@
 
       alturaTotalLayout = maxAlturaAtingida + 50; 
       
-      // Cálculo do Preço Total do Orçamento
       const custoMaterial = areaTotalM2 * precoPorM2;
       const subtotal = custoMaterial + maoObra;
       const fatorLucro = 1 + (margemLucro / 100);
@@ -689,7 +688,6 @@
       container.innerHTML = html;
     }
 
-    // Funções de Exportação, CSV e PDF
     function exportarCSV() {
       if(pecasEmCache.length === 0) {
         alert("Nenhum dado calculado para exportar.");
@@ -718,11 +716,10 @@
       window.print();
     }
 
-    // Funções de Backup e Restauração em JSON
     function fazerBackupJSON() {
       const dadosBackup = {
         bobinas: bobinas,
-        versao: "3.0 Master",
+        versao: "3.1 Master",
         data: new Date().toISOString()
       };
       const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(dadosBackup, null, 2));
@@ -753,14 +750,13 @@
           } else {
             alert("Arquivo de backup inválido.");
           }
-        } catch(err) {
+        } scanf(err => {
           alert("Erro ao ler o arquivo JSON: " + err.message);
-        }
+        });
       };
       reader.readAsText(file);
     }
     
-    // Função de Autenticação Firebase (Apenas credenciais do Administrador)
     function fazerLoginEmail() {
       const email = document.getElementById("loginEmail").value.trim();
       const senha = document.getElementById("loginSenha").value;
