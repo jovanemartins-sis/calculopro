@@ -23,8 +23,17 @@
     </div>
   </header>
 
-  <!-- APLICAÇÃO PRINCIPAL (EXIBIDA DIRETO) -->
-  <main class="flex-grow container mx-auto p-4 max-w-7xl grid grid-cols-1 lg:grid-cols-3 gap-6">
+  <!-- TELA DE AVISO QUANDO DESLOGADO -->
+  <div id="tela-aviso" class="flex-grow flex flex-col items-center justify-center p-6 text-center">
+    <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-200 max-w-md w-full space-y-4">
+      <i class="fa-solid fa-lock text-4xl text-slate-400 mb-2"></i>
+      <h2 class="text-xl font-bold text-slate-700">Acesso Restrito</h2>
+      <p class="text-sm text-slate-500">Faça login com sua conta Google no botão acima para liberar o painel de cálculo e o catálogo.</p>
+    </div>
+  </div>
+
+  <!-- APLICAÇÃO PRINCIPAL (OCULTADA ATÉ O LOGIN) -->
+  <main id="app-principal" class="hidden flex-grow container mx-auto p-4 max-w-7xl grid grid-cols-1 lg:grid-cols-3 gap-6">
     
     <!-- COLUNA 1: CATÁLOGO DE PREÇOS -->
     <section class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 lg:col-span-1">
@@ -150,7 +159,7 @@
 
   </main>
 
-  <!-- FIREBASE E ATUALIZAÇÃO DO BOTÃO NO TOPO -->
+  <!-- FIREBASE E CONTROLE DE EXIBIÇÃO -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
     import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js";
@@ -161,7 +170,7 @@
       projectId: "SEU_PROJECT_ID",
       storageBucket: "SEU_STORAGE_BUCKET.appspot.com",
       messagingSenderId: "SEU_MESSAGING_SENDER_ID",
-      appId: "SUA_APP_ID"
+      appId: "SEU_APP_ID"
     };
 
     const app = initializeApp(firebaseConfig);
@@ -180,7 +189,14 @@
 
     onAuthStateChanged(auth, (user) => {
       const container = document.getElementById("auth-container");
+      const appPrincipal = document.getElementById("app-principal");
+      const telaAviso = document.getElementById("tela-aviso");
+
       if (user) {
+        // Usuário logado: mostra o app completo e esconde o aviso
+        appPrincipal.classList.remove("hidden");
+        telaAviso.classList.add("hidden");
+
         container.innerHTML = `
           <div class="flex items-center space-x-3">
             <span class="text-sm font-medium">Olá, ${user.displayName.split(' ')[0]}</span>
@@ -188,6 +204,10 @@
           </div>
         `;
       } else {
+        // Deslogado: esconde o app, mostra o aviso e mantém o botão de entrar no topo
+        appPrincipal.classList.add("hidden");
+        telaAviso.classList.remove("hidden");
+
         container.innerHTML = `
           <button onclick="loginComGoogle()" class="bg-white text-slate-800 hover:bg-slate-200 px-4 py-2 rounded-lg text-sm font-bold flex items-center space-x-2 transition">
             <i class="fa-brands fa-google text-red-500"></i>
