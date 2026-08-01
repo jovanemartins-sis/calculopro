@@ -49,7 +49,7 @@
       <div class="text-center space-y-2">
         <i class="fa-solid fa-scissors text-3xl text-emerald-600"></i>
         <h2 class="text-xl font-bold text-slate-800">CalculaJá Pro</h2>
-        <p class="text-xs text-slate-500">Mecanismo de Nesting & Corte de Plásticos, Tecidos e Chapas (Versão v1.4.0)</p>
+        <p class="text-xs text-slate-500">Mecanismo de Nesting & Corte de Plásticos, Tecidos e Chapas (Versão v1.4.1)</p>
       </div>
       <button onclick="loginComGoogle()" class="w-full bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 font-bold py-2.5 rounded-xl text-sm flex items-center justify-center space-x-2 transition shadow-sm cursor-pointer">
         <i class="fa-brands fa-google text-red-500"></i>
@@ -348,7 +348,7 @@
 
   <!-- LÓGICA DE DETECÇÃO DE ATUALIZAÇÃO E NESTING COM RÉGUAS DE 5 EM 5 CM (Corel Style) -->
   <script>
-    const VERSAO_ATUAL = "v1.4.0";
+    const VERSAO_ATUAL = "v1.4.1";
 
     function verificarAtualizacaoApp() {
       const versaoSalva = localStorage.getItem("app_versao_calculaja");
@@ -531,7 +531,7 @@
       const cliente = document.getElementById("cliente").value || "Cliente Geral";
       const produto = document.getElementById("produto").value || "Orçamento Corte";
 
-      let custoMat = 0, totalPecas = 0;
+      let custoMat = 0;
       let agrupadoPorBobina = {};
 
       document.querySelectorAll("#partes tr").forEach(tr => {
@@ -564,7 +564,6 @@
         }
       });
 
-      let htmlRoupagemBobinas = "";
       let detalhesNestingHTML = "";
 
       for(let bNome in agrupadoPorBobina) {
@@ -572,7 +571,6 @@
         let larguraBobina = bData.obj.largura;
         let precoMetro = bData.obj.preco;
 
-        // Algoritmo simples de empacotamento linear por faixas na bobina
         let cursorX = 0;
         let cursorY = 0;
         let alturaFaixaAtual = 0;
@@ -609,7 +607,6 @@
         let custoBobinaAtual = metrosLineares * precoMetro;
         custoMat += custoBobinaAtual;
 
-        // Fator de escala para visualização em pixels (ex: 1cm = 2px)
         let escalaPx = 2;
         let canvasW = larguraBobina * escalaPx;
         let canvasH = Math.max(300, comprimentoTotalCm * escalaPx);
@@ -626,12 +623,12 @@
               <div id="container-rip-visual" class="relative" style="width: ${canvasW + 40}px; height: ${canvasH + 40}px; margin-left: 30px; margin-top: 30px;">
                 
                 <!-- Régua Superior (Horizontal) -->
-                <div class="absolute top-[-25px] left-0 w-full h-[20px] border-b border-slate-600 text-[9px] text-slate-400 flex">
+                <div class="absolute top-[-25px] left-0 w-full h-[20px] border-b border-slate-600 text-[9px] text-slate-400 flex pointer-events-none">
                   ${gerarReguaHorizontal(larguraBobina, escalaPx)}
                 </div>
 
                 <!-- Régua Esquerda (Vertical) -->
-                <div class="absolute top-0 left-[-30px] h-full w-[25px] border-r border-slate-600 text-[9px] text-slate-400 flex flex-col">
+                <div class="absolute top-0 left-[-30px] h-full w-[25px] border-r border-slate-600 text-[9px] text-slate-400 flex flex-col pointer-events-none">
                   ${gerarReguaVertical(comprimentoTotalCm, escalaPx)}
                 </div>
 
