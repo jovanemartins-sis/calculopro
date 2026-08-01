@@ -49,7 +49,7 @@
       <div class="text-center space-y-2">
         <i class="fa-solid fa-scissors text-3xl text-emerald-600"></i>
         <h2 class="text-xl font-bold text-slate-800">CalculaJá Pro</h2>
-        <p class="text-xs text-slate-500">Mecanismo de Nesting & Corte de Plásticos, Tecidos e Chapas (Versão v1.4.2)</p>
+        <p class="text-xs text-slate-500">Mecanismo de Nesting & Corte de Plásticos, Tecidos e Chapas (Versão v1.4.3)</p>
       </div>
       <button onclick="loginComGoogle()" class="w-full bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 font-bold py-2.5 rounded-xl text-sm flex items-center justify-center space-x-2 transition shadow-sm cursor-pointer">
         <i class="fa-brands fa-google text-red-500"></i>
@@ -356,9 +356,9 @@
     });
   </script>
 
-  <!-- LÓGICA DE DETECÇÃO DE ATUALIZAÇÃO E NESTING COM ESCALA PROPORCIONAL À BOBINA REAL -->
+  <!-- LÓGICA DE DETECÇÃO DE ATUALIZAÇÃO E NESTING COM CORREÇÃO DE POSICIONAMENTO E ESCALA -->
   <script>
-    const VERSAO_ATUAL = "v1.4.2";
+    const VERSAO_ATUAL = "v1.4.3";
 
     function verificarAtualizacaoApp() {
       const versaoSalva = localStorage.getItem("app_versao_calculaja");
@@ -649,20 +649,18 @@
         const comprimentoRoloTotal = dados.obj.comprimentoRolo || 5000; // ex: 5000cm
         const comprimentoConsumidoCm = dados.totalMetrosLinear * 100;
 
-        // Gerar régua X (Largura da Bobina - ex: de 0 até 140cm de 5 em 5cm)
+        // Gerar régua X (Largura da Bobina - de 5 em 5 cm exata)
         let reguaXHtml = '';
         for(let x = 0; x <= larguraBobina; x += 5) {
           let posPct = (x / larguraBobina) * 100;
           reguaXHtml += `<span class="absolute text-[9px] text-amber-400 font-mono" style="left: ${posPct}%; transform: translateX(-50%);">${x}</span>`;
         }
-        // Garantir marca exata do limite final da largura se não for múltiplo de 5
         if(larguraBobina % 5 !== 0) {
           reguaXHtml += `<span class="absolute text-[9px] text-amber-400 font-mono" style="left: 100%; transform: translateX(-100%);">${larguraBobina}</span>`;
         }
 
-        // Gerar régua Y (Comprimento Total do Rolo ou da Bobina Cadastrada - ex: 5000cm)
+        // Gerar régua Y (Comprimento Total do Rolo - de 5 em 5 cm ou passo adequado para grandes rolos)
         let reguaYHtml = '';
-        // Definir passo automático limpo baseado no comprimento total do rolo para não sobrecarregar
         let passoY = 500; 
         if(comprimentoRoloTotal <= 1000) passoY = 100;
         if(comprimentoRoloTotal <= 500) passoY = 50;
@@ -675,9 +673,7 @@
           reguaYHtml += `<span class="absolute text-[9px] text-amber-400 font-mono whitespace-nowrap" style="top: 100%; transform: translateY(-100%); left: 2px;">${comprimentoRoloTotal}</span>`;
         }
 
-        // Definir altura visual proporcional do container do rolo (limitando a uma altura máxima amigável com scroll se for muito longo, ex: 5000cm)
-        // Cada 100cm equivale a 12px de altura visual base para manuseio fluido na tela, com mínimo de 400px
-        let alturaVisualContainer = Math.max(400, Math.min(2500, (comprimentoRoloTotal / 100) * 14));
+        let alturaVisualContainer = Math.max(500, Math.min(3000, (comprimentoRoloTotal / 100) * 14));
 
         htmlPaineis += `
           <div class="bg-slate-900 border border-slate-700 rounded-xl p-4 space-y-3">
@@ -710,15 +706,14 @@
                     ${reguaYHtml}
                   </div>
 
-                  <!-- AREA DE NESTING / CORTE INTERNA DO ROLO -->
-                  <div class="flex-grow pl-1 bg-slate-950">
-                    <div class="relative bg-slate-900 border border-slate-800 overflow-hidden flex flex-wrap content-start p-0 m-0 gap-0" style="height: ${alturaVisualContainer}px;">
+                  <!-- AREA DE NESTING / CORTE INTERNA DO ROLO (Grade exata flexbox sem distorção) -->
+                  <div class="flex-grow pl-0 bg-slate-950">
+                    <div class="relative bg-slate-900 border border-slate-800 overflow-hidden flex flex-wrap content-start items-start justify-start p-0 m-0" style="height: ${alturaVisualContainer}px;">
         `;
 
-        // Renderizar peças encaixadas no rolo
+        // Renderizar peças encaixadas no rolo com proporção exata e dimensões corretas (fundo branco, borda preta)
         dados.pecas.forEach((p, idx) => {
-          let larguraPct = Math.max(15, Math.min(100, (p.w / larguraBobina) * 100));
-          // Altura proporcional da peça baseada na escala do rolo total
+          let larguraPct = (p.w / larguraBobina) * 100;
           let alturaPecaPx = Math.max(35, (p.h / comprimentoRoloTotal) * alturaVisualContainer);
 
           htmlPaineis += `
@@ -740,7 +735,7 @@
 
                 <div class="flex justify-between text-[10px] text-slate-400 font-mono mt-2 pt-1 px-1 border-t border-slate-800">
                   <span>Origem X:0 Y:0 (Canto Superior Esquerdo)</span>
-                  <span class="text-amber-400 font-bold">Rolo Completo: ${larguraBobina}cm x ${comprimentoRoloTotal}cm — Desenho Branco / Borda Preta</span>
+                  <span class="text-amber-400 font-bold">Rolo Completo: ${larguraBobina}cm x ${comprimentoRoloTotal}cm — Réguas de 5 em 5cm | Desenhos Brancos / Borda Preta</span>
                   <span>Consumo Efetivo: ${dados.totalMetrosLinear.toFixed(2)}m</span>
                 </div>
               </div>
@@ -770,7 +765,7 @@
             </div>
           </div>
           <div class="space-y-3 pt-2">
-            <h4 class="font-bold text-slate-700 text-sm">Simulador com Réguas Proporcionais à Bobina Real, Desenhos Brancos e Borda Preta</h4>
+            <h4 class="font-bold text-slate-700 text-sm">Simulador com Réguas de 5 em 5 cm, Desenhos Brancos e Borda Preta</h4>
             ${htmlPaineis || '<p class="text-xs text-slate-400">Nenhum material selecionado.</p>'}
           </div>
         </div>
