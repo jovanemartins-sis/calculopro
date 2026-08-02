@@ -376,6 +376,7 @@
     let alturaTotalLayout = 300;  
     let pecasEmCache = [];
     let valorOrcamentoCalculado = 0;
+    let unsubSessao = null; // Variável para controlar o vigia de sessão única
 
     let bobinas = [
       { id: 1, nome: "Vinil Brilho 1.00m", largura: 100, preco: 15.00 }, 
@@ -384,10 +385,31 @@
     ];
 
     auth.onAuthStateChanged(user => {
+      // Limpa o monitor anterior se houver troca de usuário
+      if (unsubSessao) {
+        unsubSessao();
+        unsubSessao = null;
+      }
+
       if (user) {
         document.getElementById("authModal").classList.add("hidden");
         document.getElementById("appContainer").classList.remove("hidden");
         
+        // --- MONITOR DE SESSÃO ÚNICA (ANTIPIRATARIA / COMPARTILHAMENTO) ---
+        const meuDeviceId = localStorage.getItem("calculaja_device_id");
+        
+        unsubSessao = db.collection("usuarios").doc(user.uid).onSnapshot((doc) => {
+          if (doc.exists) {
+            const dados = doc.data();
+            // Se o ID salvo no servidor for diferente do ID deste navegador, alguém logou em outro lugar!
+            if (dados.ativoDeviceId && dados.ativoDeviceId !== meuDeviceId) {
+              alert("Sua conta foi acessada em outro dispositivo. Este aparelho foi desconectado.");
+              auth.signOut(); // Desloga imediatamente
+            }
+          }
+        });
+        // -----------------------------------------------------------------
+
         const viewport = document.getElementById('viewportPlotagem');
         viewport.addEventListener('scroll', function() {
             document.getElementById('tracosReguaSuperior').style.transform = `translateX(-${viewport.scrollLeft}px)`;
@@ -924,6 +946,23 @@
       }
 
       auth.signInWithEmailAndPassword(email, senha)
+        .then((userCredential) => {
+          const user = userCredential.user;
+          
+          // Gera ou recupera um ID único para este aparelho/navegador
+          let deviceId = localStorage.getItem("calculaja_device_id");
+          if (!deviceId) {
+            deviceId = "dev_" + Math.random().toString(36).substring(2) + Date.now();
+            localStorage.setItem("calculaja_device_id", deviceId);
+          }
+
+          // Salva este deviceId no documento do usuário no Firestore
+          return db.collection("usuarios").doc(user.uid).set({
+            email: user.email,
+            ativoDeviceId: deviceId,
+            ultimoLogin: firebase.firestore.FieldValue.serverTimestamp()
+          }, { merge: true });
+        })
         .catch((error) => {
           if (error.code === 'auth/user-not-found' || error.code === 'auth/invalid-credential' || error.code === 'auth/wrong-password' || error.code === 'auth/invalid-email') {
             erroEl.textContent = "E-mail ou senha incorretos. Solicite acesso ao administrador.";
