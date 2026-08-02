@@ -681,7 +681,7 @@
       }
 
       let cursorX = 0, cursorY = 0, linhaAlturaMax = 0, maxComp = 0, svgElements = '';
-      const scale = appData.escalaZoom; // Escala ajustável pelo Zoom (5cm x 5cm de régua)
+      const scale = appData.escalaZoom * 15; // Ajuste exato da escala para bater com a régua em centímetros reais no canvas
 
       pecas.forEach((peca) => {
         if (cursorX + peca.largura > larguraBobina) {
@@ -694,8 +694,8 @@
         if (endY > maxComp) maxComp = endY;
 
         svgElements += `
-          <div style="position: absolute; left: ${cursorX * scale}px; top: ${cursorY * scale}px; width: ${peca.largura * scale}px; height: ${peca.comprimento * scale}px;" 
-               class="absolute bg-cyan-600/90 border border-cyan-300 rounded text-[9px] text-white p-1 flex flex-col justify-between shadow">
+          <div style="position: absolute; left: ${(cursorX * scale) + 40}px; top: ${(cursorY * scale) + 40}px; width: ${peca.largura * scale}px; height: ${peca.comprimento * scale}px; z-index: 10;" 
+               class="bg-cyan-600/90 border border-cyan-300 rounded text-[9px] text-white p-1 flex flex-col justify-between shadow">
             <span class="font-bold truncate">${peca.nome}</span>
             <span class="text-[8px] opacity-90">${peca.largura}x${peca.comprimento}cm</span>
           </div>`;
@@ -707,31 +707,75 @@
       document.getElementById('statLarguraBobina').textContent = larguraBobina + ' cm';
       document.getElementById('statAproveitamento').textContent = '85%';
 
-      const canvasWidth = larguraBobina * scale;
-      const canvasHeight = Math.max(300, (maxComp + 50) * scale);
-      const passoGrid = 5 * scale; // Régua quadriculada rigorosa de 5cm x 5cm
+      const canvasWidth = Math.max(600, (larguraBobina * scale) + 80);
+      const canvasHeight = Math.max(500, (maxComp * scale) + 120);
 
-      let linhasReguaX = '';
-      for (let x = passoGrid; x < canvasWidth; x += passoGrid) {
-        linhasReguaX += `<div style="position: absolute; left: ${x}px; top: 0; width: 1px; height: 100%; border-left: 1px dashed rgba(255,255,255,0.12); pointer-events: none;"></div>`;
-      }
-
-      let linhasReguaY = '';
-      for (let y = passoGrid; y < canvasHeight; y += passoGrid) {
-        linhasReguaY += `<div style="position: absolute; left: 0; top: ${y}px; width: 100%; height: 1px; border-top: 1px dashed rgba(255,255,255,0.12); pointer-events: none;"></div>`;
-      }
+      // Geração exata das réguas milimetradas superior e lateral idênticas à imagem de referência
+      let reguaH = `<div style="position: absolute; top: 0; left: 0; width: 40px; height: 40px; background: #e2e8f0; border-right: 1px solid #cbd5e1; border-bottom: 1px solid #cbd5e1; display: flex; align-items: center; justify-content: center; font-size: 9px; font-weight: bold; color: #475569; z-index: 30;">cm</div>`;
+      reguaH += `<div style="position: absolute; top: 0; left: 40px; width: ${canvasWidth - 40}px; height: 40px; background: #f1f5f9; border-bottom: 1px solid #cbd5e1; overflow: hidden; z-index: 25;">`;
+      reguaH += `<div style="position: relative; width: 100%; height: 100%;">`;
       
+      for (let cm = 0; cm <= larguraBobina; cm++) {
+        let posX = cm * scale;
+        reguaH += `<div style="position: absolute; left: ${posX}px; top: 0; width: 1px; height: 100%;">`;
+        reguaH += `<div style="position: absolute; top: 0; left: 0; width: 1px; height: 12px; background: #475569;"></div>`;
+        if (cm % 1 === 0) {
+          reguaH += `<span style="position: absolute; top: 14px; left: -6px; font-size: 9px; font-weight: bold; color: #334155;">${cm}</span>`;
+        }
+        // Subdivisões de mm (10 por cm)
+        for (let mm = 1; mm < 10; mm++) {
+          let mmX = mm * (scale / 10);
+          let hTick = (mm === 5) ? 8 : 4;
+          reguaH += `<div style="position: absolute; left: ${mmX}px; top: 0; width: 1px; height: ${hTick}px; background: #94a3b8;"></div>`;
+        }
+        reguaH += `</div>`;
+      }
+      reguaH += `</div></div>`;
+
+      let reguaV = `<div style="position: absolute; top: 40px; left: 0; width: 40px; height: ${canvasHeight - 40}px; background: #f1f5f9; border-right: 1px solid #cbd5e1; overflow: hidden; z-index: 25;">`;
+      reguaV += `<div style="position: relative; width: 100%; height: 100%;">`;
+
+      let maxCmVertical = Math.ceil(canvasHeight / scale);
+      for (let cm = 0; cm <= maxCmVertical; cm++) {
+        let posY = cm * scale;
+        reguaV += `<div style="position: absolute; top: ${posY}px; left: 0; width: 100%; height: 1px;">`;
+        reguaV += `<div style="position: absolute; top: 0; left: 0; width: 12px; height: 1px; background: #475569;"></div>`;
+        if (cm % 1 === 0) {
+          reguaV += `<span style="position: absolute; top: -5px; left: 14px; font-size: 9px; font-weight: bold; color: #334155; transform: rotate(0deg);">${cm}</span>`;
+        }
+        for (let mm = 1; mm < 10; mm++) {
+          let mmY = mm * (scale / 10);
+          let wTick = (mm === 5) ? 8 : 4;
+          reguaV += `<div style="position: absolute; top: ${mmY}px; left: 0; width: ${wTick}px; height: 1px; background: #94a3b8;"></div>`;
+        }
+        reguaV += `</div>`;
+      }
+      reguaV += `</div></div>`;
+
+      // Grid interno quadriculado pontilhado correspondente às réguas
+      let gridInterno = '';
+      for (let cm = 1; cm <= larguraBobina; cm++) {
+        let gx = (cm * scale) + 40;
+        gridInterno += `<div style="position: absolute; left: ${gx}px; top: 40px; width: 1px; height: ${canvasHeight - 40}px; border-left: 1px dashed rgba(148, 163, 184, 0.35); pointer-events: none; z-index: 5;"></div>`;
+      }
+      for (let cm = 1; cm <= maxCmVertical; cm++) {
+        let gy = (cm * scale) + 40;
+        gridInterno += `<div style="position: absolute; left: 40px; top: ${gy}px; width: ${canvasWidth - 40}px; height: 1px; border-top: 1px dashed rgba(148, 163, 184, 0.35); pointer-events: none; z-index: 5;"></div>`;
+      }
+
       const isEscuro = appData.temaDesenho === 'escuro';
-      const corFundoCanvas = isEscuro ? 'bg-slate-900/90' : 'bg-white/90 border-slate-300';
-      const corWrapper = isEscuro ? 'bg-slate-950' : 'bg-slate-100';
+      const corFundoCanvas = isEscuro ? 'bg-slate-900' : 'bg-white';
 
       document.getElementById('painelDesenhoResultado').innerHTML = `
-        <div class="relative ${corWrapper} border rounded shadow-inner overflow-hidden" style="width: ${canvasWidth}px; height: ${canvasHeight}px;">
-          ${linhasReguaX}
-          ${linhasReguaY}
-          ${svgElements}
-          <!-- Linha vertical exata delimitando o fim da bobina -->
-          <div style="position: absolute; left: ${canvasWidth}px; top: 0; height: 100%; border-right: 2px dashed #f43f5e; z-index: 20;" title="Fim da Bobina"></div>
+        <div class="relative ${corFundoCanvas} border border-slate-700 rounded shadow-inner overflow-auto" style="width: 100%; height: 500px; position: relative;">
+          <div style="position: relative; width: ${canvasWidth}px; height: ${canvasHeight}px;">
+            ${reguaH}
+            ${reguaV}
+            ${gridInterno}
+            ${svgElements}
+            <!-- Delimitador exato do fim da largura útil da bobina -->
+            <div style="position: absolute; left: ${(larguraBobina * scale) + 40}px; top: 40px; height: ${canvasHeight - 40}px; border-right: 2px dashed #f43f5e; z-index: 20;" title="Fim da Bobina"></div>
+          </div>
         </div>`;
     }
 
