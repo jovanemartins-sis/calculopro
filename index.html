@@ -3,23 +3,51 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>CalculaJá Pro v2.7 Enterprise</title>
+  <title>CalculaJá Pro v2.8 Enterprise</title>
   <!-- Tailwind CSS via CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- FontAwesome Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
-<body class="bg-slate-100 text-slate-800 font-sans antialiased min-h-screen text-[64%]" data-versao="2.7-enterprise">
+<body class="bg-slate-100 text-slate-800 font-sans antialiased min-h-screen text-[64%]" data-versao="2.8-enterprise">
+
+  <!-- TELA DE LOGIN / AUTENTICAÇÃO -->
+  <div id="authModal" class="fixed inset-0 bg-slate-900/95 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-8 space-y-6 border border-slate-200">
+      <div class="text-center space-y-2">
+        <div class="inline-flex items-center justify-center w-14 h-14 bg-cyan-600 text-white rounded-xl shadow-lg mb-2">
+          <i class="fa-solid fa-cubes text-xl"></i>
+        </div>
+        <h2 class="text-xl font-bold text-slate-900">CalculaJá Pro <span class="text-xs text-cyan-600 font-normal">v2.8 Enterprise</span></h2>
+        <p class="text-xs text-slate-500">Insira suas credenciais ou entre com o acesso rápido</p>
+      </div>
+
+      <div class="space-y-4">
+        <div>
+          <label class="block text-xs font-bold text-slate-600 mb-1">E-mail de Acesso</label>
+          <input type="email" id="loginEmail" value="admin@calculaja.com" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-xs text-slate-900 outline-none focus:border-cyan-500">
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-600 mb-1">Senha</label>
+          <input type="password" id="loginSenha" value="123456" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-xs text-slate-900 outline-none focus:border-cyan-500">
+        </div>
+        <button type="button" onclick="fazerLogin()" class="w-full bg-cyan-600 hover:bg-cyan-700 text-white py-2.5 rounded-lg text-xs font-bold transition shadow cursor-pointer">
+          Entrar no Sistema
+        </button>
+      </div>
+      <p id="authError" class="text-center text-xs text-red-500 font-medium"></p>
+    </div>
+  </div>
 
   <!-- APLICATIVO PRINCIPAL -->
-  <div id="appContainer" class="min-h-screen flex flex-col">
+  <div id="appContainer" class="hidden min-h-screen flex flex-col">
     
     <!-- Navegação por Abas -->
     <header class="flex flex-col md:flex-row justify-between items-center bg-slate-900 px-6 py-3 border-b border-slate-800 text-white shadow-md gap-3">
       <div class="flex items-center space-x-3 justify-start w-full md:w-auto">
         <h1 class="text-sm font-bold text-cyan-400 flex items-center">
           <i class="fa-solid fa-cubes mr-2"></i> CalculaJá Pro 
-          <span class="text-xs text-cyan-200 font-bold ml-1.5 bg-cyan-900 px-2 py-0.5 rounded border border-cyan-500/50">v2.7 Enterprise</span>
+          <span class="text-xs text-cyan-200 font-bold ml-1.5 bg-cyan-900 px-2 py-0.5 rounded border border-cyan-500/50">v2.8 Enterprise</span>
         </h1>
       </div>
       <nav class="flex items-center space-x-2 overflow-x-auto py-1 justify-start w-full md:w-auto">
@@ -43,6 +71,9 @@
         </button>
         <button onclick="mudarAba('backup')" id="btnAbaBackup" class="px-2.5 py-1.5 rounded text-[10px] font-medium bg-slate-800 text-slate-300 hover:bg-slate-700 transition cursor-pointer whitespace-nowrap flex items-center justify-start">
           <i class="fa-solid fa-database mr-1.5 text-[8px]"></i> Backup
+        </button>
+        <button onclick="fazerLogout()" class="text-slate-400 hover:text-red-400 text-[10px] px-2.5 py-1.5 rounded bg-slate-800 hover:bg-slate-700 transition cursor-pointer whitespace-nowrap flex items-center justify-start" title="Sair do Sistema">
+          <i class="fa-solid fa-power-off mr-1.5 text-[8px]"></i> Sair
         </button>
       </nav>
     </header>
@@ -301,9 +332,7 @@
         <h3 id="modalTitulo" class="text-xs font-bold text-slate-800 uppercase">Cadastrar</h3>
         <button onclick="fecharModal()" class="text-slate-400 hover:text-slate-600 font-bold text-sm"><i class="fa-solid fa-xmark"></i></button>
       </div>
-      <div id="modalCorpo" class="space-y-3">
-        <!-- Inserido via JS -->
-      </div>
+      <div id="modalCorpo" class="space-y-3"></div>
       <div class="flex justify-end gap-2 pt-2 border-t">
         <button type="button" onclick="fecharModal()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 px-4 py-2 rounded text-xs font-bold cursor-pointer">Cancelar</button>
         <button type="button" id="btnSalvarModal" class="bg-cyan-600 hover:bg-cyan-700 text-white px-4 py-2 rounded text-xs font-bold cursor-pointer">Salvar Registro</button>
@@ -311,14 +340,15 @@
     </div>
   </div>
 
-  <!-- SCRIPT DE CONTROLE E CADASTROS -->
+  <!-- SCRIPT DE CONTROLE, LOGIN E CADASTROS -->
   <script>
     let appData = {
       clientes: JSON.parse(localStorage.getItem('calculaja_clientes') || '[]'),
       fornecedores: JSON.parse(localStorage.getItem('calculaja_fornecedores') || '[]'),
       suprimentos: JSON.parse(localStorage.getItem('calculaja_suprimentos') || '[{"id":1, "nome":"Bobina Lona 1.35m", "largura":135, "preco":25.00}, {"id":2, "nome":"Bobina Adesivo 1.00m", "largura":100, "preco":18.50}]'),
       orcamentos: JSON.parse(localStorage.getItem('calculaja_orcamentos') || '[]'),
-      temaDesenho: localStorage.getItem('calculaja_tema_desenho') || 'escuro'
+      temaDesenho: localStorage.getItem('calculaja_tema_desenho') || 'escuro',
+      logado: localStorage.getItem('calculaja_logado') === 'true'
     };
 
     function salvarStorage(chave) {
@@ -326,11 +356,38 @@
     }
 
     window.addEventListener('DOMContentLoaded', () => {
+      verificarSessao();
       atualizarSelectBobinas();
       renderizarTabelas();
       addParteVazia();
-      mudarAba('dados');
     });
+
+    function verificarSessao() {
+      const authModal = document.getElementById('authModal');
+      const appContainer = document.getElementById('appContainer');
+      if (appData.logado) {
+        if (authModal) authModal.classList.add('hidden');
+        if (appContainer) appContainer.classList.remove('hidden');
+        mudarAba('dados');
+      } else {
+        if (authModal) authModal.classList.remove('hidden');
+        if (appContainer) appContainer.classList.add('hidden');
+      }
+    }
+
+    function fazerLogin() {
+      appData.logado = true;
+      localStorage.setItem('calculaja_logado', 'true');
+      verificarSessao();
+    }
+
+    function fazerLogout() {
+      if (confirm("Deseja realmente sair do sistema?")) {
+        appData.logado = false;
+        localStorage.removeItem('calculaja_logado');
+        verificarSessao();
+      }
+    }
 
     function mudarAba(abaId) {
       const abas = ['dados', 'clientes', 'fornecedores', 'suprimentos', 'desenho', 'meusOrcamentos', 'backup'];
@@ -379,7 +436,6 @@
       tbody.appendChild(tr);
     }
 
-    // FUNÇÕES DE CADASTRO E MODAIS
     function abrirModal(titulo, htmlConteudo, callbackSalvar) {
       document.getElementById('modalTitulo').textContent = titulo;
       document.getElementById('modalCorpo').innerHTML = htmlConteudo;
@@ -495,16 +551,14 @@
     }
 
     function renderizarTabelas() {
-      // Clientes
       const tbodyCl = document.getElementById('tabelaClientes');
       if (tbodyCl) {
-        tbodyCl.innerHTML = appData.clientes.length === idVazio() ? `<tr><td colspan="5" class="p-4 text-center text-slate-500">Nenhum cliente cadastrado.</td></tr>` : '';
-        appData.clientes.forEach((c, idx) => {
+        tbodyCl.innerHTML = appData.clientes.length === 0 ? `<tr><td colspan="5" class="p-4 text-center text-slate-500">Nenhum cliente cadastrado.</td></tr>` : '';
+        appData.clientes.forEach(c => {
           tbodyCl.innerHTML += `<tr class="border-b"><td class="p-2 font-bold">${c.nome}</td><td class="p-2">${c.doc||'-'}</td><td class="p-2">${c.tel||'-'}</td><td class="p-2">${c.email||'-'}</td><td class="p-2 text-center"><button onclick="deletarRegistro('clientes', ${c.id})" class="text-red-500 hover:text-red-700"><i class="fa-solid fa-trash text-[8px]"></i></button></td></tr>`;
         });
       }
 
-      // Fornecedores
       const tbodyFn = document.getElementById('tabelaFornecedores');
       if (tbodyFn) {
         tbodyFn.innerHTML = appData.fornecedores.length === 0 ? `<tr><td colspan="6" class="p-4 text-center text-slate-500">Nenhum fornecedor cadastrado.</td></tr>` : '';
@@ -513,7 +567,6 @@
         });
       }
 
-      // Suprimentos
       const tbodySup = document.getElementById('tabelaSuprimentos');
       if (tbodySup) {
         tbodySup.innerHTML = appData.suprimentos.length === 0 ? `<tr><td colspan="4" class="p-4 text-center text-slate-500">Nenhum material cadastrado.</td></tr>` : '';
@@ -522,8 +575,6 @@
         });
       }
     }
-
-    function idVazio() { return 0; }
 
     function deletarRegistro(tipo, id) {
       if (confirm("Deseja realmente excluir este registro?")) {
@@ -561,7 +612,7 @@
       let cursorX = 0, cursorY = 0, linhaAlturaMax = 0, maxComp = 0, svgElements = '';
       const scale = 2.5;
 
-      pecas.forEach((peca, idx) => {
+      pecas.forEach((peca) => {
         if (cursorX + peca.largura > larguraBobina) {
           cursorX = 0;
           cursorY += linhaAlturaMax;
