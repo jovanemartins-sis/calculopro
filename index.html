@@ -117,7 +117,7 @@
             </div>
             <div>
               <label class="block text-[11px] font-bold text-slate-700 uppercase">Selecione a Bobina / Papel =></label>
-              <p class="text-[10px] text-slate-500">Define a largura do papel/bobina base para o RIP de impressão</p>
+              <p class="text-[10px] text-slate-500">Define a largura exata da bobina para o RIP de impressão</p>
             </div>
           </div>
           <div class="w-full md:w-80">
@@ -268,7 +268,7 @@
         </div>
       </section>
 
-      <!-- ABA 5: DESENHO (RIP) - COM LINHA DE FIM DE BOBINA E SELETOR DE TEMA -->
+      <!-- ABA 5: DESENHO (RIP) - COM LINHA VERTICAL DE FIM DE BOBINA E SELETOR DE TEMA -->
       <section id="abaDesenho" class="hidden space-y-4">
         <div id="painelTemaWrapper" class="bg-slate-900 text-white p-5 rounded-xl shadow-inner space-y-4 transition-colors duration-300">
           
@@ -277,7 +277,7 @@
               <h3 class="text-xs font-bold text-cyan-400 uppercase tracking-widest flex items-center">
                 <i class="fa-solid fa-network-wired mr-2"></i> Módulo de Desenho Técnico e Nesting (RIP)
               </h3>
-              <p class="text-[11px] text-slate-400 mt-0.5">Visualizador RIP com algoritmo de impressora (largura exata do papel), linha de fim de bobina e seletor de tema (Claro / Escuro)</p>
+              <p class="text-[11px] text-slate-400 mt-0.5">Visualizador RIP com algoritmo de impressora, linha vertical de fim de bobina (ex: 135cm) e seletor de tema</p>
             </div>
             
             <div class="flex items-center space-x-3 flex-wrap gap-2">
@@ -317,17 +317,17 @@
             </div>
           </div>
 
-          <!-- Container Gráfico do Desenho RIP com Linha de Fim de Bobina -->
+          <!-- Container Gráfico do Desenho RIP com Linha Vertical de Fim de Bobina -->
           <div id="painelGraficoWrapper" class="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-3 transition-colors duration-300">
             <div id="topoGraficoLegenda" class="flex justify-between items-center text-[11px] text-slate-400 border-b border-slate-800/80 pb-2">
-              <span class="font-bold flex items-center"><i class="fa-solid fa-eye mr-1 text-cyan-400"></i> Visualizador RIP (Baseado na Largura do Papel & Fim de Bobina)</span>
+              <span class="font-bold flex items-center"><i class="fa-solid fa-eye mr-1 text-cyan-400"></i> Visualizador RIP (Baseado na Largura da Bobina & Linha Vertical de Fim)</span>
               <div class="flex items-center space-x-3">
                 <span class="flex items-center"><span class="w-2.5 h-2.5 bg-cyan-500 rounded-sm inline-block mr-1"></span> Peças Impressas</span>
-                <span class="flex items-center"><span class="w-2.5 h-2.5 bg-rose-500 rounded-sm inline-block mr-1"></span> Linha Fim de Bobina (Corte)</span>
+                <span class="flex items-center"><span class="w-2.5 h-2.5 bg-rose-500 rounded-sm inline-block mr-1"></span> Linha Vertical Fim de Bobina</span>
               </div>
             </div>
 
-            <!-- Área Gráfica com Réguas e Linha de Fim de Bobina -->
+            <!-- Área Gráfica com Réguas e Linha Vertical de Fim de Bobina -->
             <div class="relative w-full overflow-auto bg-slate-950 rounded-lg p-2 border border-slate-800 transition-colors duration-300" id="scrollAreaCanvas">
               <div id="painelDesenhoResultado" class="relative bg-slate-900/90 rounded-lg min-h-[340px] flex items-center justify-center transition-colors duration-300">
                 <div class="text-center space-y-2 text-slate-400">
@@ -494,8 +494,8 @@
       const metrica4 = document.getElementById('metricaCard4');
 
       if (tema === 'claro') {
-        btnClaro.className = "px-2.5 py-1 rounded text-[10px] font-bold bg-cyan-600 text-white transition cursor-pointer";
-        btnEscuro.className = "px-2.5 py-1 rounded text-[10px] font-bold bg-transparent text-slate-400 hover:text-white transition cursor-pointer";
+        if (btnClaro) btnClaro.className = "px-2.5 py-1 rounded text-[10px] font-bold bg-cyan-600 text-white transition cursor-pointer";
+        if (btnEscuro) btnEscuro.className = "px-2.5 py-1 rounded text-[10px] font-bold bg-transparent text-slate-400 hover:text-white transition cursor-pointer";
         
         if (wrapper) wrapper.className = "bg-white text-slate-800 p-5 rounded-xl shadow-md border border-slate-200 space-y-4 transition-colors duration-300";
         if (painelGraficoWrapper) painelGraficoWrapper.className = "bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-3 transition-colors duration-300";
@@ -508,8 +508,8 @@
           if (card) card.className = "bg-white p-3 rounded-lg border border-slate-200 shadow-sm";
         });
       } else {
-        btnEscuro.className = "px-2.5 py-1 rounded text-[10px] font-bold bg-cyan-600 text-white transition cursor-pointer";
-        btnClaro.className = "px-2.5 py-1 rounded text-[10px] font-bold bg-transparent text-slate-400 hover:text-white transition cursor-pointer";
+        if (btnEscuro) btnEscuro.className = "px-2.5 py-1 rounded text-[10px] font-bold bg-cyan-600 text-white transition cursor-pointer";
+        if (btnClaro) btnClaro.className = "px-2.5 py-1 rounded text-[10px] font-bold bg-transparent text-slate-400 hover:text-white transition cursor-pointer";
         
         if (wrapper) wrapper.className = "bg-slate-900 text-white p-5 rounded-xl shadow-inner space-y-4 transition-colors duration-300";
         if (painelGraficoWrapper) painelGraficoWrapper.className = "bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-3 transition-colors duration-300";
@@ -524,7 +524,7 @@
       }
     }
 
-    // Algoritmo de Impressão com Largura da Bobina/Papel e Linha de Fim de Bobina
+    // Algoritmo de Impressão com Largura Exata da Bobina e Linha Vertical de Fim de Bobina
     function processarECalcular() {
       mudarAba('desenho');
       
@@ -612,14 +612,15 @@
       const aproveitamento = Math.min(100, Math.max(1, Math.round((areaPecas / areaTotalBobina) * 100)));
       document.getElementById('statAproveitamento').textContent = aproveitamento + '%';
 
-      // Réguas e Linha de Fim de Bobina
+      // Réguas e Linha VERTICAL de Fim de Bobina (na largura exata configurada, ex: 135cm)
       const scale = 2.5;
-      const canvasWidth = larguraBobina * scale;
+      const canvasWidth = Math.max((larguraBobina + 20) * scale, larguraBobina * scale);
       const canvasHeight = Math.max(300, (maxComprimentoAlcancado + 50) * scale);
       const isClaro = appData.temaDesenho === 'claro';
 
       let reguaXHTML = '';
-      for (let cm = 0; cm <= larguraBobina; cm += 5) {
+      const maxCmX = larguraBobina + 20;
+      for (let cm = 0; cm <= maxCmX; cm += 5) {
         let leftPx = cm * scale;
         let isMajor = (cm % 10 === 0);
         let corTraco = isClaro ? (isMajor ? 'bg-cyan-700' : 'bg-cyan-400/70') : (isMajor ? 'bg-cyan-300' : 'bg-cyan-500/60');
@@ -645,13 +646,13 @@
           </div>`;
       }
 
-      // Linha de Fim de Bobina (Corte de Impressão) baseada exatamente na altura total alcançada
-      const fimBobinaTopPx = maxComprimentoAlcancado * scale;
-      const linhaFimBobinaHTML = `
-        <div style="position: absolute; top: ${fimBobinaTopPx}px; left: 0; width: 100%; z-index: 20;" class="flex items-center">
-          <div class="w-full border-b-2 border-dashed border-rose-500 relative">
-            <span class="absolute right-2 -top-3.5 bg-rose-500 text-white text-[9px] font-bold px-2 py-0.5 rounded shadow">
-              <i class="fa-solid fa-scissors mr-1"></i> FIM DA BOBINA / CORTE (${maxComprimentoAlcancado} cm)
+      // Linha VERTICAL de Fim de Bobina posicionada exatamente na largura selecionada (ex: 135cm)
+      const fimBobinaLeftPx = larguraBobina * scale;
+      const linhaVerticalFimBobinaHTML = `
+        <div style="position: absolute; left: ${fimBobinaLeftPx}px; top: 0; height: 100%; z-index: 20;" class="flex flex-col items-center">
+          <div class="h-full border-r-2 border-dashed border-rose-500 relative">
+            <span class="absolute -left-3 top-2 bg-rose-500 text-white text-[9px] font-bold px-1.5 py-1 rounded shadow writing-mode-vertical whitespace-nowrap" style="writing-mode: vertical-lr; text-orientation: mixed;">
+              <i class="fa-solid fa-scissors mb-1"></i> FIM DA BOBINA (${larguraBobina} cm)
             </span>
           </div>
         </div>`;
@@ -663,7 +664,7 @@
       const containerGrafico = document.getElementById('painelDesenhoResultado');
       containerGrafico.innerHTML = `
         <div class="relative flex flex-col p-4">
-          <!-- Régua Superior (Eixo X - Largura do Papel) -->
+          <!-- Régua Superior (Eixo X - Largura do Papel com Indicação da Bobina) -->
           <div class="relative h-6 ${bgReguaClass} border-b mb-2" style="width: ${canvasWidth + 40}px; margin-left: 45px;">
             <div class="absolute inset-0">${reguaXHTML}</div>
           </div>
@@ -674,11 +675,11 @@
               <div class="absolute inset-0">${reguaYHTML}</div>
             </div>
 
-            <!-- Área de Plotagem com Malha e Linha de Fim de Bobina -->
+            <!-- Área de Plotagem com Malha e Linha VERTICAL de Fim de Bobina -->
             <div class="relative ${bgPlotClass} border rounded shadow-inner overflow-hidden" style="width: ${canvasWidth}px; height: ${canvasHeight}px;">
               <div class="absolute inset-0 ${gridColorClass} bg-[size:20px_20px] opacity-70"></div>
               ${svgElements}
-              ${linhaFimBobinaHTML}
+              ${linhaVerticalFimBobinaHTML}
             </div>
           </div>
         </div>`;
