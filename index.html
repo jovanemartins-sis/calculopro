@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>CalculaJá Pro v3.1 Enterprise</title>
+  <title>CalculaJá Pro v3.2 Enterprise - Nesting Otimizado</title>
   <!-- Tailwind CSS via CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- FontAwesome Icons -->
@@ -15,7 +15,7 @@
     .peca-box span { white-space: nowrap; text-overflow: ellipsis; overflow: hidden; max-width: 100%; padding: 0 2px; }
   </style>
 </head>
-<body class="bg-slate-100 text-slate-800 font-sans antialiased min-h-screen text-[64%]" data-versao="3.1-enterprise">
+<body class="bg-slate-100 text-slate-800 font-sans antialiased min-h-screen text-[64%]" data-versao="3.2-enterprise">
 
   <!-- TELA DE LOGIN / AUTENTICAÇÃO -->
   <div id="authModal" class="fixed inset-0 bg-slate-900/95 z-50 flex items-center justify-center p-4">
@@ -24,7 +24,7 @@
         <div class="inline-flex items-center justify-center w-14 h-14 bg-cyan-600 text-white rounded-xl shadow-lg mb-2">
           <i class="fa-solid fa-cubes text-xl"></i>
         </div>
-        <h2 class="text-xl font-bold text-slate-900">CalculaJá Pro <span class="text-xs text-cyan-600 font-normal">v3.1 Enterprise</span></h2>
+        <h2 class="text-xl font-bold text-slate-900">CalculaJá Pro <span class="text-xs text-cyan-600 font-normal">v3.2 Enterprise</span></h2>
         <p class="text-xs text-slate-500">Insira suas credenciais ou entre com o acesso rápido</p>
       </div>
 
@@ -47,12 +47,11 @@
   <!-- APLICATIVO PRINCIPAL -->
   <div id="appContainer" class="hidden min-h-screen flex flex-col">
     
-    <!-- Navegação por Abas -->
     <header class="flex flex-col md:flex-row justify-between items-center bg-slate-900 px-6 py-3 border-b border-slate-800 text-white shadow-md gap-3">
       <div class="flex items-center space-x-3 justify-start w-full md:w-auto">
         <h1 class="text-sm font-bold text-cyan-400 flex items-center">
           <i class="fa-solid fa-cubes mr-2"></i> CalculaJá Pro 
-          <span class="text-xs text-cyan-200 font-bold ml-1.5 bg-cyan-900 px-2 py-0.5 rounded border border-cyan-500/50">v3.1 Enterprise</span>
+          <span class="text-xs text-cyan-200 font-bold ml-1.5 bg-cyan-900 px-2 py-0.5 rounded border border-cyan-500/50">v3.2 Otimizado</span>
         </h1>
       </div>
       <nav class="flex items-center space-x-2 overflow-x-auto py-1 justify-start w-full md:w-auto">
@@ -112,8 +111,8 @@
           </div>
           <div class="grid grid-cols-3 gap-2">
             <div>
-              <label class="block text-[10px] font-bold text-slate-600 mb-1">Mão de Obra (R$)</label>
-              <input type="number" id="mao" value="0" class="w-full bg-slate-50 border border-slate-300 rounded px-2 py-1.5 text-xs text-slate-900 outline-none">
+              <label class="block text-[10px] font-bold text-slate-600 mb-1">Espaçamento (cm)</label>
+              <input type="number" id="espacamentoPecas" value="0" step="0.1" min="0" class="w-full bg-slate-50 border border-slate-300 rounded px-2 py-1.5 text-xs text-slate-900 outline-none font-bold text-cyan-600">
             </div>
             <div>
               <label class="block text-[10px] font-bold text-slate-600 mb-1">Lucro (%)</label>
@@ -331,7 +330,6 @@
       });
     }
 
-    /* SISTEMA DE MODAL E CADASTROS */
     function fecharModal() {
       document.getElementById('modalDinamico').classList.add('hidden');
     }
@@ -411,21 +409,18 @@
     }
 
     function renderizarTabelas() {
-      // Clientes
       const tbodyC = document.getElementById('tabelaClientes');
       tbodyC.innerHTML = appData.clientes.length === 0 ? '<tr><td colspan="4" class="p-3 text-center text-slate-400">Nenhum cliente cadastrado.</td></tr>' : '';
       appData.clientes.forEach((c, i) => {
         tbodyC.innerHTML += `<tr class="hover:bg-slate-50"><td class="p-2 font-bold">${c.nome}</td><td class="p-2">${c.doc||'-'}</td><td class="p-2">${c.tel||'-'}</td><td class="p-2 text-center"><button onclick="removerCliente(${i})" class="text-red-500"><i class="fa-solid fa-trash"></i></button></td></tr>`;
       });
 
-      // Fornecedores
       const tbodyF = document.getElementById('tabelaFornecedores');
       tbodyF.innerHTML = appData.fornecedores.length === 0 ? '<tr><td colspan="4" class="p-3 text-center text-slate-400">Nenhum fornecedor cadastrado.</td></tr>' : '';
       appData.fornecedores.forEach((f, i) => {
         tbodyF.innerHTML += `<tr class="hover:bg-slate-50"><td class="p-2 font-bold">${f.empresa}</td><td class="p-2">${f.cnpj||'-'}</td><td class="p-2">${f.contato||'-'}</td><td class="p-2 text-center"><button onclick="removerFornecedor(${i})" class="text-red-500"><i class="fa-solid fa-trash"></i></button></td></tr>`;
       });
 
-      // Suprimentos
       const tbodyS = document.getElementById('tabelaSuprimentos');
       tbodyS.innerHTML = appData.suprimentos.length === 0 ? '<tr><td colspan="4" class="p-3 text-center text-slate-400">Nenhum suprimento cadastrado.</td></tr>' : '';
       appData.suprimentos.forEach((s, i) => {
@@ -472,46 +467,67 @@
       tbody.appendChild(tr);
     }
 
-    function processarNesting(pecas, larguraBobina) {
-      let prateleiras = [];
-      let comprimentoTotal = 0;
+    /* ALGORITMO GUILLOTINE / BEST-FIT COMPACTO (Com alinhamento e sem vãos) */
+    function processarNestingOtimizado(pecas, larguraBobina, espacamento) {
+      let espacosLivres = [{ x: 0, y: 0, w: larguraBobina, h: 999999 }];
+      let alturaMaximaUso = 0;
 
       pecas.forEach(peca => {
-        let colocada = false;
-        for (let p of prateleiras) {
-          if (p.larguraOcupada + peca.largura <= larguraBobina) {
-            peca.x = p.larguraOcupada;
-            peca.y = p.y;
-            p.larguraOcupada += peca.largura;
-            if (peca.comprimento > p.alturaMax) {
-              comprimentoTotal += (peca.comprimento - p.alturaMax);
-              p.alturaMax = peca.comprimento;
+        let melhorEspacoIdx = -1;
+        let menorSobraArea = Infinity;
+
+        // Procura o melhor espaço que caiba a peça exatamente
+        for (let i = 0; i < espacosLivres.length; i++) {
+          let esp = espacosLivres[i];
+          if (peca.largura <= esp.w && peca.comprimento <= esp.h) {
+            let sobraArea = (esp.w * esp.h) - (peca.largura * peca.comprimento);
+            if (sobraArea < menorSobraArea) {
+              menorSobraArea = sobraArea;
+              melhorEspacoIdx = i;
             }
-            p.pecas.push(peca);
-            colocada = true;
-            break;
           }
         }
-        if (!colocada) {
-          let novaY = comprimentoTotal;
-          peca.x = 0;
-          peca.y = novaY;
-          prateleiras.push({
-            y: novaY,
-            larguraOcupada: peca.largura,
-            alturaMax: peca.comprimento,
-            pecas: [peca]
-          });
-          comprimentoTotal += peca.comprimento;
+
+        if (melhorEspacoIdx !== -1) {
+          let esp = espacosLivres.splice(melhorEspacoIdx, 1)[0];
+          
+          peca.x = esp.x;
+          peca.y = esp.y;
+
+          if (peca.y + peca.comprimento > alturaMaximaUso) {
+            alturaMaximaUso = peca.y + peca.comprimento;
+          }
+
+          // Divisão do espaço restante (Sub-retângulos colados)
+          let espacoDireita = {
+            x: esp.x + peca.largura + espacamento,
+            y: esp.y,
+            w: esp.w - peca.largura - espacamento,
+            h: peca.comprimento
+          };
+
+          let espacoAbaixo = {
+            x: esp.x,
+            y: esp.y + peca.comprimento + espacamento,
+            w: esp.w,
+            h: esp.h - peca.comprimento - espacamento
+          };
+
+          if (espacoDireita.w > 0) espacosLivres.push(espacoDireita);
+          if (espacoAbaixo.h > 0) espacosLivres.push(espacoAbaixo);
+
+          // Ordena espaços por menor Y para empacotar de cima para baixo
+          espacosLivres.sort((a, b) => a.y - b.y || a.x - b.x);
         }
       });
 
-      return { pecas, comprimentoTotal };
+      return { pecas, comprimentoTotal: alturaMaximaUso };
     }
 
     function calcularCustos() {
       const selectBobina = document.getElementById('selectBobinaGlobal');
       const larguraBobina = parseFloat(selectBobina.value) || 135;
+      const espacamento = parseFloat(document.getElementById('espacamentoPecas').value) || 0;
       const linhas = document.querySelectorAll('#partes tr');
       let pecas = [];
 
@@ -533,8 +549,10 @@
         return null;
       }
 
-      pecas.sort((a, b) => b.area - a.area);
-      const resultado = processarNesting(pecas, larguraBobina);
+      // Ordenar peças da MAIOR para a MENOR área (fundamental para colagem perfeita)
+      pecas.sort((a, b) => b.comprimento - a.comprimento || b.area - a.area);
+      
+      const resultado = processarNestingOtimizado(pecas, larguraBobina, espacamento);
       const areaUsada = pecas.reduce((acc, p) => acc + p.area, 0);
       const areaTotal = larguraBobina * resultado.comprimentoTotal;
       const aproveitamento = areaTotal > 0 ? ((areaUsada / areaTotal) * 100).toFixed(1) : 0;
@@ -571,7 +589,7 @@
       const larguraPx = larguraBobina * pxPorCm;
       const alturaPx = Math.max(comprimentoTotal * pxPorCm, 300);
 
-      // Régua H
+      // Régua Horizontal
       let htmlReguaH = '';
       for (let i = 0; i <= larguraBobina; i++) {
         let pos = i * pxPorCm;
@@ -586,7 +604,7 @@
       reguaH.innerHTML = htmlReguaH;
       reguaH.style.width = larguraPx + 'px';
 
-      // Régua V
+      // Régua Vertical
       let htmlReguaV = '';
       const maxVert = Math.max(comprimentoTotal, Math.ceil(300 / pxPorCm));
       for (let i = 0; i <= maxVert; i++) {
@@ -602,14 +620,14 @@
       reguaV.innerHTML = htmlReguaV;
       reguaV.style.height = alturaPx + 'px';
 
-      // Render Peças
+      // Desenhar Peças no Canvas RIP
       container.style.width = larguraPx + 'px';
       container.style.height = alturaPx + 'px';
       container.innerHTML = '';
 
       pecas.forEach(p => {
         const div = document.createElement('div');
-        div.className = 'peca-box absolute border border-cyan-400/90 bg-[#0c2438] text-cyan-200 flex items-center justify-center font-medium text-[10px] shadow-sm select-none';
+        div.className = 'peca-box absolute border border-cyan-400 bg-[#0c2438] text-cyan-200 flex items-center justify-center font-medium text-[10px] shadow-sm select-none';
         div.style.left = (p.x * pxPorCm) + 'px';
         div.style.top = (p.y * pxPorCm) + 'px';
         div.style.width = (p.largura * pxPorCm) + 'px';
