@@ -16,8 +16,8 @@
 </head>
 <body class="bg-slate-100 text-slate-800 font-sans antialiased min-h-screen text-[64%]" data-versao="3.5-master-forcada">
 
-  <!-- TELA DE LOGIN / AUTENTICAÇÃO FIREBASE -->
-  <div id="authModal" class="fixed inset-0 bg-slate-900/90 z-50 flex items-center justify-center p-4">
+  <!-- TELA DE LOGIN / AUTENTICAÇÃO FIREBASE (Inicia oculta para evitar piscar no celular) -->
+  <div id="authModal" class="hidden fixed inset-0 bg-slate-900/90 z-50 flex items-center justify-center p-4">
     <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-8 space-y-6 border border-slate-200">
       <div class="text-center space-y-2">
         <div class="inline-flex items-center justify-center w-14 h-14 bg-cyan-600 text-white rounded-xl shadow-lg mb-2">
@@ -49,10 +49,10 @@
     </div>
   </div>
 
-  <!-- APLICATIVO PRINCIPAL -->
+  <!-- APLICATIVO PRINCIPAL (Inicia oculto até o Firebase validar a sessão) -->
   <div id="appContainer" class="hidden min-h-screen flex flex-col">
     
-    <!-- Navegação por Abas (Ícones e Links Alinhados Rigorosamente à Esquerda) -->
+    <!-- Navegação por Abas -->
     <header class="flex flex-col md:flex-row justify-between items-center bg-slate-900 px-6 py-3 border-b border-slate-800 text-white shadow-md gap-3">
       <div class="flex items-center space-x-3 justify-start w-full md:w-auto">
         <h1 class="text-sm font-bold text-cyan-400 flex items-center">
@@ -87,7 +87,6 @@
       <!-- ABA 1: ORÇAMENTO E PEÇAS -->
       <section id="abaDados" class="space-y-4">
         
-        <!-- BARRA SUPERIOR ÚNICA DE SELEÇÃO DE BOBINA PADRÃO DO PROJETO -->
         <div class="bg-cyan-900/15 border border-cyan-500/30 p-3 rounded-xl flex flex-col md:flex-row items-center justify-between gap-3">
           <div class="flex items-center space-x-2 w-full md:w-auto">
             <div class="bg-cyan-600 text-white p-2 rounded-lg text-xs">
@@ -100,7 +99,6 @@
           </div>
           <div class="w-full md:w-80">
             <select id="selectBobinaGlobal" class="w-full bg-white border border-cyan-500/50 rounded px-3 py-2 text-xs font-bold text-slate-800 outline-none focus:ring-2 focus:ring-cyan-500" onchange="mudarBobinaGlobal(this)">
-              <!-- Preenchido dinamicamente via JS -->
             </select>
           </div>
         </div>
@@ -199,12 +197,11 @@
               <p id="infoClienteDesenho" class="text-[11px] text-slate-400">Aguardando processamento de dados...</p>
             </div>
             <div class="flex items-center space-x-3">
-              <!-- CONTROLES DE ZOOM -->
               <div class="flex items-center bg-slate-950 rounded-lg border border-slate-800 px-2 py-1 space-x-1">
                 <span class="text-[10px] text-slate-400 font-mono mr-1">Zoom:</span>
-                <button type="button" onclick="ajustarZoom(-0.2)" class="text-slate-300 hover:text-white px-1.5 py-0.5 text-xs font-bold cursor-pointer flex items-center" title="Diminuir Zoom"><i class="fa-solid fa-magnifying-glass-minus"></i></button>
+                <button type="button" onclick="ajustarZoom(-0.2)" class="text-slate-300 hover:text-white px-1.5 py-0.5 text-xs font-bold cursor-pointer" title="Diminuir Zoom"><i class="fa-solid fa-magnifying-glass-minus"></i></button>
                 <span id="labelZoom" class="text-xs font-mono text-cyan-400 w-12 text-center">100%</span>
-                <button type="button" onclick="ajustarZoom(0.2)" class="text-slate-300 hover:text-white px-1.5 py-0.5 text-xs font-bold cursor-pointer flex items-center" title="Aumentar Zoom"><i class="fa-solid fa-magnifying-glass-plus"></i></button>
+                <button type="button" onclick="ajustarZoom(0.2)" class="text-slate-300 hover:text-white px-1.5 py-0.5 text-xs font-bold cursor-pointer" title="Aumentar Zoom"><i class="fa-solid fa-magnifying-glass-plus"></i></button>
               </div>
               <div class="text-left md:text-right bg-slate-950 px-4 py-2 rounded-lg border border-slate-800">
                 <span id="valorFinalDesenho" class="text-sm font-bold text-emerald-400">R$ 0.00</span>
@@ -214,7 +211,6 @@
 
           <!-- ÁREA DO VISUALIZADOR COM RÉGUAS DINÂMICAS -->
           <div class="relative bg-white rounded border border-[#b5b5b5] overflow-hidden shadow-inner text-slate-800 flex flex-col h-[580px]">
-            
             <div class="flex h-8 border-b border-[#b5b5b5] bg-[#ececec] relative z-20 shrink-0">
               <div class="w-12 h-full border-r border-[#b5b5b5] flex items-center justify-center text-[11px] font-bold font-sans text-slate-700 z-30 shrink-0 bg-[#e2e2e2]">cm</div>
               <div class="flex-grow relative overflow-hidden" id="containerReguaX">
@@ -235,11 +231,9 @@
                   <div class="absolute top-12 left-12 text-slate-400 text-xs font-medium">Aguardando cálculo do projeto...</div>
                 </div>
               </div>
-
             </div>
           </div>
 
-          <!-- BOTÕES DE EXPORTAÇÃO E AÇÕES -->
           <div class="flex flex-wrap justify-between items-center pt-2 gap-2">
             <button type="button" onclick="mudarAba('dados')" class="bg-slate-800 hover:bg-slate-700 text-slate-300 px-4 py-2 rounded text-xs transition cursor-pointer flex items-center">
               <i class="fa-solid fa-arrow-left mr-2"></i> Voltar para Orçamento
@@ -259,7 +253,7 @@
         </div>
       </section>
 
-      <!-- ABA 4: MEUS ORÇAMENTOS (SERVIDOR DO ADM) -->
+      <!-- ABA 4: MEUS ORÇAMENTOS -->
       <section id="abaMeusOrcamentos" class="hidden space-y-4">
         <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 space-y-4">
           <div class="flex justify-between items-center border-b border-slate-100 pb-3">
@@ -292,28 +286,26 @@
         </div>
       </section>
 
-      <!-- ABA 5: BACKUP E GERENCIAMENTO DE DADOS -->
+      <!-- ABA 5: BACKUP -->
       <section id="abaBackup" class="hidden space-y-4">
         <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 space-y-6">
           <div class="border-b border-slate-100 pb-3">
             <h2 class="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center"><i class="fa-solid fa-database mr-1 text-cyan-600"></i> Central de Backup e Restauração</h2>
-            <p class="text-[11px] text-slate-400">Exporte ou importe todos os dados do sistema (suprimentos e configurações) em formato JSON.</p>
+            <p class="text-[11px] text-slate-400">Exporte ou importe todos os dados do sistema em formato JSON.</p>
           </div>
 
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <!-- Fazer Backup -->
             <div class="bg-slate-50 border border-slate-200 p-4 rounded-xl space-y-3">
               <h3 class="text-xs font-bold text-slate-800 flex items-center"><i class="fa-solid fa-download mr-1 text-emerald-600"></i> Fazer Backup do Sistema</h3>
-              <p class="text-[11px] text-slate-500">Baixe um arquivo contendo todas as configurações de bobinas e dados cadastrados no seu navegador.</p>
+              <p class="text-[11px] text-slate-500">Baixe um arquivo contendo todas as configurações de bobinas.</p>
               <button type="button" onclick="fazerBackupJSON()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded text-xs font-bold transition cursor-pointer flex items-center">
                 <i class="fa-solid fa-file-arrow-down mr-2"></i> Baixar Arquivo de Backup (.json)
               </button>
             </div>
 
-            <!-- Restaurar Backup -->
             <div class="bg-slate-50 border border-slate-200 p-4 rounded-xl space-y-3">
               <h3 class="text-xs font-bold text-slate-800 flex items-center"><i class="fa-solid fa-upload mr-1 text-cyan-600"></i> Restaurar Dados</h3>
-              <p class="text-[11px] text-slate-500">Selecione um arquivo de backup (.json) gerado anteriormente para restaurar as informações.</p>
+              <p class="text-[11px] text-slate-500">Selecione um arquivo de backup (.json) gerado anteriormente.</p>
               <input type="file" id="inputArquivoBackup" accept=".json" class="block w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-cyan-50 file:text-cyan-700 hover:file:bg-cyan-100 cursor-pointer">
               <button type="button" onclick="restaurarBackupJSON()" class="bg-cyan-600 hover:bg-cyan-700 text-white px-4 py-2 rounded text-xs font-bold transition cursor-pointer flex items-center">
                 <i class="fa-solid fa-file-arrow-up mr-2"></i> Carregar e Restaurar Backup
@@ -326,7 +318,7 @@
     </main>
   </div>
 
-  <!-- MODAL DE CADASTRO DE SUPRIMENTO -->
+  <!-- MODAL SUPRIMENTO -->
   <div id="modalSuprimento" class="hidden fixed inset-0 bg-slate-900/80 z-50 flex items-center justify-center p-4">
     <div class="bg-white rounded-xl shadow-xl max-w-sm w-full p-6 space-y-4 border border-slate-200">
       <h3 class="text-xs font-bold text-slate-800 uppercase flex items-center"><i class="fa-solid fa-plus-circle text-cyan-600 mr-1"></i> Adicionar Nova Bobina</h3>
@@ -376,7 +368,7 @@
     let alturaTotalLayout = 300;  
     let pecasEmCache = [];
     let valorOrcamentoCalculado = 0;
-    let unsubSessao = null; // Variável para controlar o vigia de sessão única
+    let unsubSessao = null; 
 
     let bobinas = [
       { id: 1, nome: "Vinil Brilho 1.00m", largura: 100, preco: 15.00 }, 
@@ -385,30 +377,27 @@
     ];
 
     auth.onAuthStateChanged(user => {
-      // Limpa o monitor anterior se houver troca de usuário
       if (unsubSessao) {
         unsubSessao();
         unsubSessao = null;
       }
 
       if (user) {
+        // Usuário logado: esconde o login e mostra o app de vez
         document.getElementById("authModal").classList.add("hidden");
         document.getElementById("appContainer").classList.remove("hidden");
         
-        // --- MONITOR DE SESSÃO ÚNICA (ANTIPIRATARIA / COMPARTILHAMENTO) ---
         const meuDeviceId = localStorage.getItem("calculaja_device_id");
         
         unsubSessao = db.collection("usuarios").doc(user.uid).onSnapshot((doc) => {
           if (doc.exists) {
             const dados = doc.data();
-            // Se o ID salvo no servidor for diferente do ID deste navegador, alguém logou em outro lugar!
             if (dados.ativoDeviceId && dados.ativoDeviceId !== meuDeviceId) {
               alert("Sua conta foi acessada em outro dispositivo. Este aparelho foi desconectado.");
-              auth.signOut(); // Desloga imediatamente
+              auth.signOut();
             }
           }
         });
-        // -----------------------------------------------------------------
 
         const viewport = document.getElementById('viewportPlotagem');
         viewport.addEventListener('scroll', function() {
@@ -424,8 +413,9 @@
           calcularEscalaFit150();
         }, 50);
       } else {
-        document.getElementById("authModal").classList.remove("hidden");
+        // Usuário NÃO logado: garante que o app está oculto e exibe o login
         document.getElementById("appContainer").classList.add("hidden");
+        document.getElementById("authModal").classList.remove("hidden");
       }
     });
 
@@ -634,7 +624,7 @@
       }
       if(largura > 150) {
         largura = 150;
-        alert("A largura máxima permitida pela régua/limite é de 150cm.");
+        alert("A largura máxima permitida é de 150cm.");
       }
 
       bobinas.push({ id: Date.now(), nome, largura, preco });
@@ -687,7 +677,7 @@
         const q = parseInt(tr.querySelector(".qtdParte").value) || 1;
 
         if (w > larguraBobinaAtual) {
-          alert(`A peça "${nome}" (${w}cm) excede a largura da bobina principal selecionada (${larguraBobinaAtual}cm)! Ajuste o tamanho.`);
+          alert(`A peça "${nome}" (${w}cm) excede a largura da bobina selecionada (${larguraBobinaAtual}cm)!`);
           return;
         }
 
@@ -765,11 +755,11 @@
     function salvarOrcamentoServidor() {
       const user = auth.currentUser;
       if (!user) {
-        alert("Você precisa estar logado para salvar no servidor.");
+        alert("Você precisa estar logado.");
         return;
       }
       if (pecasEmCache.length === 0) {
-        alert("Nenhum cálculo efetuado para salvar.");
+        alert("Nenhum cálculo efetuado.");
         return;
       }
 
@@ -790,11 +780,11 @@
 
       db.collection("orcamentos").add(dadosOrcamento)
         .then(() => {
-          alert("Orçamento salvo com sucesso no servidor do administrador!");
+          alert("Orçamento salvo com sucesso!");
           mudarAba('meusOrcamentos');
         })
         .catch((error) => {
-          alert("Erro ao salvar orçamento: " + error.message);
+          alert("Erro ao salvar: " + error.message);
         });
     }
 
@@ -803,7 +793,7 @@
       const tbody = document.getElementById("tabelaMeusOrcamentos");
       if (!user) return;
 
-      tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-slate-400">Carregando orçamentos do servidor...</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-slate-400">Carregando...</td></tr>`;
 
       db.collection("orcamentos")
         .where("userId", "==", user.uid)
@@ -826,8 +816,8 @@
                 <td class="p-2">${o.larguraBobina} cm</td>
                 <td class="p-2 font-bold text-emerald-600">R$ ${Number(o.valorTotal).toFixed(2)}</td>
                 <td class="p-2 text-center space-x-2">
-                  <button onclick='carregarOrcamentoDoServidor(${JSON.stringify(o.pecas).replace(/'/g, "&apos;")}, "${o.cliente}", "${o.produto}", ${o.larguraBobina}, ${o.valorTotal})' class="text-cyan-600 hover:text-cyan-800 cursor-pointer font-medium" title="Visualizar no App"><i class="fa-solid fa-eye mr-1"></i> Ver</button>
-                  <button onclick="deletarOrcamentoServidor('${idDoc}')" class="text-red-500 hover:text-red-700 cursor-pointer" title="Excluir"><i class="fa-solid fa-trash"></i></button>
+                  <button onclick='carregarOrcamentoDoServidor(${JSON.stringify(o.pecas).replace(/'/g, "&apos;")}, "${o.cliente}", "${o.produto}", ${o.larguraBobina}, ${o.valorTotal})' class="text-cyan-600 hover:text-cyan-800 cursor-pointer font-medium"><i class="fa-solid fa-eye mr-1"></i> Ver</button>
+                  <button onclick="deletarOrcamentoServidor('${idDoc}')" class="text-red-500 hover:text-red-700 cursor-pointer"><i class="fa-solid fa-trash"></i></button>
                 </td>
               </tr>
             `;
@@ -835,7 +825,7 @@
           tbody.innerHTML = html;
         })
         .catch((error) => {
-          tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-red-500">Erro ao carregar orçamentos: ${error.message}</td></tr>`;
+          tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-red-500">Erro: ${error.message}</td></tr>`;
         });
     }
 
@@ -854,20 +844,16 @@
     }
 
     function deletarOrcamentoServidor(idDoc) {
-      if(confirm("Deseja realmente excluir este orçamento do servidor?")) {
+      if(confirm("Deseja excluir este orçamento?")) {
         db.collection("orcamentos").doc(idDoc).delete()
-          .then(() => {
-            carregarMeusOrcamentos();
-          })
-          .catch((error) => {
-            alert("Erro ao excluir: " + error.message);
-          });
+          .then(() => carregarMeusOrcamentos())
+          .catch((error) => alert("Erro: " + error.message));
       }
     }
 
     function exportarCSV() {
       if(pecasEmCache.length === 0) {
-        alert("Nenhum dado calculado para exportar.");
+        alert("Nenhum dado calculado.");
         return;
       }
       const cliente = document.getElementById("cliente").value || "Cliente";
@@ -894,15 +880,11 @@
     }
 
     function fazerBackupJSON() {
-      const dadosBackup = {
-        bobinas: bobinas,
-        versao: VERSAO_SISTEMA,
-        data: new Date().toISOString()
-      };
+      const dadosBackup = { bobinas: bobinas, versao: VERSAO_SISTEMA, data: new Date().toISOString() };
       const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(dadosBackup, null, 2));
       const downloadAnchor = document.createElement('a');
       downloadAnchor.setAttribute("href", dataStr);
-      downloadAnchor.setAttribute("download", `backup_calculajapro_${new Date().toISOString().slice(0,10)}.json`);
+      downloadAnchor.setAttribute("download", `backup_calculajapro.json`);
       document.body.appendChild(downloadAnchor);
       downloadAnchor.click();
       downloadAnchor.remove();
@@ -911,7 +893,7 @@
     function restaurarBackupJSON() {
       const fileInput = document.getElementById("inputArquivoBackup");
       if(fileInput.files.length === 0) {
-        alert("Selecione um arquivo .json para restaurar.");
+        alert("Selecione um arquivo .json.");
         return;
       }
       const file = fileInput.files[0];
@@ -922,13 +904,13 @@
           if(dados.bobinas && Array.isArray(dados.bobinas)) {
             bobinas = dados.bobinas;
             renderizarTabelaSuprimentos();
-            alert("Backup restaurado com sucesso!");
+            alert("Restaurado com sucesso!");
             mudarAba('suprimentos');
           } else {
-            alert("Arquivo de backup inválido.");
+            alert("Arquivo inválido.");
           }
         } catch(err) {
-          alert("Erro ao ler o arquivo JSON: " + err.message);
+          alert("Erro: " + err.message);
         }
       };
       reader.readAsText(file);
@@ -948,15 +930,12 @@
       auth.signInWithEmailAndPassword(email, senha)
         .then((userCredential) => {
           const user = userCredential.user;
-          
-          // Gera ou recupera um ID único para este aparelho/navegador
           let deviceId = localStorage.getItem("calculaja_device_id");
           if (!deviceId) {
             deviceId = "dev_" + Math.random().toString(36).substring(2) + Date.now();
             localStorage.setItem("calculaja_device_id", deviceId);
           }
 
-          // Salva este deviceId no documento do usuário no Firestore
           return db.collection("usuarios").doc(user.uid).set({
             email: user.email,
             ativoDeviceId: deviceId,
@@ -964,11 +943,7 @@
           }, { merge: true });
         })
         .catch((error) => {
-          if (error.code === 'auth/user-not-found' || error.code === 'auth/invalid-credential' || error.code === 'auth/wrong-password' || error.code === 'auth/invalid-email') {
-            erroEl.textContent = "E-mail ou senha incorretos. Solicite acesso ao administrador.";
-          } else {
-            erroEl.textContent = error.message;
-          }
+          erroEl.textContent = "E-mail ou senha incorretos.";
         });
     }
 
@@ -976,19 +951,13 @@
       const email = document.getElementById("loginEmail").value.trim();
       const erroEl = document.getElementById("authError");
       erroEl.textContent = "";
-
       if (!email) {
-        erroEl.textContent = "Digite seu e-mail no campo acima para recuperar a senha.";
+        erroEl.textContent = "Digite seu e-mail no campo acima.";
         return;
       }
-
       auth.sendPasswordResetEmail(email)
-        .then(() => {
-          alert("E-mail de redefinição de senha enviado com sucesso! Verifique sua caixa de entrada.");
-        })
-        .catch((error) => {
-          erroEl.textContent = "Erro ao enviar e-mail: " + error.message;
-        });
+        .then(() => alert("E-mail de redefinição enviado!"))
+        .catch((error) => erroEl.textContent = "Erro: " + error.message);
     }
 
     function fazerLogout() {
