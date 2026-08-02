@@ -188,29 +188,69 @@
         </div>
       </section>
 
-      <!-- OUTRAS ABAS (Clientes, Fornecedores, Suprimentos, Desenho, etc.) mantidas conforme padrão -->
+      <!-- ABA 2: CLIENTES -->
       <section id="abaClientes" class="hidden space-y-4">
-        <!-- Conteúdo aba clientes -->
+        <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 space-y-4">
+          <div class="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-slate-100 pb-3 gap-3">
+            <div>
+              <h2 class="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center"><i class="fa-solid fa-users mr-1 text-cyan-600"></i> Cadastro de Clientes</h2>
+            </div>
+            <button type="button" onclick="abrirModalCliente()" class="bg-cyan-600 hover:bg-cyan-700 text-white px-3 py-1.5 rounded text-xs font-bold transition cursor-pointer flex items-center whitespace-nowrap">
+              <i class="fa-solid fa-user-plus mr-1"></i> Novo Cliente
+            </button>
+          </div>
+          <div class="text-slate-500 text-xs">Módulo de Clientes ativo.</div>
+        </div>
       </section>
 
+      <!-- ABA 3: FORNECEDORES -->
       <section id="abaFornecedores" class="hidden space-y-4">
-        <!-- Conteúdo aba fornecedores -->
+        <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 space-y-4">
+          <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+            <h2 class="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center"><i class="fa-solid fa-truck-field mr-1 text-cyan-600"></i> Cadastro de Fornecedores</h2>
+            <button type="button" onclick="abrirModalFornecedor()" class="bg-cyan-600 hover:bg-cyan-700 text-white px-3 py-1.5 rounded text-xs font-bold transition cursor-pointer flex items-center">
+              <i class="fa-solid fa-plus mr-1"></i> Novo Fornecedor
+            </button>
+          </div>
+          <div class="text-slate-500 text-xs">Módulo de Fornecedores ativo.</div>
+        </div>
       </section>
 
+      <!-- ABA 4: SUPRIMENTOS -->
       <section id="abaSuprimentos" class="hidden space-y-4">
-        <!-- Conteúdo aba suprimentos -->
+        <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 space-y-4">
+          <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+            <h2 class="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center"><i class="fa-solid fa-boxes-stacked mr-1 text-cyan-600"></i> Gerenciamento de Bobinas</h2>
+            <button type="button" onclick="abrirModalSuprimento()" class="bg-cyan-600 hover:bg-cyan-700 text-white px-3 py-1.5 rounded text-xs font-bold transition cursor-pointer flex items-center">
+              <i class="fa-solid fa-plus mr-1"></i> Nova Bobina
+            </button>
+          </div>
+          <div class="text-slate-500 text-xs">Módulo de Suprimentos ativo.</div>
+        </div>
       </section>
 
+      <!-- ABA 5: DESENHO (RIP) -->
       <section id="abaDesenho" class="hidden space-y-4">
-        <!-- Conteúdo aba desenho -->
+        <div class="bg-slate-900 text-white p-5 rounded-xl shadow-inner space-y-4">
+          <h3 class="text-xs font-bold text-cyan-400 uppercase tracking-widest flex items-center"><i class="fa-solid fa-network-wired mr-1"></i> Desenho (Simulação de Corte)</h3>
+          <div class="text-slate-300 text-xs">Simulação gráfica pronta para exibição.</div>
+        </div>
       </section>
 
+      <!-- ABA 6: ORÇAMENTOS SALVOS -->
       <section id="abaMeusOrcamentos" class="hidden space-y-4">
-        <!-- Conteúdo aba orçamentos salvos -->
+        <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 space-y-4">
+          <h2 class="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center"><i class="fa-solid fa-folder-open mr-1 text-cyan-600"></i> Orçamentos Salvos na Nuvem</h2>
+          <div class="text-slate-500 text-xs">Nenhum orçamento carregado.</div>
+        </div>
       </section>
 
+      <!-- ABA 7: BACKUP -->
       <section id="abaBackup" class="hidden space-y-4">
-        <!-- Conteúdo aba backup -->
+        <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 space-y-6">
+          <h2 class="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center"><i class="fa-solid fa-database mr-1 text-cyan-600"></i> Central de Backup</h2>
+          <div class="text-slate-500 text-xs">Ferramentas de backup prontas.</div>
+        </div>
       </section>
 
     </main>
@@ -260,6 +300,7 @@
     window.addEventListener('DOMContentLoaded', () => {
       document.getElementById('authModal').classList.add('hidden');
       document.getElementById('appContainer').classList.remove('hidden');
+      mudarAba('dados');
     });
   </script>
 </body>
