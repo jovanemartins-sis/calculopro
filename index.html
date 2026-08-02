@@ -1,442 +1,818 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ProFull Dashboard - Sistema de Gestão</title>
-    <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- FontAwesome para Ícones -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CalculaJá Pro - Sistema Integrado Completo</title>
+  <!-- Tailwind CSS via CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- Firebase SDKs (Compat) -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
 </head>
-<body class="bg-gray-100 font-sans antialiased text-gray-900">
+<body class="bg-slate-100 text-slate-800 font-sans antialiased min-h-screen text-[64%]" data-versao="3.7-master">
 
-    <div class="flex h-screen overflow-hidden">
-        <!-- Sidebar -->
-        <aside class="w-64 bg-slate-900 text-white flex flex-col hidden md:flex">
-            <div class="p-5 flex items-center space-x-3 border-b border-slate-800">
-                <div class="bg-blue-600 p-2 rounded-lg text-white font-bold text-xl flex items-center justify-center w-10 h-10">
-                    <i class="fa-solid fa-cube"></i>
-                </div>
-                <div>
-                    <h1 class="font-bold text-lg tracking-wide">ProFull</h1>
-                    <p class="text-xs text-slate-400">Dashboard de Gestão</p>
-                </div>
-            </div>
-            
-            <nav class="flex-1 p-4 space-y-2">
-                <button onclick="switchTab('dashboard')" id="nav-dashboard" class="w-full flex items-center space-x-3 px-4 py-3 rounded-xl bg-blue-600 text-white transition font-medium">
-                    <i class="fa-solid fa-chart-pie w-5"></i>
-                    <span>Dashboard</span>
-                </button>
-                <button onclick="switchTab('budgets')" id="nav-budgets" class="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-slate-300 hover:bg-slate-800 transition font-medium">
-                    <i class="fa-solid fa-file-invoice-dollar w-5"></i>
-                    <span>Orçamentos</span>
-                </button>
-                <button onclick="switchTab('clients')" id="nav-clients" class="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-slate-300 hover:bg-slate-800 transition font-medium">
-                    <i class="fa-solid fa-users w-5"></i>
-                    <span>Clientes & Veículos</span>
-                </button>
-                <button onclick="switchTab('stock')" id="nav-stock" class="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-slate-300 hover:bg-slate-800 transition font-medium">
-                    <i class="fa-solid fa-boxes-stacked w-5"></i>
-                    <span>Estoque & Peças</span>
-                </button>
-                <button onclick="switchTab('settings')" id="nav-settings" class="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-slate-300 hover:bg-slate-800 transition font-medium">
-                    <i class="fa-solid fa-gear w-5"></i>
-                    <span>Configurações</span>
-                </button>
-            </nav>
-
-            <div class="p-4 border-t border-slate-800 text-xs text-slate-400 flex justify-between items-center">
-                <span>Modo: <strong class="text-green-400">Demo Local</strong></span>
-                <button onclick="exportData()" class="bg-slate-800 hover:bg-slate-700 p-2 rounded text-slate-200 transition" title="Exportar Backup JSON">
-                    <i class="fa-solid fa-download"></i>
-                </button>
-            </div>
-        </aside>
-
-        <!-- Main Content Wrapper -->
-        <div class="flex-1 flex flex-col overflow-hidden">
-            <!-- TopHeader -->
-            <header class="bg-white shadow-sm h-16 flex items-center justify-between px-6 z-10">
-                <div class="flex items-center space-x-4">
-                    <h2 id="page-title" class="text-xl font-bold text-gray-800">Visão Geral</h2>
-                </div>
-                <div class="flex items-center space-x-4">
-                    <span id="header-company-name" class="text-sm font-medium text-gray-600">Empresa Exemplo</span>
-                    <div class="w-10 h-10 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold">
-                        PF
-                    </div>
-                </div>
-            </header>
-
-            <!-- Main View Area -->
-            <main class="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100 p-6">
-
-                <!-- TAB: DASHBOARD -->
-                <section id="tab-dashboard" class="space-y-6">
-                    <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
-                        <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between">
-                            <div>
-                                <p class="text-sm text-gray-500 font-medium">Faturamento Total</p>
-                                <h3 id="stat-revenue" class="text-2xl font-bold text-gray-800 mt-1">R$ 0,00</h3>
-                            </div>
-                            <div class="bg-green-100 text-green-600 p-3 rounded-xl">
-                                <i class="fa-solid fa-dollar-sign text-xl"></i>
-                            </div>
-                        </div>
-                        <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between">
-                            <div>
-                                <p class="text-sm text-gray-500 font-medium">Orçamentos Emitidos</p>
-                                <h3 id="stat-budgets" class="text-2xl font-bold text-gray-800 mt-1">0</h3>
-                            </div>
-                            <div class="bg-blue-100 text-blue-600 p-3 rounded-xl">
-                                <i class="fa-solid fa-file-invoice text-xl"></i>
-                            </div>
-                        </div>
-                        <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between">
-                            <div>
-                                <p class="text-sm text-gray-500 font-medium">Clientes Cadastrados</p>
-                                <h3 id="stat-clients" class="text-2xl font-bold text-gray-800 mt-1">0</h3>
-                            </div>
-                            <div class="bg-purple-100 text-purple-600 p-3 rounded-xl">
-                                <i class="fa-solid fa-users text-xl"></i>
-                            </div>
-                        </div>
-                        <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between">
-                            <div>
-                                <p class="text-sm text-gray-500 font-medium">Itens em Estoque</p>
-                                <h3 id="stat-stock" class="text-2xl font-bold text-gray-800 mt-1">0</h3>
-                            </div>
-                            <div class="bg-amber-100 text-amber-600 p-3 rounded-xl">
-                                <i class="fa-solid fa-box text-xl"></i>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-                        <h3 class="text-lg font-bold text-gray-800 mb-4">Ações Rápidas</h3>
-                        <div class="flex flex-wrap gap-4">
-                            <button onclick="switchTab('budgets'); openNewBudgetModal();" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl font-medium transition flex items-center space-x-2">
-                                <i class="fa-solid fa-plus"></i>
-                                <span>Novo Orçamento</span>
-                            </button>
-                            <button onclick="switchTab('clients'); openNewClientModal();" class="bg-slate-800 hover:bg-slate-700 text-white px-5 py-2.5 rounded-xl font-medium transition flex items-center space-x-2">
-                                <i class="fa-solid fa-user-plus"></i>
-                                <span>Novo Cliente</span>
-                            </button>
-                            <button onclick="switchTab('stock'); openNewStockModal();" class="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2.5 rounded-xl font-medium transition flex items-center space-x-2">
-                                <i class="fa-solid fa-boxes-stacked"></i>
-                                <span>Adicionar Peça</span>
-                            </button>
-                        </div>
-                    </div>
-                </section>
-
-                <!-- TAB: ORÇAMENTOS -->
-                <section id="tab-budgets" class="hidden space-y-6">
-                    <div class="flex justify-between items-center">
-                        <h3 class="text-xl font-bold text-gray-800">Gerenciamento de Orçamentos</h3>
-                        <button onclick="openNewBudgetModal()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl font-medium transition flex items-center space-x-2">
-                            <i class="fa-solid fa-plus"></i>
-                            <span>Criar Orçamento</span>
-                        </button>
-                    </div>
-                    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-                        <table class="w-full text-left border-collapse">
-                            <thead>
-                                <tr class="bg-gray-50 border-b border-gray-100 text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                                    <th class="p-4">ID</th>
-                                    <th class="p-4">Cliente</th>
-                                    <th class="p-4">Placa</th>
-                                    <th class="p-4">Data</th>
-                                    <th class="p-4">Total</th>
-                                    <th class="p-4">Status</th>
-                                    <th class="p-4 text-right">Ações</th>
-                                </tr>
-                            </thead>
-                            <tbody id="budgets-table-body" class="divide-y divide-gray-100 text-sm text-gray-600"></tbody>
-                        </table>
-                    </div>
-                </section>
-
-                <!-- TAB: CLIENTES & VEÍCULOS -->
-                <section id="tab-clients" class="hidden space-y-6">
-                    <div class="flex justify-between items-center">
-                        <h3 class="text-xl font-bold text-gray-800">Clientes & Veículos</h3>
-                        <button onclick="openNewClientModal()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl font-medium transition flex items-center space-x-2">
-                            <i class="fa-solid fa-user-plus"></i>
-                            <span>Novo Cliente</span>
-                        </button>
-                    </div>
-                    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-                        <table class="w-full text-left border-collapse">
-                            <thead>
-                                <tr class="bg-gray-50 border-b border-gray-100 text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                                    <th class="p-4">Nome</th>
-                                    <th class="p-4">WhatsApp</th>
-                                    <th class="p-4">Veículo / Placa</th>
-                                    <th class="p-4 text-right">Ações</th>
-                                </tr>
-                            </thead>
-                            <tbody id="clients-table-body" class="divide-y divide-gray-100 text-sm text-gray-600"></tbody>
-                        </table>
-                    </div>
-                </section>
-
-                <!-- TAB: ESTOQUE & PEÇAS -->
-                <section id="tab-stock" class="hidden space-y-6">
-                    <div class="flex justify-between items-center">
-                        <h3 class="text-xl font-bold text-gray-800">Estoque & Peças</h3>
-                        <button onclick="openNewStockModal()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-xl font-medium transition flex items-center space-x-2">
-                            <i class="fa-solid fa-plus"></i>
-                            <span>Adicionar Peça</span>
-                        </button>
-                    </div>
-                    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-                        <table class="w-full text-left border-collapse">
-                            <thead>
-                                <tr class="bg-gray-50 border-b border-gray-100 text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                                    <th class="p-4">SKU</th>
-                                    <th class="p-4">Descrição</th>
-                                    <th class="p-4">Estoque</th>
-                                    <th class="p-4">Preço Venda</th>
-                                    <th class="p-4 text-right">Ações</th>
-                                </tr>
-                            </thead>
-                            <tbody id="stock-table-body" class="divide-y divide-gray-100 text-sm text-gray-600"></tbody>
-                        </table>
-                    </div>
-                </section>
-
-                <!-- TAB: CONFIGURAÇÕES -->
-                <section id="tab-settings" class="hidden space-y-6">
-                    <h3 class="text-xl font-bold text-gray-800">Configurações da Empresa</h3>
-                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 space-y-4 max-w-xl">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Nome da Empresa</label>
-                            <input type="text" id="setting-company-name" class="w-full border border-gray-300 rounded-xl px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Telefone / WhatsApp</label>
-                            <input type="text" id="setting-company-phone" class="w-full border border-gray-300 rounded-xl px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none">
-                        </div>
-                        <button onclick="saveSettings()" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl font-medium transition">
-                            Salvar Configurações
-                        </button>
-                    </div>
-                </section>
-
-            </main>
+  <!-- TELA DE LOGIN / AUTENTICAÇÃO FIREBASE -->
+  <div id="authModal" class="hidden fixed inset-0 bg-slate-900/90 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-8 space-y-6 border border-slate-200">
+      <div class="text-center space-y-2">
+        <div class="inline-flex items-center justify-center w-14 h-14 bg-cyan-600 text-white rounded-xl shadow-lg mb-2">
+          <i class="fa-solid fa-cubes text-2xl"></i>
         </div>
-    </div>
+        <h2 class="text-xl font-bold text-slate-900">CalculaJá Pro <span class="text-xs text-cyan-600 font-normal">v3.7 Master</span></h2>
+        <p class="text-xs text-slate-500">Insira as credenciais fornecidas pelo administrador para acessar o sistema</p>
+      </div>
 
-    <!-- MODAL CLIENTE -->
-    <div id="modal-client" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50">
-        <div class="bg-white rounded-2xl max-w-md w-full p-6 space-y-4">
-            <h3 class="text-lg font-bold text-gray-800">Cadastrar Cliente & Veículo</h3>
-            <div class="space-y-3">
-                <input type="text" id="client-name" placeholder="Nome do Cliente" class="w-full border border-gray-300 rounded-xl px-4 py-2">
-                <input type="text" id="client-phone" placeholder="WhatsApp" class="w-full border border-gray-300 rounded-xl px-4 py-2">
-                <input type="text" id="client-vehicle" placeholder="Modelo do Veículo" class="w-full border border-gray-300 rounded-xl px-4 py-2">
-                <input type="text" id="client-plate" placeholder="Placa (Ex: GAQ-5I80)" class="w-full border border-gray-300 rounded-xl px-4 py-2 uppercase">
-            </div>
-            <div class="flex justify-end space-x-3 pt-2">
-                <button onclick="closeModal('modal-client')" class="px-4 py-2 rounded-xl text-gray-600 hover:bg-gray-100 transition">Cancelar</button>
-                <button onclick="saveClient()" class="bg-blue-600 text-white px-4 py-2 rounded-xl hover:bg-blue-700 transition">Salvar</button>
-            </div>
+      <div class="space-y-4">
+        <div>
+          <label class="block text-xs font-bold text-slate-600 mb-1">E-mail de Acesso</label>
+          <input type="email" id="loginEmail" placeholder="seu.email@exemplo.com" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-xs text-slate-900 outline-none focus:border-cyan-500">
         </div>
-    </div>
-
-    <!-- MODAL ESTOQUE -->
-    <div id="modal-stock" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50">
-        <div class="bg-white rounded-2xl max-w-md w-full p-6 space-y-4">
-            <h3 class="text-lg font-bold text-gray-800">Adicionar Peça ao Estoque</h3>
-            <div class="space-y-3">
-                <input type="text" id="stock-sku" placeholder="Código / SKU" class="w-full border border-gray-300 rounded-xl px-4 py-2">
-                <input type="text" id="stock-desc" placeholder="Descrição da Peça" class="w-full border border-gray-300 rounded-xl px-4 py-2">
-                <input type="number" id="stock-qty" placeholder="Quantidade" class="w-full border border-gray-300 rounded-xl px-4 py-2">
-                <input type="number" step="0.01" id="stock-price" placeholder="Preço de Venda (R$)" class="w-full border border-gray-300 rounded-xl px-4 py-2">
-            </div>
-            <div class="flex justify-end space-x-3 pt-2">
-                <button onclick="closeModal('modal-stock')" class="px-4 py-2 rounded-xl text-gray-600 hover:bg-gray-100 transition">Cancelar</button>
-                <button onclick="saveStock()" class="bg-emerald-600 text-white px-4 py-2 rounded-xl hover:bg-emerald-700 transition">Salvar</button>
-            </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-600 mb-1">Senha</label>
+          <input type="password" id="loginSenha" placeholder="••••••••" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-xs text-slate-900 outline-none focus:border-cyan-500">
+          <div class="text-right mt-1.5">
+            <button type="button" onclick="esqueciSenha()" class="text-[11px] text-cyan-600 hover:text-cyan-800 font-medium cursor-pointer">
+              Esqueci minha senha
+            </button>
+          </div>
         </div>
+        <button type="button" onclick="fazerLoginEmail()" class="w-full bg-cyan-600 hover:bg-cyan-700 text-white py-2.5 rounded-lg text-xs font-bold transition shadow cursor-pointer">
+          Entrar no Sistema
+        </button>
+      </div>
+      <p id="authError" class="text-center text-xs text-red-500 font-medium"></p>
     </div>
+  </div>
 
-    <!-- SCRIPT DE GERENCIAMENTO -->
-    <script>
-        let appData = {
-            settings: { companyName: "Oficina & Peças ProFull", phone: "(14) 99999-9999" },
-            clients: [
-                { id: 1, name: "João da Silva", phone: "(14) 98888-8888", vehicle: "Gol 1.6", plate: "GAQ-5I80" }
-            ],
-            stock: [
-                { id: 1, sku: "PST-001", desc: "Pastilha de Freio Dianteira", qty: 12, price: 150.00 },
-                { id: 2, sku: "OLE-002", desc: "Óleo Sintético 5W30", qty: 25, price: 55.00 }
-            ],
-            budgets: [
-                { id: 101, clientId: 1, date: "2026-08-01", total: 205.00, status: "Aprovado", items: "Pastilha + Óleo" }
-            ]
-        };
+  <!-- APLICATIVO PRINCIPAL -->
+  <div id="appContainer" class="hidden min-h-screen flex flex-col">
+    
+    <!-- Navegação por Abas -->
+    <header class="flex flex-col md:flex-row justify-between items-center bg-slate-900 px-6 py-3 border-b border-slate-800 text-white shadow-md gap-3">
+      <div class="flex items-center space-x-3 justify-start w-full md:w-auto">
+        <h1 class="text-sm font-bold text-cyan-400 flex items-center">
+          <i class="fa-solid fa-cubes mr-2"></i> CalculaJá Pro 
+          <span class="text-xs text-cyan-200 font-bold ml-1.5 bg-cyan-900 px-2 py-0.5 rounded border border-cyan-500/50">v3.7</span>
+        </h1>
+      </div>
+      <nav class="flex items-center space-x-2 overflow-x-auto py-1 justify-start w-full md:w-auto">
+        <button onclick="mudarAba('dados')" id="btnAbaDados" class="px-3 py-1.5 rounded text-xs font-medium bg-cyan-600 text-white transition cursor-pointer shadow whitespace-nowrap flex items-center justify-start">
+          <i class="fa-solid fa-list-check mr-1.5"></i> Orçamento
+        </button>
+        <button onclick="mudarAba('clientes')" id="btnAbaClientes" class="px-3 py-1.5 rounded text-xs font-medium bg-slate-800 text-slate-300 hover:bg-slate-700 transition cursor-pointer whitespace-nowrap flex items-center justify-start">
+          <i class="fa-solid fa-users mr-1.5"></i> Clientes
+        </button>
+        <button onclick="mudarAba('fornecedores')" id="btnAbaFornecedores" class="px-3 py-1.5 rounded text-xs font-medium bg-slate-800 text-slate-300 hover:bg-slate-700 transition cursor-pointer whitespace-nowrap flex items-center justify-start">
+          <i class="fa-solid fa-truck-field mr-1.5"></i> Fornecedores
+        </button>
+        <button onclick="mudarAba('suprimentos')" id="btnAbaSuprimentos" class="px-3 py-1.5 rounded text-xs font-medium bg-slate-800 text-slate-300 hover:bg-slate-700 transition cursor-pointer whitespace-nowrap flex items-center justify-start">
+          <i class="fa-solid fa-boxes-stacked mr-1.5"></i> Suprimentos / Bobinas
+        </button>
+        <button onclick="mudarAba('desenho')" id="btnAbaDesenho" class="px-3 py-1.5 rounded text-xs font-medium bg-slate-800 text-slate-300 hover:bg-slate-700 transition cursor-pointer whitespace-nowrap flex items-center justify-start">
+          <i class="fa-solid fa-network-wired mr-1.5"></i> Desenho (RIP)
+        </button>
+        <button onclick="mudarAba('meusOrcamentos')" id="btnAbaMeusOrcamentos" class="px-3 py-1.5 rounded text-xs font-medium bg-slate-800 text-slate-300 hover:bg-slate-700 transition cursor-pointer whitespace-nowrap flex items-center justify-start">
+          <i class="fa-solid fa-folder-open mr-1.5"></i> Orçamentos Salvos
+        </button>
+        <button onclick="mudarAba('backup')" id="btnAbaBackup" class="px-3 py-1.5 rounded text-xs font-medium bg-slate-800 text-slate-300 hover:bg-slate-700 transition cursor-pointer whitespace-nowrap flex items-center justify-start">
+          <i class="fa-solid fa-database mr-1.5"></i> Backup
+        </button>
+        <button onclick="fazerLogout()" class="text-slate-400 hover:text-red-400 text-xs px-3 py-1.5 rounded bg-slate-800 hover:bg-slate-700 transition cursor-pointer whitespace-nowrap flex items-center justify-start" title="Sair">
+          <i class="fa-solid fa-power-off mr-1.5"></i> Sair
+        </button>
+      </nav>
+    </header>
 
-        if (localStorage.getItem('profull_data')) {
-            try { appData = JSON.parse(localStorage.getItem('profull_data')); } catch(e) {}
+    <main class="p-4 max-w-7xl mx-auto space-y-4 flex-grow w-full">
+      
+      <!-- ABA 1: ORÇAMENTO E PEÇAS -->
+      <section id="abaDados" class="space-y-4">
+        
+        <!-- Chave Liga/Desliga do Módulo de Desenho no Topo do Orçamento -->
+        <div class="bg-white p-3 rounded-xl shadow-sm border border-slate-200 flex items-center justify-between">
+          <div class="flex items-center space-x-2">
+            <div class="bg-cyan-600 text-white p-2 rounded-lg text-xs">
+              <i class="fa-solid fa-toggle-on"></i>
+            </div>
+            <div>
+              <label class="block text-[11px] font-bold text-slate-700 uppercase">Módulo de Desenho Automático</label>
+              <p class="text-[10px] text-slate-500">Ativa ou desativa a geração de simulação gráfica de corte</p>
+            </div>
+          </div>
+          <label class="relative inline-flex items-center cursor-pointer">
+            <input type="checkbox" id="toggleModuloDesenhoGlobal" checked class="sr-only peer">
+            <div class="w-9 h-5 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-cyan-600"></div>
+            <span class="ml-2 text-xs font-bold text-slate-700" id="labelStatusModulo">Ativo</span>
+          </label>
+        </div>
+
+        <div class="bg-cyan-900/15 border border-cyan-500/30 p-3 rounded-xl flex flex-col md:flex-row items-center justify-between gap-3">
+          <div class="flex items-center space-x-2 w-full md:w-auto">
+            <div class="bg-cyan-600 text-white p-2 rounded-lg text-xs">
+              <i class="fa-solid fa-tape"></i>
+            </div>
+            <div>
+              <label class="block text-[11px] font-bold text-slate-700 uppercase">Selecione a Bobina=></label>
+              <p class="text-[10px] text-slate-500">Define o limite horizontal de toda a folha/nesting do projeto</p>
+            </div>
+          </div>
+          <div class="w-full md:w-80">
+            <select id="selectBobinaGlobal" class="w-full bg-white border border-cyan-500/50 rounded px-3 py-2 text-xs font-bold text-slate-800 outline-none focus:ring-2 focus:ring-cyan-500">
+            </select>
+          </div>
+        </div>
+
+        <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 grid grid-cols-1 md:grid-cols-3 gap-3">
+          <div>
+            <label class="block text-[11px] font-bold text-slate-600 mb-1">Cliente</label>
+            <div class="flex gap-2">
+              <input type="text" id="cliente" placeholder="Nome do Cliente" class="w-full bg-slate-50 border border-slate-300 rounded px-3 py-1.5 text-xs text-slate-900 outline-none focus:border-cyan-500">
+              <button type="button" onclick="mudarAba('clientes')" class="bg-slate-800 hover:bg-slate-700 text-white px-3 py-1 rounded text-xs font-bold transition shrink-0 cursor-pointer" title="Selecionar ou Cadastrar Cliente">
+                <i class="fa-solid fa-user-plus"></i>
+              </button>
+            </div>
+          </div>
+          <div>
+            <label class="block text-[11px] font-bold text-slate-600 mb-1">Produto / Projeto</label>
+            <input type="text" id="produto" placeholder="Ex: Fachada / Adesivos" class="w-full bg-slate-50 border border-slate-300 rounded px-3 py-1.5 text-xs text-slate-900 outline-none focus:border-cyan-500">
+          </div>
+          <div class="grid grid-cols-3 gap-2">
+            <div>
+              <label class="block text-[10px] font-bold text-slate-600 mb-1">Mão de Obra (R$)</label>
+              <input type="number" id="mao" value="0" class="w-full bg-slate-50 border border-slate-300 rounded px-2 py-1.5 text-xs text-slate-900 outline-none focus:border-cyan-500">
+            </div>
+            <div>
+              <label class="block text-[10px] font-bold text-slate-600 mb-1">Lucro (%)</label>
+              <input type="number" id="lucro" value="30" class="w-full bg-slate-50 border border-slate-300 rounded px-2 py-1.5 text-xs text-slate-900 outline-none focus:border-cyan-500">
+            </div>
+            <div>
+              <label class="block text-[10px] font-bold text-slate-600 mb-1">Imposto (%)</label>
+              <input type="number" id="imposto" value="0" class="w-full bg-slate-50 border border-slate-300 rounded px-2 py-1.5 text-xs text-slate-900 outline-none focus:border-cyan-500">
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 space-y-3">
+          <div class="flex justify-between items-center">
+            <h2 class="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center"><i class="fa-solid fa-scissors mr-1 text-cyan-600"></i> Peças e Cortes do Projeto</h2>
+            <button type="button" onclick="addParteVazia()" class="bg-slate-800 hover:bg-slate-700 text-white px-3 py-1 rounded text-xs font-bold transition cursor-pointer flex items-center">
+              <i class="fa-solid fa-plus mr-1"></i> Adicionar Peça
+            </button>
+          </div>
+
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse text-xs">
+              <thead>
+                <tr class="bg-slate-100 text-slate-600 border-b border-slate-200">
+                  <th class="p-2">Nome da Peça</th>
+                  <th class="p-2">Largura (cm)</th>
+                  <th class="p-2">Comprimento (cm)</th>
+                  <th class="p-2">Qtd</th>
+                  <th class="p-2 text-center">Ações</th>
+                </tr>
+              </thead>
+              <tbody id="partes" class="divide-y divide-slate-100"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="flex justify-end pt-2">
+          <button type="button" onclick="processarECalcular()" class="bg-cyan-600 hover:bg-cyan-700 text-white px-6 py-2.5 rounded-lg text-xs font-bold transition shadow cursor-pointer flex items-center">
+            Calcular e Gerar Desenho RIP <i class="fa-solid fa-arrow-right ml-2"></i>
+          </button>
+        </div>
+      </section>
+
+      <!-- ABA 2: CLIENTES -->
+      <section id="abaClientes" class="hidden space-y-4">
+        <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 space-y-4">
+          <div class="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-slate-100 pb-3 gap-3">
+            <h2 class="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center"><i class="fa-solid fa-users mr-1 text-cyan-600"></i> Cadastro de Clientes</h2>
+            <button type="button" onclick="abrirModalCliente()" class="bg-cyan-600 hover:bg-cyan-700 text-white px-3 py-1.5 rounded text-xs font-bold transition cursor-pointer flex items-center whitespace-nowrap">
+              <i class="fa-solid fa-user-plus mr-1"></i> Novo Cliente
+            </button>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse text-xs">
+              <thead>
+                <tr class="bg-slate-100 text-slate-600 border-b border-slate-200">
+                  <th class="p-2">Nome</th>
+                  <th class="p-2">CPF/CNPJ</th>
+                  <th class="p-2">Telefone</th>
+                  <th class="p-2">E-mail</th>
+                  <th class="p-2 text-center">Ações</th>
+                </tr>
+              </thead>
+              <tbody id="tabelaClientes" class="divide-y divide-slate-100"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ABA 3: FORNECEDORES -->
+      <section id="abaFornecedores" class="hidden space-y-4">
+        <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 space-y-4">
+          <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+            <h2 class="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center"><i class="fa-solid fa-truck-field mr-1 text-cyan-600"></i> Cadastro de Fornecedores</h2>
+            <button type="button" onclick="abrirModalFornecedor()" class="bg-cyan-600 hover:bg-cyan-700 text-white px-3 py-1.5 rounded text-xs font-bold transition cursor-pointer flex items-center">
+              <i class="fa-solid fa-plus mr-1"></i> Novo Fornecedor
+            </button>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse text-xs">
+              <thead>
+                <tr class="bg-slate-100 text-slate-600 border-b border-slate-200">
+                  <th class="p-2">Empresa</th>
+                  <th class="p-2">CNPJ</th>
+                  <th class="p-2">Contato</th>
+                  <th class="p-2">Telefone</th>
+                  <th class="p-2">Segmento</th>
+                  <th class="p-2 text-center">Ações</th>
+                </tr>
+              </thead>
+              <tbody id="tabelaFornecedores" class="divide-y divide-slate-100"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ABA 4: SUPRIMENTOS / BOBINAS -->
+      <section id="abaSuprimentos" class="hidden space-y-4">
+        <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 space-y-4">
+          <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+            <h2 class="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center"><i class="fa-solid fa-boxes-stacked mr-1 text-cyan-600"></i> Gerenciamento de Bobinas e Materiais</h2>
+            <button type="button" onclick="abrirModalSuprimento()" class="bg-cyan-600 hover:bg-cyan-700 text-white px-3 py-1.5 rounded text-xs font-bold transition cursor-pointer flex items-center">
+              <i class="fa-solid fa-plus mr-1"></i> Nova Bobina / Material
+            </button>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse text-xs">
+              <thead>
+                <tr class="bg-slate-100 text-slate-600 border-b border-slate-200">
+                  <th class="p-2">Nome do Material / Bobina</th>
+                  <th class="p-2">Largura (cm)</th>
+                  <th class="p-2">Preço por Metro (R$)</th>
+                  <th class="p-2 text-center">Ações</th>
+                </tr>
+              </thead>
+              <tbody id="tabelaSuprimentos" class="divide-y divide-slate-100"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ABA 5: DESENHO (RIP) -->
+      <section id="abaDesenho" class="hidden space-y-4">
+        <div class="bg-slate-900 text-white p-5 rounded-xl shadow-inner space-y-4">
+          <h3 class="text-xs font-bold text-cyan-400 uppercase tracking-widest flex items-center"><i class="fa-solid fa-network-wired mr-1"></i> Desenho (Simulação de Corte e Nesting)</h3>
+          <div id="painelDesenhoResultado" class="text-slate-300 text-xs bg-slate-950 p-4 rounded border border-slate-800 min-h-[200px]">
+            Nenhum cálculo processado ainda. Clique em "Calcular e Gerar Desenho RIP" na aba Orçamento.
+          </div>
+        </div>
+      </section>
+
+      <!-- ABA 6: ORÇAMENTOS SALVOS -->
+      <section id="abaMeusOrcamentos" class="hidden space-y-4">
+        <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 space-y-4">
+          <h2 class="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center"><i class="fa-solid fa-folder-open mr-1 text-cyan-600"></i> Orçamentos Salvos</h2>
+          <div id="listaOrcamentosSalvos" class="text-slate-500 text-xs">Nenhum orçamento salvo no momento.</div>
+        </div>
+      </section>
+
+      <!-- ABA 7: BACKUP -->
+      <section id="abaBackup" class="hidden space-y-4">
+        <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 space-y-6">
+          <h2 class="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center"><i class="fa-solid fa-database mr-1 text-cyan-600"></i> Central de Backup / Restaurar Dados</h2>
+          <div class="flex gap-3">
+            <button onclick="exportarBackup()" class="bg-slate-800 hover:bg-slate-700 text-white px-4 py-2 rounded text-xs font-bold cursor-pointer">Exportar Dados (JSON)</button>
+            <label class="bg-cyan-600 hover:bg-cyan-700 text-white px-4 py-2 rounded text-xs font-bold cursor-pointer inline-flex items-center">
+              Importar Backup <input type="file" onchange="importarBackup(event)" class="hidden" accept=".json">
+            </label>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- MODAL CLIENTE -->
+  <div id="modalCliente" class="hidden fixed inset-0 bg-slate-900/80 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-xl shadow-xl max-w-md w-full p-6 space-y-4 border border-slate-200">
+      <h3 class="text-xs font-bold text-slate-800 uppercase flex items-center"><i class="fa-solid fa-user-plus text-cyan-600 mr-1"></i> Cadastrar / Editar Cliente</h3>
+      <input type="hidden" id="editClienteId" value="">
+      <div class="space-y-3 text-xs">
+        <div>
+          <label class="block font-bold text-slate-600 mb-1">Nome Completo</label>
+          <input type="text" id="cliNome" placeholder="Nome do cliente" class="w-full border rounded px-3 py-1.5 outline-none focus:border-cyan-500">
+        </div>
+        <div>
+          <label class="block font-bold text-slate-600 mb-1">CPF / CNPJ</label>
+          <input type="text" id="cliDoc" placeholder="000.000.000-00" class="w-full border rounded px-3 py-1.5 outline-none focus:border-cyan-500">
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="block font-bold text-slate-600 mb-1">Telefone</label>
+            <input type="text" id="cliTelefone" placeholder="(00) 00000-0000" class="w-full border rounded px-3 py-1.5 outline-none focus:border-cyan-500">
+          </div>
+          <div>
+            <label class="block font-bold text-slate-600 mb-1">E-mail</label>
+            <input type="email" id="cliEmail" placeholder="email@exemplo.com" class="w-full border rounded px-3 py-1.5 outline-none focus:border-cyan-500">
+          </div>
+        </div>
+        <div>
+          <label class="block font-bold text-slate-600 mb-1">Endereço</label>
+          <input type="text" id="cliEndereco" placeholder="Endereço completo" class="w-full border rounded px-3 py-1.5 outline-none focus:border-cyan-500">
+        </div>
+      </div>
+      <div class="flex justify-end space-x-2 pt-2">
+        <button type="button" onclick="fecharModalCliente()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 px-3 py-1.5 rounded text-xs font-bold cursor-pointer">Cancelar</button>
+        <button type="button" onclick="salvarCliente()" class="bg-cyan-600 hover:bg-cyan-700 text-white px-3 py-1.5 rounded text-xs font-bold cursor-pointer">Salvar Cliente</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL FORNECEDOR -->
+  <div id="modalFornecedor" class="hidden fixed inset-0 bg-slate-900/80 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-xl shadow-xl max-w-md w-full p-6 space-y-4 border border-slate-200">
+      <h3 class="text-xs font-bold text-slate-800 uppercase flex items-center"><i class="fa-solid fa-truck-field text-cyan-600 mr-1"></i> Cadastrar / Editar Fornecedor</h3>
+      <input type="hidden" id="editFornecedorId" value="">
+      <div class="space-y-3 text-xs">
+        <div>
+          <label class="block font-bold text-slate-600 mb-1">Empresa / Fornecedor</label>
+          <input type="text" id="fornEmpresa" placeholder="Nome da empresa" class="w-full border rounded px-3 py-1.5 outline-none focus:border-cyan-500">
+        </div>
+        <div>
+          <label class="block font-bold text-slate-600 mb-1">CNPJ</label>
+          <input type="text" id="fornCnpj" placeholder="00.000.000/0000-00" class="w-full border rounded px-3 py-1.5 outline-none focus:border-cyan-500">
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="block font-bold text-slate-600 mb-1">Contato / Responsável</label>
+            <input type="text" id="fornContato" placeholder="Nome do responsável" class="w-full border rounded px-3 py-1.5 outline-none focus:border-cyan-500">
+          </div>
+          <div>
+            <label class="block font-bold text-slate-600 mb-1">Telefone</label>
+            <input type="text" id="fornTelefone" placeholder="(00) 00000-0000" class="w-full border rounded px-3 py-1.5 outline-none focus:border-cyan-500">
+          </div>
+        </div>
+        <div>
+          <label class="block font-bold text-slate-600 mb-1">Segmento / Materiais</label>
+          <input type="text" id="fornSegmento" placeholder="Ex: Lonas, Adesivos, Tintas" class="w-full border rounded px-3 py-1.5 outline-none focus:border-cyan-500">
+        </div>
+      </div>
+      <div class="flex justify-end space-x-2 pt-2">
+        <button type="button" onclick="fecharModalFornecedor()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 px-3 py-1.5 rounded text-xs font-bold cursor-pointer">Cancelar</button>
+        <button type="button" onclick="salvarFornecedor()" class="bg-cyan-600 hover:bg-cyan-700 text-white px-3 py-1.5 rounded text-xs font-bold cursor-pointer">Salvar Fornecedor</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL SUPRIMENTO / BOBINA -->
+  <div id="modalSuprimento" class="hidden fixed inset-0 bg-slate-900/80 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-xl shadow-xl max-w-md w-full p-6 space-y-4 border border-slate-200">
+      <h3 class="text-xs font-bold text-slate-800 uppercase flex items-center"><i class="fa-solid fa-boxes-stacked text-cyan-600 mr-1"></i> Cadastrar / Editar Bobina ou Material</h3>
+      <input type="hidden" id="editSuprimentoId" value="">
+      <div class="space-y-3 text-xs">
+        <div>
+          <label class="block font-bold text-slate-600 mb-1">Nome da Bobina / Material</label>
+          <input type="text" id="supNome" placeholder="Ex: Lona 440g / Adesivo Brilho" class="w-full border rounded px-3 py-1.5 outline-none focus:border-cyan-500">
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="block font-bold text-slate-600 mb-1">Largura (cm)</label>
+            <input type="number" id="supLargura" placeholder="135" class="w-full border rounded px-3 py-1.5 outline-none focus:border-cyan-500">
+          </div>
+          <div>
+            <label class="block font-bold text-slate-600 mb-1">Preço por Metro (R$)</label>
+            <input type="number" id="supPreco" step="0.01" placeholder="20.00" class="w-full border rounded px-3 py-1.5 outline-none focus:border-cyan-500">
+          </div>
+        </div>
+      </div>
+      <div class="flex justify-end space-x-2 pt-2">
+        <button type="button" onclick="fecharModalSuprimento()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 px-3 py-1.5 rounded text-xs font-bold cursor-pointer">Cancelar</button>
+        <button type="button" onclick="salvarSuprimento()" class="bg-cyan-600 hover:bg-cyan-700 text-white px-3 py-1.5 rounded text-xs font-bold cursor-pointer">Salvar Material</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCRIPT DE GESTÃO LOCAL E INTERFACE -->
+  <script>
+    // Banco de dados local em memória / localStorage
+    let appData = {
+      clientes: JSON.parse(localStorage.getItem('calculaja_clientes') || '[]'),
+      fornecedores: JSON.parse(localStorage.getItem('calculaja_fornecedores') || '[]'),
+      suprimentos: JSON.parse(localStorage.getItem('calculaja_suprimentos') || '[{"id":1, "nome":"Bobina Lona 1.35m", "largura":135, "preco":25.00}, {"id":2, "nome":"Bobina Adesivo 1.00m", "largura":100, "preco":18.50}]'),
+      orcamentos: JSON.parse(localStorage.getItem('calculaja_orcamentos') || '[]')
+    };
+
+    function salvarStorage(chave) {
+      localStorage.setItem('calculaja_' + chave, JSON.stringify(appData[chave]));
+    }
+
+    // Inicialização ao carregar
+    window.addEventListener('DOMContentLoaded', () => {
+      document.getElementById('authModal').classList.add('hidden');
+      document.getElementById('appContainer').classList.remove('hidden');
+      atualizarSelectBobinas();
+      renderizarTabelaClientes();
+      renderizarTabelaFornecedores();
+      renderizarTabelaSuprimentos();
+      addParteVazia();
+      mudarAba('dados');
+    });
+
+    function mudarAba(abaId) {
+      const abas = ['dados', 'clientes', 'fornecedores', 'suprimentos', 'desenho', 'meusOrcamentos', 'backup'];
+      abas.forEach(aba => {
+        const elemento = document.getElementById('aba' + aba.charAt(0).toUpperCase() + aba.slice(1));
+        const botao = document.getElementById('btnAba' + aba.charAt(0).toUpperCase() + aba.slice(1));
+        if (elemento) {
+          if (aba === abaId) {
+            elemento.classList.remove('hidden');
+            if (botao) botao.className = "px-3 py-1.5 rounded text-xs font-medium bg-cyan-600 text-white transition cursor-pointer shadow whitespace-nowrap flex items-center justify-start";
+          } else {
+            elemento.classList.add('hidden');
+            if (botao) botao.className = "px-3 py-1.5 rounded text-xs font-medium bg-slate-800 text-slate-300 hover:bg-slate-700 transition cursor-pointer whitespace-nowrap flex items-center justify-start";
+          }
         }
+      });
+    }
 
-        function saveData() {
-            localStorage.setItem('profull_data', JSON.stringify(appData));
-            renderAll();
+    // Toggle label updater
+    const toggleModulo = document.getElementById('toggleModuloDesenhoGlobal');
+    if (toggleModulo) {
+      toggleModulo.addEventListener('change', function() {
+        const lbl = document.getElementById('labelStatusModulo');
+        if (lbl) lbl.textContent = this.checked ? 'Ativo' : 'Inativo';
+      });
+    }
+
+    // Gerenciamento de Bobinas / Suprimentos
+    function atualizarSelectBobinas() {
+      const select = document.getElementById('selectBobinaGlobal');
+      if (!select) return;
+      select.innerHTML = '';
+      if (appData.suprimentos.length === 0) {
+        select.innerHTML = '<option value="">Cadastre uma bobina na aba Suprimentos</option>';
+        return;
+      }
+      appData.suprimentos.forEach(sup => {
+        const opt = document.createElement('option');
+        opt.value = sup.largura;
+        opt.textContent = `${sup.nome} - Largura: ${sup.largura}cm (R$ ${Number(sup.preco).toFixed(2)}/m)`;
+        select.appendChild(opt);
+      });
+    }
+
+    function renderizarTabelaSuprimentos() {
+      const tbody = document.getElementById('tabelaSuprimentos');
+      if (!tbody) return;
+      tbody.innerHTML = '';
+      if (appData.suprimentos.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="4" class="p-4 text-center text-slate-400">Nenhuma bobina cadastrada.</td></tr>';
+        return;
+      }
+      appData.suprimentos.forEach((sup, idx) => {
+        tbody.innerHTML += `
+          <tr class="hover:bg-slate-50">
+            <td class="p-2 font-bold">${sup.nome}</td>
+            <td class="p-2">${sup.largura} cm</td>
+            <td class="p-2">R$ ${Number(sup.preco).toFixed(2)}</td>
+            <td class="p-2 text-center space-x-2">
+              <button onclick="editarSuprimento(${idx})" class="text-cyan-600 hover:text-cyan-800 font-bold"><i class="fa-solid fa-pen"></i></button>
+              <button onclick="excluirSuprimento(${idx})" class="text-red-500 hover:text-red-700 font-bold"><i class="fa-solid fa-trash"></i></button>
+            </td>
+          </tr>`;
+      });
+    }
+
+    function abrirModalSuprimento() {
+      document.getElementById('editSuprimentoId').value = '';
+      document.getElementById('supNome').value = '';
+      document.getElementById('supLargura').value = '';
+      document.getElementById('supPreco').value = '';
+      document.getElementById('modalSuprimento').classList.remove('hidden');
+    }
+
+    function fecharModalSuprimento() {
+      document.getElementById('modalSuprimento').classList.add('hidden');
+    }
+
+    function salvarSuprimento() {
+      const id = document.getElementById('editSuprimentoId').value;
+      const nome = document.getElementById('supNome').value.trim();
+      const largura = parseFloat(document.getElementById('supLargura').value);
+      const preco = parseFloat(document.getElementById('supPreco').value);
+
+      if (!nome || isNaN(largura) || isNaN(preco)) {
+        alert('Preencha todos os campos corretamente!');
+        return;
+      }
+
+      if (id === '') {
+        appData.suprimentos.push({ id: Date.now(), nome, largura, preco });
+      } else {
+        appData.suprimentos[parseInt(id)] = { ...appData.suprimentos[parseInt(id)], nome, largura, preco };
+      }
+
+      salvarStorage('suprimentos');
+      renderizarTabelaSuprimentos();
+      atualizarSelectBobinas();
+      fecharModalSuprimento();
+    }
+
+    function editarSuprimento(idx) {
+      const sup = appData.suprimentos[idx];
+      document.getElementById('editSuprimentoId').value = idx;
+      document.getElementById('supNome').value = sup.nome;
+      document.getElementById('supLargura').value = sup.largura;
+      document.getElementById('supPreco').value = sup.preco;
+      document.getElementById('modalSuprimento').classList.remove('hidden');
+    }
+
+    function excluirSuprimento(idx) {
+      if (confirm('Deseja excluir esta bobina?')) {
+        appData.suprimentos.splice(idx, 1);
+        salvarStorage('suprimentos');
+        renderizarTabelaSuprimentos();
+        atualizarSelectBobinas();
+      }
+    }
+
+    // Gerenciamento de Clientes
+    function renderizarTabelaClientes() {
+      const tbody = document.getElementById('tabelaClientes');
+      if (!tbody) return;
+      tbody.innerHTML = '';
+      if (appData.clientes.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" class="p-4 text-center text-slate-400">Nenhum cliente cadastrado.</td></tr>';
+        return;
+      }
+      appData.clientes.forEach((cli, idx) => {
+        tbody.innerHTML += `
+          <tr class="hover:bg-slate-50">
+            <td class="p-2 font-bold">${cli.nome}</td>
+            <td class="p-2">${cli.doc || '-'}</td>
+            <td class="p-2">${cli.telefone || '-'}</td>
+            <td class="p-2">${cli.email || '-'}</td>
+            <td class="p-2 text-center space-x-2">
+              <button onclick="selecionarClienteParaOrcamento('${cli.nome}')" class="text-green-600 hover:text-green-800 font-bold" title="Usar no Orçamento"><i class="fa-solid fa-check"></i></button>
+              <button onclick="editarCliente(${idx})" class="text-cyan-600 hover:text-cyan-800 font-bold"><i class="fa-solid fa-pen"></i></button>
+              <button onclick="excluirCliente(${idx})" class="text-red-500 hover:text-red-700 font-bold"><i class="fa-solid fa-trash"></i></button>
+            </td>
+          </tr>`;
+      });
+    }
+
+    function abrirModalCliente() {
+      document.getElementById('editClienteId').value = '';
+      document.getElementById('cliNome').value = '';
+      document.getElementById('cliDoc').value = '';
+      document.getElementById('cliTelefone').value = '';
+      document.getElementById('cliEmail').value = '';
+      document.getElementById('cliEndereco').value = '';
+      document.getElementById('modalCliente').classList.remove('hidden');
+    }
+
+    function fecharModalCliente() {
+      document.getElementById('modalCliente').classList.add('hidden');
+    }
+
+    function salvarCliente() {
+      const id = document.getElementById('editClienteId').value;
+      const nome = document.getElementById('cliNome').value.trim();
+      const doc = document.getElementById('cliDoc').value.trim();
+      const telefone = document.getElementById('cliTelefone').value.trim();
+      const email = document.getElementById('cliEmail').value.trim();
+      const endereco = document.getElementById('cliEndereco').value.trim();
+
+      if (!nome) {
+        alert('O nome do cliente é obrigatório!');
+        return;
+      }
+
+      if (id === '') {
+        appData.clientes.push({ id: Date.now(), nome, doc, telefone, email, endereco });
+      } else {
+        appData.clientes[parseInt(id)] = { ...appData.clientes[parseInt(id)], nome, doc, telefone, email, endereco };
+      }
+
+      salvarStorage('clientes');
+      renderizarTabelaClientes();
+      fecharModalCliente();
+    }
+
+    function editarCliente(idx) {
+      const cli = appData.clientes[idx];
+      document.getElementById('editClienteId').value = idx;
+      document.getElementById('cliNome').value = cli.nome;
+      document.getElementById('cliDoc').value = cli.doc || '';
+      document.getElementById('cliTelefone').value = cli.telefone || '';
+      document.getElementById('cliEmail').value = cli.email || '';
+      document.getElementById('cliEndereco').value = cli.endereco || '';
+      document.getElementById('modalCliente').classList.remove('hidden');
+    }
+
+    function excluirCliente(idx) {
+      if (confirm('Deseja excluir este cliente?')) {
+        appData.clientes.splice(idx, 1);
+        salvarStorage('clientes');
+        renderizarTabelaClientes();
+      }
+    }
+
+    function selecionarClienteParaOrcamento(nome) {
+      document.getElementById('cliente').value = nome;
+      mudarAba('dados');
+    }
+
+    // Gerenciamento de Fornecedores
+    function renderizarTabelaFornecedores() {
+      const tbody = document.getElementById('tabelaFornecedores');
+      if (!tbody) return;
+      tbody.innerHTML = '';
+      if (appData.fornecedores.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" class="p-4 text-center text-slate-400">Nenhum fornecedor cadastrado.</td></tr>';
+        return;
+      }
+      appData.fornecedores.forEach((forn, idx) => {
+        tbody.innerHTML += `
+          <tr class="hover:bg-slate-50">
+            <td class="p-2 font-bold">${forn.empresa}</td>
+            <td class="p-2">${forn.cnpj || '-'}</td>
+            <td class="p-2">${forn.contato || '-'}</td>
+            <td class="p-2">${forn.telefone || '-'}</td>
+            <td class="p-2">${forn.segmento || '-'}</td>
+            <td class="p-2 text-center space-x-2">
+              <button onclick="editarFornecedor(${idx})" class="text-cyan-600 hover:text-cyan-800 font-bold"><i class="fa-solid fa-pen"></i></button>
+              <button onclick="excluirFornecedor(${idx})" class="text-red-500 hover:text-red-700 font-bold"><i class="fa-solid fa-trash"></i></button>
+            </td>
+          </tr>`;
+      });
+    }
+
+    function abrirModalFornecedor() {
+      document.getElementById('editFornecedorId').value = '';
+      document.getElementById('fornEmpresa').value = '';
+      document.getElementById('fornCnpj').value = '';
+      document.getElementById('fornContato').value = '';
+      document.getElementById('fornTelefone').value = '';
+      document.getElementById('fornSegmento').value = '';
+      document.getElementById('modalFornecedor').classList.remove('hidden');
+    }
+
+    function fecharModalFornecedor() {
+      document.getElementById('modalFornecedor').classList.add('hidden');
+    }
+
+    function salvarFornecedor() {
+      const id = document.getElementById('editFornecedorId').value;
+      const empresa = document.getElementById('fornEmpresa').value.trim();
+      const cnpj = document.getElementById('fornCnpj').value.trim();
+      const contato = document.getElementById('fornContato').value.trim();
+      const telefone = document.getElementById('fornTelefone').value.trim();
+      const segmento = document.getElementById('fornSegmento').value.trim();
+
+      if (!empresa) {
+        alert('O nome da empresa é obrigatório!');
+        return;
+      }
+
+      if (id === '') {
+        appData.fornecedores.push({ id: Date.now(), empresa, cnpj, contato, telefone, segmento });
+      } else {
+        appData.fornecedores[parseInt(id)] = { ...appData.fornecedores[parseInt(id)], empresa, cnpj, contato, telefone, segmento };
+      }
+
+      salvarStorage('fornecedores');
+      renderizarTabelaFornecedores();
+      fecharModalFornecedor();
+    }
+
+    function editarFornecedor(idx) {
+      const forn = appData.fornecedores[idx];
+      document.getElementById('editFornecedorId').value = idx;
+      document.getElementById('fornEmpresa').value = forn.empresa;
+      document.getElementById('fornCnpj').value = forn.cnpj || '';
+      document.getElementById('fornContato').value = forn.contato || '';
+      document.getElementById('fornTelefone').value = forn.telefone || '';
+      document.getElementById('fornSegmento').value = forn.segmento || '';
+      document.getElementById('modalFornecedor').classList.remove('hidden');
+    }
+
+    function excluirFornecedor(idx) {
+      if (confirm('Deseja excluir este fornecedor?')) {
+        appData.fornecedores.splice(idx, 1);
+        salvarStorage('fornecedores');
+        renderizarTabelaFornecedores();
+      }
+    }
+
+    // Gerenciamento de Peças do Orçamento
+    function addParteVazia() {
+      const tbody = document.getElementById('partes');
+      if (!tbody) return;
+      const tr = document.createElement('tr');
+      tr.className = "hover:bg-slate-50";
+      tr.innerHTML = `
+        <td class="p-2"><input type="text" class="parte-nome w-full border rounded px-2 py-1 outline-none focus:border-cyan-500" placeholder="Nome da Peça"></td>
+        <td class="p-2"><input type="number" class="parte-largura w-full border rounded px-2 py-1 outline-none focus:border-cyan-500" placeholder="0"></td>
+        <td class="p-2"><input type="number" class="parte-comprimento w-full border rounded px-2 py-1 outline-none focus:border-cyan-500" placeholder="0"></td>
+        <td class="p-2"><input type="number" class="parte-qtd w-20 border rounded px-2 py-1 outline-none focus:border-cyan-500" value="1"></td>
+        <td class="p-2 text-center"><button type="button" onclick="this.closest('tr').remove()" class="text-red-500 hover:text-red-700 font-bold"><i class="fa-solid fa-trash"></i></button></td>
+      `;
+      tbody.appendChild(tr);
+    }
+
+    function processarECalcular() {
+      const cliente = document.getElementById('cliente').value || 'Cliente Geral';
+      const produto = document.getElementById('produto').value || 'Projeto Personalizado';
+      const bobinaLargura = parseFloat(document.getElementById('selectBobinaGlobal').value) || 135;
+      const ativadoDesenho = document.getElementById('toggleModuloDesenhoGlobal').checked;
+
+      const linhas = document.querySelectorAll('#partes tr');
+      let pecas = [];
+      linhas.forEach(tr => {
+        const nome = tr.querySelector('.parte-nome').value || 'Peça';
+        const largura = parseFloat(tr.querySelector('.parte-largura').value) || 0;
+        const comprimento = parseFloat(tr.querySelector('.parte-comprimento').value) || 0;
+        const qtd = parseInt(tr.querySelector('.parte-qtd').value) || 1;
+        if (largura > 0 && comprimento > 0) {
+          pecas.push({ nome, largura, comprimento, qtd });
         }
+      });
 
-        function switchTab(tabId) {
-            ['dashboard', 'budgets', 'clients', 'stock', 'settings'].forEach(t => {
-                document.getElementById('tab-' + t).classList.add('hidden');
-                let nav = document.getElementById('nav-' + t);
-                if(nav) nav.className = "w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-slate-300 hover:bg-slate-800 transition font-medium";
-            });
-            document.getElementById('tab-' + tabId).classList.remove('hidden');
-            let activeNav = document.getElementById('nav-' + tabId);
-            if(activeNav) activeNav.className = "w-full flex items-center space-x-3 px-4 py-3 rounded-xl bg-blue-600 text-white transition font-medium";
-            
-            const titles = { dashboard: "Visão Geral", budgets: "Gerenciamento de Orçamentos", clients: "Clientes & Veículos", stock: "Estoque & Peças", settings: "Configurações" };
-            document.getElementById('page-title').innerText = titles[tabId] || "Dashboard";
+      if (pecas.length === 0) {
+        alert('Adicione pelo menos uma peça com largura e comprimento válidos!');
+        return;
+      }
+
+      const painel = document.getElementById('painelDesenhoResultado');
+      if (painel) {
+        painel.innerHTML = `
+          <h4 class="text-cyan-400 font-bold mb-2">Orçamento: ${produto} - Cliente: ${cliente}</h4>
+          <p class="mb-2">Módulo de Desenho: ${ativadoDesenho ? 'ATIVADO' : 'DESATIVADO'}</p>
+          <p class="mb-2">Bobina Selecionada: ${bobinaLargura} cm</p>
+          <ul class="list-disc pl-5 space-y-1">
+            ${pecas.map(p => `<li><b>${p.qtd}x</b> ${p.nome}: ${p.largura}cm x ${p.comprimento}cm</li>`).join('')}
+          </ul>
+        `;
+      }
+
+      mudarAba('desenho');
+    }
+
+    // Backup e Exportação
+    function exportarBackup() {
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(appData, null, 2));
+      const dlAnchorElem = document.createElement('a');
+      dlAnchorElem.setAttribute("href", dataStr);
+      dlAnchorElem.setAttribute("download", "calculaja_backup.json");
+      dlAnchorElem.click();
+    }
+
+    function importarBackup(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          const json = JSON.parse(e.target.result);
+          if (json.clientes && json.suprimentos) {
+            appData = json;
+            salvarStorage('clientes');
+            salvarStorage('fornecedores');
+            salvarStorage('suprimentos');
+            salvarStorage('orcamentos');
+            renderizarTabelaClientes();
+            renderizarTabelaFornecedores();
+            renderizarTabelaSuprimentos();
+            atualizarSelectBobinas();
+            alert('Backup importado com sucesso!');
+          } else {
+            alert('Arquivo de backup inválido.');
+          }
+        } catch(err) {
+          alert('Erro ao ler arquivo JSON.');
         }
+      };
+      reader.readAsText(file);
+    }
 
-        function renderAll() {
-            document.getElementById('header-company-name').innerText = appData.settings.companyName;
-            document.getElementById('setting-company-name').value = appData.settings.companyName;
-            document.getElementById('setting-company-phone').value = appData.settings.phone;
+    function fazerLoginEmail() {
+      document.getElementById('authModal').classList.add('hidden');
+      document.getElementById('appContainer').classList.remove('hidden');
+    }
 
-            let totalRev = appData.budgets.reduce((acc, b) => acc + (b.status === 'Aprovado' ? b.total : 0), 0);
-            document.getElementById('stat-revenue').innerText = totalRev.toLocaleString('pt-BR', {style: 'currency', currency: 'BRL'});
-            document.getElementById('stat-budgets').innerText = appData.budgets.length;
-            document.getElementById('stat-clients').innerText = appData.clients.length;
-            document.getElementById('stat-stock').innerText = appData.stock.reduce((acc, s) => acc + s.qty, 0);
-
-            let clientHtml = '';
-            appData.clients.forEach(c => {
-                clientHtml += `<tr class="hover:bg-gray-50">
-                    <td class="p-4 font-medium text-gray-800">${c.name}</td>
-                    <td class="p-4">${c.phone}</td>
-                    <td class="p-4">${c.vehicle || '-'} <span class="text-xs bg-gray-100 px-2 py-1 rounded ml-1 font-mono font-bold">${c.plate || ''}</span></td>
-                    <td class="p-4 text-right">
-                        <button onclick="deleteClient(${c.id})" class="text-red-500 hover:text-red-700"><i class="fa-solid fa-trash"></i></button>
-                    </td>
-                </tr>`;
-            });
-            document.getElementById('clients-table-body').innerHTML = clientHtml || `<tr><td colspan="4" class="p-4 text-center text-gray-400">Nenhum cliente cadastrado.</td></tr>`;
-
-            let stockHtml = '';
-            appData.stock.forEach(s => {
-                stockHtml += `<tr class="hover:bg-gray-50">
-                    <td class="p-4 font-mono text-xs">${s.sku}</td>
-                    <td class="p-4 font-medium text-gray-800">${s.desc}</td>
-                    <td class="p-4"><span class="px-2 py-1 rounded text-xs font-bold ${s.qty < 5 ? 'bg-red-100 text-red-600' : 'bg-green-100 text-green-600'}">${s.qty} un</span></td>
-                    <td class="p-4">R$ ${s.price.toFixed(2)}</td>
-                    <td class="p-4 text-right">
-                        <button onclick="deleteStock(${s.id})" class="text-red-500 hover:text-red-700"><i class="fa-solid fa-trash"></i></button>
-                    </td>
-                </tr>`;
-            });
-            document.getElementById('stock-table-body').innerHTML = stockHtml || `<tr><td colspan="5" class="p-4 text-center text-gray-400">Nenhuma peça cadastrada.</td></tr>`;
-
-            let budgetHtml = '';
-            appData.budgets.forEach(b => {
-                let client = appData.clients.find(c => c.id === b.clientId) || {name: 'Cliente não encontrado', plate: ''};
-                budgetHtml += `<tr class="hover:bg-gray-50">
-                    <td class="p-4 font-mono text-xs">#${b.id}</td>
-                    <td class="p-4 font-medium text-gray-800">${client.name}</td>
-                    <td class="p-4 font-mono font-bold">${client.plate || '-'}</td>
-                    <td class="p-4">${b.date}</td>
-                    <td class="p-4 font-bold text-gray-800">R$ ${b.total.toFixed(2)}</td>
-                    <td class="p-4"><span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-700">${b.status}</span></td>
-                    <td class="p-4 text-right space-x-2">
-                        <button onclick="printBudget(${b.id})" class="text-blue-500 hover:text-blue-700" title="Imprimir"><i class="fa-solid fa-print"></i></button>
-                        <button onclick="deleteBudget(${b.id})" class="text-red-500 hover:text-red-700"><i class="fa-solid fa-trash"></i></button>
-                    </td>
-                </tr>`;
-            });
-            document.getElementById('budgets-table-body').innerHTML = budgetHtml || `<tr><td colspan="7" class="p-4 text-center text-gray-400">Nenhum orçamento.</td></tr>`;
-        }
-
-        function openNewClientModal() { document.getElementById('modal-client').classList.remove('hidden'); }
-        function openNewStockModal() { document.getElementById('modal-stock').classList.remove('hidden'); }
-        function openNewBudgetModal() { 
-            let client = appData.clients[0];
-            if(!client) { alert("Cadastre um cliente primeiro!"); switchTab('clients'); openNewClientModal(); return; }
-            let newId = Math.floor(Math.random() * 900) + 100;
-            appData.budgets.push({ id: newId, clientId: client.id, date: new Date().toISOString().split('T')[0], total: 150.00, status: "Aprovado", items: "Serviço Geral" });
-            saveData();
-            switchTab('budgets');
-        }
-        function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
-
-        function saveClient() {
-            let name = document.getElementById('client-name').value;
-            let phone = document.getElementById('client-phone').value;
-            let vehicle = document.getElementById('client-vehicle').value;
-            let plate = document.getElementById('client-plate').value.toUpperCase();
-            if(!name) { alert("Preencha o nome!"); return; }
-            appData.clients.push({ id: Date.now(), name, phone, vehicle, plate });
-            closeModal('modal-client');
-            saveData();
-        }
-
-        function saveStock() {
-            let sku = document.getElementById('stock-sku').value;
-            let desc = document.getElementById('stock-desc').value;
-            let qty = parseInt(document.getElementById('stock-qty').value) || 0;
-            let price = parseFloat(document.getElementById('stock-price').value) || 0;
-            if(!desc) { alert("Preencha a descrição!"); return; }
-            appData.stock.push({ id: Date.now(), sku, desc, qty, price });
-            closeModal('modal-stock');
-            saveData();
-        }
-
-        function saveSettings() {
-            appData.settings.companyName = document.getElementById('setting-company-name').value;
-            appData.settings.phone = document.getElementById('setting-company-phone').value;
-            saveData();
-            alert("Configurações salvas!");
-        }
-
-        function deleteClient(id) { appData.clients = appData.clients.filter(c => c.id !== id); saveData(); }
-        function deleteStock(id) { appData.stock = appData.stock.filter(s => s.id !== id); saveData(); }
-        function deleteBudget(id) { appData.budgets = appData.budgets.filter(b => b.id !== id); saveData(); }
-
-        function printBudget(id) {
-            let b = appData.budgets.find(item => item.id === id);
-            let c = appData.clients.find(item => item.id === b.clientId) || {};
-            let w = window.open('', '_blank');
-            w.document.write(`
-                <html><head><title>Orçamento #${b.id}</title><script src="https://cdn.tailwindcss.com"><\\/script></head>
-                <body class="p-8 bg-white">
-                    <div class="max-w-2xl mx-auto border p-8 rounded-xl shadow-sm space-y-6">
-                        <div class="flex justify-between items-center border-b pb-4">
-                            <div><h1 class="text-2xl font-bold text-gray-800">${appData.settings.companyName}</h1><p class="text-sm text-gray-500">Tel: ${appData.settings.phone}</p></div>
-                            <div class="text-right"><h2 class="text-xl font-bold text-blue-600">ORÇAMENTO #${b.id}</h2><p class="text-sm text-gray-500">Data: ${b.date}</p></div>
-                        </div>
-                        <div><h3 class="font-bold text-gray-700">Cliente:</h3><p class="text-sm text-gray-600"><strong>${c.name || 'N/D'}</strong> | Veículo: ${c.vehicle || '-'} | Placa: <strong class="font-mono">${c.plate || '-'}</strong></p></div>
-                        <div class="border-t pt-4"><h3 class="font-bold text-gray-700 mb-2">Serviços / Peças:</h3><p class="text-sm bg-gray-50 p-4 rounded-lg">${b.items}</p></div>
-                        <div class="border-t pt-4 flex justify-between items-center"><span class="font-bold text-gray-700">Total:</span><span class="text-2xl font-bold text-blue-600">R$ ${b.total.toFixed(2)}</span></div>
-                    </div>
-                    <script>window.print();<\\/script>
-                </body></html>
-            `);
-            w.document.close();
-        }
-
-        function exportData() {
-            let dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(appData, null, 2));
-            let dlAnchorElem = document.createElement('a');
-            dlAnchorElem.setAttribute("href", dataStr);
-            dlAnchorElem.setAttribute("download", "profull_backup.json");
-            dlAnchorElem.click();
-        }
-
-        renderAll();
-    </script>
+    function fazerLogout() {
+      document.getElementById('appContainer').classList.add('hidden');
+      document.getElementById('authModal').classList.add('hidden');
+    }
+  </script>
 </body>
 </html>
