@@ -264,7 +264,7 @@
           <div class="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-slate-800 pb-3 gap-3">
             <div>
               <h3 class="text-xs font-bold text-cyan-400 uppercase tracking-widest flex items-center">
-                <i class="fa-solid fa-network-wired mr-2 text-[8px]"></i> Módulo de Desenho Técnico e Nesting (RIP)
+                <i class="fa-solid fa-network-wired mr-2 text-[8px]"></i> Módulo de Desenho Técnico e Nesting (RIP) com Réguas de 5x5cm
               </h3>
             </div>
             <div class="flex flex-wrap items-center gap-2">
@@ -300,16 +300,35 @@
               <div id="statLarguraBobina" class="text-sm font-extrabold text-amber-400 mt-1">0 cm</div>
             </div>
           </div>
+          
+          <!-- PAINEL COM RÉGUAS DE ESCALA 5x5cm -->
           <div id="painelGraficoWrapper" class="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-3">
-            <div class="relative w-full overflow-auto bg-slate-950 rounded-lg p-2 border border-slate-800" id="scrollAreaCanvas">
-              <div id="painelDesenhoResultado" class="relative bg-slate-900/90 rounded-lg min-h-[340px] flex items-center justify-center">
-                <div class="text-center space-y-2 text-slate-400">
-                  <i class="fa-solid fa-layer-group text-3xl text-cyan-500 animate-pulse"></i>
-                  <p class="text-xs">Clique em "Gerar Desenho RIP" na aba Orçamento.</p>
+            <div class="relative w-full overflow-auto bg-slate-950 rounded-lg border border-slate-800" id="scrollAreaCanvas" style="max-height: 500px;">
+              
+              <!-- Container Principal da Área de Desenho com Margem para as Réguas -->
+              <div id="containerComReguas" class="relative" style="padding: 30px 0 0 30px; display: inline-block; min-width: 100%;">
+                
+                <!-- Régua Superior (Horizontal - marcações a cada 5cm) -->
+                <div id="reguaHorizontal" class="absolute top-0 left-[30px] h-[30px] bg-slate-900 border-b border-slate-700 overflow-hidden select-none" style="right: 0;"></div>
+                
+                <!-- Régua Lateral (Vertical - marcações a cada 5cm) -->
+                <div id="reguaVertical" class="absolute top-[30px] left-0 w-[30px] bg-slate-900 border-r border-slate-700 overflow-hidden select-none" style="bottom: 0;"></div>
+
+                <!-- Canto Superior Esquerdo (Intersecção das Réguas) -->
+                <div class="absolute top-0 left-0 w-[30px] h-[30px] bg-slate-950 border-r border-b border-slate-700 z-20 flex items-center justify-center text-[9px] text-slate-500 font-bold">cm</div>
+
+                <!-- Área Onde o Canvas/Bobina e as Peças serão Renderizados -->
+                <div id="painelDesenhoResultado" class="relative bg-slate-900/90 rounded-none min-h-[340px] flex items-center justify-center">
+                  <div class="text-center space-y-2 text-slate-400 p-8">
+                    <i class="fa-solid fa-layer-group text-3xl text-cyan-500 animate-pulse"></i>
+                    <p class="text-xs">Clique em "Gerar Desenho RIP" na aba Orçamento.</p>
+                  </div>
                 </div>
+
               </div>
             </div>
           </div>
+
         </div>
       </section>
 
@@ -686,7 +705,6 @@
       mudarAba('desenho');
       const selectBobina = document.getElementById('selectBobinaGlobal');
       const larguraBobina = parseFloat(selectBobina.value) || 100;
-      const precoMetro = selectBobina && selectBobina.selectedOptions[0] ? parseFloat(selectBobina.selectedOptions[0].dataset.preco) || 0 : 0;
       
       const linhas = document.querySelectorAll('#partes tr');
       let pecas = [];
@@ -708,7 +726,7 @@
         return;
       }
 
-      // Simulação simples de Nesting/Layout
+      // Simulação de Nesting/Layout
       let cursorX = 0, cursorY = 0, linhaAlturaMax = 0, maxComp = 0;
       let pecasPosicionadas = [];
 
@@ -729,27 +747,97 @@
       document.getElementById('statComprimentoTotal').textContent = totalMetros.toFixed(2) + ' metros';
       document.getElementById('statTotalPecas').textContent = pecas.length + ' unidades';
       document.getElementById('statLarguraBobina').textContent = larguraBobina + ' cm';
-      document.getElementById('statAproveitamento').textContent = '85%'; // Valor estimado para demonstração
+      document.getElementById('statAproveitamento').textContent = '85%';
 
-      // Desenhar no painel
+      // Fator de escala base (cada 1 cm real = appData.escalaZoom pixels)
+      const pxPorCm = appData.escalaZoom;
+      const larguraCanvasPx = larguraBobina * pxPorCm;
+      const alturaCanvasPx = Math.max(maxComp, 300) * pxPorCm;
+
+      // Desenhar Bobina no Painel
       const painel = document.getElementById('painelDesenhoResultado');
-      const escala = appData.escalaZoom * 10;
-      painel.innerHTML = `<div style="position:relative; width:${larguraBobina * (appData.escalaZoom)}px; height:${Math.max(maxComp, 300) * (appData.escalaZoom / 2.5)}px; border:2px dashed #06b6d4; margin:auto;"></div>`;
+      painel.innerHTML = `<div id="bobinaVisual" style="position:relative; width:${larguraCanvasPx}px; height:${alturaCanvasPx}px; border:1px solid #06b6d4; background-color: rgba(6, 182, 212, 0.05); margin:0;"></div>`;
       
+      const bobinaVisual = document.getElementById('bobinaVisual');
+
       pecasPosicionadas.forEach(p => {
         const box = document.createElement('div');
-        box.className = 'absolute border border-cyan-400 bg-cyan-900/40 text-[9px] text-white flex items-center justify-center p-1 overflow-hidden';
-        box.style.left = (p.x * (appData.escalaZoom)) + 'px';
-        box.style.top = (p.y * (appData.escalaZoom / 2.5)) + 'px';
-        box.style.width = (p.largura * (appData.escalaZoom)) + 'px';
-        box.style.height = (p.comprimento * (appData.escalaZoom / 2.5)) + 'px';
+        box.className = 'absolute border border-cyan-400 bg-cyan-950/80 text-[9px] text-cyan-200 flex items-center justify-center p-1 overflow-hidden shadow-sm';
+        box.style.left = (p.x * pxPorCm) + 'px';
+        box.style.top = (p.y * pxPorCm) + 'px';
+        box.style.width = (p.largura * pxPorCm) + 'px';
+        box.style.height = (p.comprimento * pxPorCm) + 'px';
         box.textContent = p.nome;
-        painel.appendChild(box);
+        bobinaVisual.appendChild(box);
       });
+
+      // Renderizar as Réguas (Escala com marcações a cada 5cm)
+      gerarReguas(larguraBobina, Math.max(maxComp, 300), pxPorCm);
+    }
+
+    function gerarReguas(larguraMaxCm, alturaMaxCm, pxPorCm) {
+      const reguaH = document.getElementById('reguaHorizontal');
+      const reguaV = document.getElementById('reguaVertical');
+      
+      reguaH.innerHTML = '';
+      reguaV.innerHTML = '';
+
+      const larguraTotalPx = larguraMaxCm * pxPorCm;
+      const alturaTotalPx = alturaMaxCm * pxPorCm;
+
+      // Cada 5 cm reais terá uma marcação principal com número
+      // O intervalo entre marcações menores (subdivisões) pode ser de 1cm ou 5cm
+      const passoCm = 5; 
+
+      // Montando Régua Horizontal (X)
+      reguaH.style.width = larguraTotalPx + 'px';
+      for (let cm = 0; cm <= larguraMaxCm; cm += passoCm) {
+        const posPx = cm * pxPorCm;
+        
+        // Traço da marcação
+        const traco = document.createElement('div');
+        traco.className = 'absolute bottom-0 bg-slate-500';
+        traco.style.left = posPx + 'px';
+        traco.style.width = '1px';
+        traco.style.height = (cm % 10 === 0 ? '12px' : '6px');
+        reguaH.appendChild(traco);
+
+        // Número da escala (a cada 10cm para não sobrecarregar, ou a cada 5cm se houver espaço)
+        if (cm % 10 === 0 || larguraMaxCm <= 100) {
+          const rotulo = document.createElement('span');
+          rotulo.className = 'absolute bottom-[13px] text-[8px] text-slate-400 transform -translate-x-1/2';
+          rotulo.style.left = posPx + 'px';
+          rotulo.textContent = cm;
+          reguaH.appendChild(rotulo);
+        }
+      }
+
+      // Montando Régua Vertical (Y)
+      reguaV.style.height = alturaTotalPx + 'px';
+      for (let cm = 0; cm <= alturaMaxCm; cm += passoCm) {
+        const posPx = cm * pxPorCm;
+
+        // Traço da marcação
+        const traco = document.createElement('div');
+        traco.className = 'absolute right-0 bg-slate-500';
+        traco.style.top = posPx + 'px';
+        traco.style.height = '1px';
+        traco.style.width = (cm % 10 === 0 ? '12px' : '6px');
+        reguaV.appendChild(traco);
+
+        // Número da escala
+        if (cm % 10 === 0 || alturaMaxCm <= 150) {
+          const rotulo = document.createElement('span');
+          rotulo.className = 'absolute right-[14px] text-[8px] text-slate-400 transform -translate-y-1/2 text-right';
+          rotulo.style.top = posPx + 'px';
+          rotulo.textContent = cm;
+          reguaV.appendChild(rotulo);
+        }
+      }
     }
 
     function alterarZoom(valor) {
-      appData.escalaZoom = Math.max(1, Math.min(5, appData.escalaZoom + valor));
+      appData.escalaZoom = Math.max(1, Math.min(6, appData.escalaZoom + valor));
       document.getElementById('labelZoom').textContent = appData.escalaZoom.toFixed(1) + 'x';
       processarECalcular();
     }
