@@ -9,27 +9,10 @@
   <!-- FontAwesome Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
-    /* Estilização avançada das Réguas no estilo CAD/RIP */
-    .regua-tick-cm {
-      position: absolute;
-      background-color: #475569;
-    }
-    .regua-tick-10cm {
-      position: absolute;
-      background-color: #94a3b8;
-    }
-    /* Rótulo de Peças Estreitas */
-    .peca-box {
-      box-sizing: border-box;
-      transition: all 0.2s ease;
-    }
-    .peca-box span {
-      white-space: nowrap;
-      text-overflow: ellipsis;
-      overflow: hidden;
-      max-width: 100%;
-      padding: 0 2px;
-    }
+    .regua-tick-cm { position: absolute; background-color: #475569; }
+    .regua-tick-10cm { position: absolute; background-color: #94a3b8; }
+    .peca-box { box-sizing: border-box; transition: all 0.2s ease; }
+    .peca-box span { white-space: nowrap; text-overflow: ellipsis; overflow: hidden; max-width: 100%; padding: 0 2px; }
   </style>
 </head>
 <body class="bg-slate-100 text-slate-800 font-sans antialiased min-h-screen text-[64%]" data-versao="3.1-enterprise">
@@ -88,12 +71,6 @@
         <button onclick="mudarAba('desenho')" id="btnAbaDesenho" class="px-2.5 py-1.5 rounded text-[10px] font-medium bg-slate-800 text-slate-300 hover:bg-slate-700 transition cursor-pointer whitespace-nowrap flex items-center justify-start">
           <i class="fa-solid fa-network-wired mr-1.5 text-[8px]"></i> Desenho (RIP)
         </button>
-        <button onclick="mudarAba('meusOrcamentos')" id="btnAbaMeusOrcamentos" class="px-2.5 py-1.5 rounded text-[10px] font-medium bg-slate-800 text-slate-300 hover:bg-slate-700 transition cursor-pointer whitespace-nowrap flex items-center justify-start">
-          <i class="fa-solid fa-folder-open mr-1.5 text-[8px]"></i> Orçamentos Salvos
-        </button>
-        <button onclick="mudarAba('backup')" id="btnAbaBackup" class="px-2.5 py-1.5 rounded text-[10px] font-medium bg-slate-800 text-slate-300 hover:bg-slate-700 transition cursor-pointer whitespace-nowrap flex items-center justify-start">
-          <i class="fa-solid fa-database mr-1.5 text-[8px]"></i> Backup
-        </button>
         <button onclick="fazerLogout()" class="text-slate-400 hover:text-red-400 text-[10px] px-2.5 py-1.5 rounded bg-slate-800 hover:bg-slate-700 transition cursor-pointer whitespace-nowrap flex items-center justify-start">
           <i class="fa-solid fa-power-off mr-1.5 text-[8px]"></i> Sair
         </button>
@@ -102,7 +79,7 @@
 
     <main class="p-4 max-w-7xl mx-auto space-y-4 flex-grow w-full">
       
-      <!-- ABA 1: ORÇAMENTO E PEÇAS -->
+      <!-- ABA 1: ORÇAMENTO -->
       <section id="abaDados" class="space-y-4">
         
         <div class="bg-cyan-900/15 border border-cyan-500/30 p-3 rounded-xl flex flex-col md:flex-row items-center justify-between gap-3">
@@ -124,11 +101,14 @@
         <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 grid grid-cols-1 md:grid-cols-3 gap-3">
           <div>
             <label class="block text-[11px] font-bold text-slate-600 mb-1">Cliente</label>
-            <input type="text" id="cliente" placeholder="Nome do Cliente" class="w-full bg-slate-50 border border-slate-300 rounded px-3 py-1.5 text-xs text-slate-900 outline-none focus:border-cyan-500">
+            <div class="flex gap-2">
+              <select id="selectClienteOrcamento" class="w-full bg-slate-50 border border-slate-300 rounded px-3 py-1.5 text-xs text-slate-900 outline-none focus:border-cyan-500"></select>
+              <button type="button" onclick="abrirModalCliente()" class="bg-cyan-600 hover:bg-cyan-700 text-white px-3 py-1.5 rounded text-xs font-bold shrink-0 cursor-pointer" title="Novo Cliente">+</button>
+            </div>
           </div>
           <div>
             <label class="block text-[11px] font-bold text-slate-600 mb-1">Produto / Projeto</label>
-            <input type="text" id="produto" placeholder="Ex: Adensamento / Adesivos" class="w-full bg-slate-50 border border-slate-300 rounded px-3 py-1.5 text-xs text-slate-900 outline-none focus:border-cyan-500">
+            <input type="text" id="produto" placeholder="Ex: Adesivos / Painel" class="w-full bg-slate-50 border border-slate-300 rounded px-3 py-1.5 text-xs text-slate-900 outline-none focus:border-cyan-500">
           </div>
           <div class="grid grid-cols-3 gap-2">
             <div>
@@ -183,28 +163,64 @@
       <!-- ABA 2: CLIENTES -->
       <section id="abaClientes" class="hidden space-y-4">
         <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 space-y-4">
-          <h2 class="text-xs font-bold text-slate-700 uppercase">Clientes Cadastrados</h2>
-          <div id="tabelaClientes" class="text-xs text-slate-500">Nenhum cliente cadastrado.</div>
+          <div class="flex justify-between items-center border-b pb-2">
+            <h2 class="text-xs font-bold text-slate-700 uppercase">Clientes Cadastrados</h2>
+            <button onclick="abrirModalCliente()" class="bg-cyan-600 hover:bg-cyan-700 text-white px-3 py-1.5 rounded text-xs font-bold cursor-pointer flex items-center">
+              <i class="fa-solid fa-user-plus mr-1.5"></i> Cadastrar Cliente
+            </button>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse text-xs">
+              <thead>
+                <tr class="bg-slate-100 border-b"><th class="p-2">Nome</th><th class="p-2">Documento</th><th class="p-2">Telefone</th><th class="p-2 text-center">Ações</th></tr>
+              </thead>
+              <tbody id="tabelaClientes" class="divide-y"></tbody>
+            </table>
+          </div>
         </div>
       </section>
 
       <!-- ABA 3: FORNECEDORES -->
       <section id="abaFornecedores" class="hidden space-y-4">
         <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 space-y-4">
-          <h2 class="text-xs font-bold text-slate-700 uppercase">Fornecedores Cadastrados</h2>
-          <div id="tabelaFornecedores" class="text-xs text-slate-500">Nenhum fornecedor cadastrado.</div>
+          <div class="flex justify-between items-center border-b pb-2">
+            <h2 class="text-xs font-bold text-slate-700 uppercase">Fornecedores Cadastrados</h2>
+            <button onclick="abrirModalFornecedor()" class="bg-cyan-600 hover:bg-cyan-700 text-white px-3 py-1.5 rounded text-xs font-bold cursor-pointer flex items-center">
+              <i class="fa-solid fa-truck-field mr-1.5"></i> Cadastrar Fornecedor
+            </button>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse text-xs">
+              <thead>
+                <tr class="bg-slate-100 border-b"><th class="p-2">Empresa</th><th class="p-2">CNPJ</th><th class="p-2">Contato</th><th class="p-2 text-center">Ações</th></tr>
+              </thead>
+              <tbody id="tabelaFornecedores" class="divide-y"></tbody>
+            </table>
+          </div>
         </div>
       </section>
 
       <!-- ABA 4: SUPRIMENTOS / BOBINAS -->
       <section id="abaSuprimentos" class="hidden space-y-4">
         <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 space-y-4">
-          <h2 class="text-xs font-bold text-slate-700 uppercase">Suprimentos</h2>
-          <div id="tabelaSuprimentos" class="text-xs text-slate-500">Acesse via botão de adição ou formulário.</div>
+          <div class="flex justify-between items-center border-b pb-2">
+            <h2 class="text-xs font-bold text-slate-700 uppercase">Suprimentos e Bobinas</h2>
+            <button onclick="abrirModalSuprimento()" class="bg-cyan-600 hover:bg-cyan-700 text-white px-3 py-1.5 rounded text-xs font-bold cursor-pointer flex items-center">
+              <i class="fa-solid fa-boxes-stacked mr-1.5"></i> Cadastrar Bobina / Material
+            </button>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse text-xs">
+              <thead>
+                <tr class="bg-slate-100 border-b"><th class="p-2">Nome do Material</th><th class="p-2">Largura (cm)</th><th class="p-2">Preço / Metro (R$)</th><th class="p-2 text-center">Ações</th></tr>
+              </thead>
+              <tbody id="tabelaSuprimentos" class="divide-y"></tbody>
+            </table>
+          </div>
         </div>
       </section>
 
-      <!-- ABA 5: DESENHO (RIP) AJUSTADO CONFORME IMAGEM -->
+      <!-- ABA 5: DESENHO (RIP) -->
       <section id="abaDesenho" class="hidden space-y-4">
         <div id="painelTemaWrapper" class="bg-slate-900 text-white p-5 rounded-xl shadow-inner space-y-4 transition-colors duration-300">
           <div class="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-slate-800 pb-3 gap-3">
@@ -243,31 +259,13 @@
             </div>
           </div>
           
-          <!-- PAINEL RIP COM RÉGUAS CAD FIDEDIGNAS À FOTO -->
           <div class="bg-slate-950 p-2 rounded-xl border border-slate-800">
             <div class="relative w-full overflow-auto bg-[#080d14] rounded-lg border border-slate-800" id="scrollAreaCanvas" style="max-height: 550px;">
-              
-              <!-- Wrapper para manter Régua e Canvas Alinhados -->
               <div id="containerComReguas" class="relative inline-block" style="padding: 28px 0 0 28px;">
-                
-                <!-- Intersecção Superior Esquerda ("cm") -->
-                <div class="absolute top-0 left-0 w-[28px] h-[28px] bg-[#0c131d] border-r border-b border-slate-700/80 z-30 flex items-center justify-center text-[10px] text-slate-400 font-bold select-none">
-                  cm
-                </div>
-
-                <!-- Régua Superior (Horizontal) -->
+                <div class="absolute top-0 left-0 w-[28px] h-[28px] bg-[#0c131d] border-r border-b border-slate-700/80 z-30 flex items-center justify-center text-[10px] text-slate-400 font-bold select-none">cm</div>
                 <div id="reguaHorizontal" class="absolute top-0 left-[28px] h-[28px] bg-[#0c131d] border-b border-slate-700/80 overflow-hidden select-none z-20"></div>
-                
-                <!-- Régua Lateral (Vertical) -->
                 <div id="reguaVertical" class="absolute top-[28px] left-0 w-[28px] bg-[#0c131d] border-r border-slate-700/80 overflow-hidden select-none z-20"></div>
-
-                <!-- Área da Bobina / Nesting Canvas -->
-                <div id="painelDesenhoResultado" class="relative bg-[#070b11] border border-cyan-500/20 shadow-inner">
-                  <div class="flex items-center justify-center h-64 text-slate-500 text-xs">
-                    Gere o orçamento para visualizar o layout de corte.
-                  </div>
-                </div>
-
+                <div id="painelDesenhoResultado" class="relative bg-[#070b11] border border-cyan-500/20 shadow-inner min-h-[300px]"></div>
               </div>
             </div>
           </div>
@@ -275,27 +273,41 @@
         </div>
       </section>
 
-      <!-- ABA 6 e 7 EXTRAS -->
-      <section id="abaMeusOrcamentos" class="hidden"><div class="bg-white p-4 rounded-xl text-xs">Orçamentos salvos aparecerão aqui.</div></section>
-      <section id="abaBackup" class="hidden"><div class="bg-white p-4 rounded-xl text-xs">Exportar/Importar Backup.</div></section>
-
     </main>
+  </div>
+
+  <!-- MODAL DE CADASTROS DINÂMICO -->
+  <div id="modalDinamico" class="hidden fixed inset-0 bg-slate-900/80 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-xl shadow-2xl max-w-md w-full p-6 space-y-4 border border-slate-200">
+      <div class="flex justify-between items-center border-b pb-2">
+        <h3 id="modalTitulo" class="text-xs font-bold text-slate-800 uppercase">Cadastrar</h3>
+        <button type="button" onclick="fecharModal()" class="text-slate-400 hover:text-slate-600 font-bold text-sm"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div id="modalCorpo" class="space-y-3"></div>
+      <div class="flex justify-end gap-2 pt-2 border-t">
+        <button type="button" onclick="fecharModal()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 px-4 py-2 rounded text-xs font-bold cursor-pointer">Cancelar</button>
+        <button type="button" id="btnSalvarModal" class="bg-cyan-600 hover:bg-cyan-700 text-white px-4 py-2 rounded text-xs font-bold cursor-pointer">Salvar Registro</button>
+      </div>
+    </div>
   </div>
 
   <script>
     let appData = {
-      suprimentos: [
-        {id:1, nome:"Bobina Lona 1.35m", largura:135, preco:25.00},
-        {id:2, nome:"Bobina Adesivo 1.00m", largura:100, preco:18.50}
-      ],
-      logado: true,
+      clientes: JSON.parse(localStorage.getItem('calculaja_clientes') || '[]'),
+      fornecedores: JSON.parse(localStorage.getItem('calculaja_fornecedores') || '[]'),
+      suprimentos: JSON.parse(localStorage.getItem('calculaja_suprimentos') || '[{"id":1, "nome":"Bobina Lona 1.35m", "largura":135, "preco":25.00}, {"id":2, "nome":"Bobina Adesivo 1.00m", "largura":100, "preco":18.50}]'),
       escalaZoom: 2.5
     };
+
+    function salvarStorage(chave) {
+      localStorage.setItem('calculaja_' + chave, JSON.stringify(appData[chave]));
+    }
 
     window.addEventListener('DOMContentLoaded', () => {
       verificarSessao();
       atualizarSelectBobinas();
-      // Exemplo inicial de dados idênticos à imagem (Peças grandes + Tiras estreitas)
+      renderizarTabelas();
+      atualizarSelectClientes();
       addParteExemplo("Peça 1", 120, 50, 4);
       addParteExemplo("Peça 2", 10, 20, 4);
     });
@@ -309,13 +321,123 @@
     function fazerLogout() { alert("Sessão encerrada"); }
 
     function mudarAba(abaId) {
-      ['dados', 'clientes', 'fornecedores', 'suprimentos', 'desenho', 'meusOrcamentos', 'backup'].forEach(aba => {
+      ['dados', 'clientes', 'fornecedores', 'suprimentos', 'desenho'].forEach(aba => {
         const el = document.getElementById('aba' + aba.charAt(0).toUpperCase() + aba.slice(1));
         const btn = document.getElementById('btnAba' + aba.charAt(0).toUpperCase() + aba.slice(1));
         if (el) el.classList.toggle('hidden', aba !== abaId);
         if (btn) btn.className = aba === abaId 
           ? "px-2.5 py-1.5 rounded text-[10px] font-medium bg-cyan-600 text-white transition cursor-pointer shadow whitespace-nowrap flex items-center justify-start"
           : "px-2.5 py-1.5 rounded text-[10px] font-medium bg-slate-800 text-slate-300 hover:bg-slate-700 transition cursor-pointer whitespace-nowrap flex items-center justify-start";
+      });
+    }
+
+    /* SISTEMA DE MODAL E CADASTROS */
+    function fecharModal() {
+      document.getElementById('modalDinamico').classList.add('hidden');
+    }
+
+    function abrirModalCliente() {
+      document.getElementById('modalTitulo').textContent = 'Novo Cliente';
+      document.getElementById('modalCorpo').innerHTML = `
+        <div><label class="block text-[10px] font-bold text-slate-600 mb-1">Nome Completo / Razão Social</label><input type="text" id="mNome" class="w-full bg-slate-50 border p-2 text-xs rounded outline-none focus:border-cyan-500"></div>
+        <div><label class="block text-[10px] font-bold text-slate-600 mb-1">CPF / CNPJ</label><input type="text" id="mDoc" class="w-full bg-slate-50 border p-2 text-xs rounded outline-none focus:border-cyan-500"></div>
+        <div><label class="block text-[10px] font-bold text-slate-600 mb-1">Telefone / WhatsApp</label><input type="text" id="mTel" class="w-full bg-slate-50 border p-2 text-xs rounded outline-none focus:border-cyan-500"></div>
+      `;
+      
+      const btn = document.getElementById('btnSalvarModal');
+      btn.onclick = function() {
+        const nome = document.getElementById('mNome').value;
+        if (!nome) return alert('Informe o nome do cliente!');
+        appData.clientes.push({
+          nome: nome,
+          doc: document.getElementById('mDoc').value,
+          tel: document.getElementById('mTel').value
+        });
+        salvarStorage('clientes');
+        renderizarTabelas();
+        atualizarSelectClientes();
+        fecharModal();
+      };
+      document.getElementById('modalDinamico').classList.remove('hidden');
+    }
+
+    function abrirModalFornecedor() {
+      document.getElementById('modalTitulo').textContent = 'Novo Fornecedor';
+      document.getElementById('modalCorpo').innerHTML = `
+        <div><label class="block text-[10px] font-bold text-slate-600 mb-1">Empresa / Razão Social</label><input type="text" id="mEmpresa" class="w-full bg-slate-50 border p-2 text-xs rounded outline-none focus:border-cyan-500"></div>
+        <div><label class="block text-[10px] font-bold text-slate-600 mb-1">CNPJ</label><input type="text" id="mCNPJ" class="w-full bg-slate-50 border p-2 text-xs rounded outline-none focus:border-cyan-500"></div>
+        <div><label class="block text-[10px] font-bold text-slate-600 mb-1">Contato</label><input type="text" id="mContato" class="w-full bg-slate-50 border p-2 text-xs rounded outline-none focus:border-cyan-500"></div>
+      `;
+      
+      const btn = document.getElementById('btnSalvarModal');
+      btn.onclick = function() {
+        const empresa = document.getElementById('mEmpresa').value;
+        if (!empresa) return alert('Informe o nome da empresa!');
+        appData.fornecedores.push({
+          empresa: empresa,
+          cnpj: document.getElementById('mCNPJ').value,
+          contato: document.getElementById('mContato').value
+        });
+        salvarStorage('fornecedores');
+        renderizarTabelas();
+        fecharModal();
+      };
+      document.getElementById('modalDinamico').classList.remove('hidden');
+    }
+
+    function abrirModalSuprimento() {
+      document.getElementById('modalTitulo').textContent = 'Novo Suprimento / Bobina';
+      document.getElementById('modalCorpo').innerHTML = `
+        <div><label class="block text-[10px] font-bold text-slate-600 mb-1">Nome do Material (Ex: Lona 440g)</label><input type="text" id="mNome" class="w-full bg-slate-50 border p-2 text-xs rounded outline-none focus:border-cyan-500"></div>
+        <div><label class="block text-[10px] font-bold text-slate-600 mb-1">Largura (cm)</label><input type="number" id="mLargura" placeholder="Ex: 135" class="w-full bg-slate-50 border p-2 text-xs rounded outline-none focus:border-cyan-500"></div>
+        <div><label class="block text-[10px] font-bold text-slate-600 mb-1">Preço do Metro (R$)</label><input type="number" step="0.01" id="mPreco" placeholder="Ex: 25.00" class="w-full bg-slate-50 border p-2 text-xs rounded outline-none focus:border-cyan-500"></div>
+      `;
+      
+      const btn = document.getElementById('btnSalvarModal');
+      btn.onclick = function() {
+        const nome = document.getElementById('mNome').value;
+        const largura = parseFloat(document.getElementById('mLargura').value);
+        const preco = parseFloat(document.getElementById('mPreco').value);
+
+        if (!nome || !largura) return alert('Informe o nome e a largura do material!');
+
+        appData.suprimentos.push({ id: Date.now(), nome, largura, preco: preco || 0 });
+        salvarStorage('suprimentos');
+        atualizarSelectBobinas();
+        renderizarTabelas();
+        fecharModal();
+      };
+      document.getElementById('modalDinamico').classList.remove('hidden');
+    }
+
+    function renderizarTabelas() {
+      // Clientes
+      const tbodyC = document.getElementById('tabelaClientes');
+      tbodyC.innerHTML = appData.clientes.length === 0 ? '<tr><td colspan="4" class="p-3 text-center text-slate-400">Nenhum cliente cadastrado.</td></tr>' : '';
+      appData.clientes.forEach((c, i) => {
+        tbodyC.innerHTML += `<tr class="hover:bg-slate-50"><td class="p-2 font-bold">${c.nome}</td><td class="p-2">${c.doc||'-'}</td><td class="p-2">${c.tel||'-'}</td><td class="p-2 text-center"><button onclick="removerCliente(${i})" class="text-red-500"><i class="fa-solid fa-trash"></i></button></td></tr>`;
+      });
+
+      // Fornecedores
+      const tbodyF = document.getElementById('tabelaFornecedores');
+      tbodyF.innerHTML = appData.fornecedores.length === 0 ? '<tr><td colspan="4" class="p-3 text-center text-slate-400">Nenhum fornecedor cadastrado.</td></tr>' : '';
+      appData.fornecedores.forEach((f, i) => {
+        tbodyF.innerHTML += `<tr class="hover:bg-slate-50"><td class="p-2 font-bold">${f.empresa}</td><td class="p-2">${f.cnpj||'-'}</td><td class="p-2">${f.contato||'-'}</td><td class="p-2 text-center"><button onclick="removerFornecedor(${i})" class="text-red-500"><i class="fa-solid fa-trash"></i></button></td></tr>`;
+      });
+
+      // Suprimentos
+      const tbodyS = document.getElementById('tabelaSuprimentos');
+      tbodyS.innerHTML = appData.suprimentos.length === 0 ? '<tr><td colspan="4" class="p-3 text-center text-slate-400">Nenhum suprimento cadastrado.</td></tr>' : '';
+      appData.suprimentos.forEach((s, i) => {
+        tbodyS.innerHTML += `<tr class="hover:bg-slate-50"><td class="p-2 font-bold">${s.nome}</td><td class="p-2">${s.largura} cm</td><td class="p-2">R$ ${Number(s.preco).toFixed(2)}</td><td class="p-2 text-center"><button onclick="removerSuprimento(${i})" class="text-red-500"><i class="fa-solid fa-trash"></i></button></td></tr>`;
+      });
+    }
+
+    function atualizarSelectClientes() {
+      const select = document.getElementById('selectClienteOrcamento');
+      select.innerHTML = '<option value="">-- Selecione o Cliente --</option>';
+      appData.clientes.forEach(c => {
+        select.innerHTML += `<option value="${c.nome}">${c.nome}</option>`;
       });
     }
 
@@ -330,6 +452,10 @@
         select.appendChild(opt);
       });
     }
+
+    function removerCliente(index) { appData.clientes.splice(index, 1); salvarStorage('clientes'); renderizarTabelas(); atualizarSelectClientes(); }
+    function removerFornecedor(index) { appData.fornecedores.splice(index, 1); salvarStorage('fornecedores'); renderizarTabelas(); }
+    function removerSuprimento(index) { appData.suprimentos.splice(index, 1); salvarStorage('suprimentos'); atualizarSelectBobinas(); renderizarTabelas(); }
 
     function addParteVazia() { addParteExemplo('', '', '', 1); }
 
@@ -346,7 +472,6 @@
       tbody.appendChild(tr);
     }
 
-    /* Algoritmo de Nesting 2D (FFDH) */
     function processarNesting(pecas, larguraBobina) {
       let prateleiras = [];
       let comprimentoTotal = 0;
@@ -408,7 +533,6 @@
         return null;
       }
 
-      // Ordenar por área descendente
       pecas.sort((a, b) => b.area - a.area);
       const resultado = processarNesting(pecas, larguraBobina);
       const areaUsada = pecas.reduce((acc, p) => acc + p.area, 0);
@@ -438,7 +562,6 @@
       renderizarGraficoDesenho(dados.pecas, dados.larguraBobina, dados.comprimentoTotal);
     }
 
-    /* RENDERIZADOR DE RÉGUAS CAD & CANVAS FIDEDIGNO À IMAGEM */
     function renderizarGraficoDesenho(pecas, larguraBobina, comprimentoTotal) {
       const container = document.getElementById('painelDesenhoResultado');
       const reguaH = document.getElementById('reguaHorizontal');
@@ -448,15 +571,12 @@
       const larguraPx = larguraBobina * pxPorCm;
       const alturaPx = Math.max(comprimentoTotal * pxPorCm, 300);
 
-      // --- 1. RÉGUA HORIZONTAL (Subdivisões idênticas ao anexo) ---
+      // Régua H
       let htmlReguaH = '';
       for (let i = 0; i <= larguraBobina; i++) {
         let pos = i * pxPorCm;
         if (i % 10 === 0) {
-          htmlReguaH += `
-            <div class="regua-tick-10cm" style="left: ${pos}px; top: 14px; width: 1px; height: 14px;"></div>
-            <div class="absolute text-[9px] text-slate-300 font-sans" style="left: ${pos + 2}px; top: 1px;">${i}</div>
-          `;
+          htmlReguaH += `<div class="regua-tick-10cm" style="left: ${pos}px; top: 14px; width: 1px; height: 14px;"></div><div class="absolute text-[9px] text-slate-300 font-sans" style="left: ${pos + 2}px; top: 1px;">${i}</div>`;
         } else if (i % 5 === 0) {
           htmlReguaH += `<div class="regua-tick-cm" style="left: ${pos}px; top: 18px; width: 1px; height: 10px;"></div>`;
         } else {
@@ -466,16 +586,13 @@
       reguaH.innerHTML = htmlReguaH;
       reguaH.style.width = larguraPx + 'px';
 
-      // --- 2. RÉGUA VERTICAL ---
+      // Régua V
       let htmlReguaV = '';
       const maxVert = Math.max(comprimentoTotal, Math.ceil(300 / pxPorCm));
       for (let i = 0; i <= maxVert; i++) {
         let pos = i * pxPorCm;
         if (i % 10 === 0) {
-          htmlReguaV += `
-            <div class="regua-tick-10cm" style="top: ${pos}px; left: 14px; height: 1px; width: 14px;"></div>
-            <div class="absolute text-[9px] text-slate-300 font-sans" style="top: ${pos + 2}px; left: 2px;">${i}</div>
-          `;
+          htmlReguaV += `<div class="regua-tick-10cm" style="top: ${pos}px; left: 14px; height: 1px; width: 14px;"></div><div class="absolute text-[9px] text-slate-300 font-sans" style="top: ${pos + 2}px; left: 2px;">${i}</div>`;
         } else if (i % 5 === 0) {
           htmlReguaV += `<div class="regua-tick-cm" style="top: ${pos}px; left: 18px; height: 1px; width: 10px;"></div>`;
         } else {
@@ -485,7 +602,7 @@
       reguaV.innerHTML = htmlReguaV;
       reguaV.style.height = alturaPx + 'px';
 
-      // --- 3. RENDERIZAÇÃO DAS PEÇAS (Estilo CAD Cyan da foto) ---
+      // Render Peças
       container.style.width = larguraPx + 'px';
       container.style.height = alturaPx + 'px';
       container.innerHTML = '';
@@ -499,7 +616,6 @@
         div.style.height = (p.comprimento * pxPorCm) + 'px';
         div.title = `${p.nome}: ${p.largura}x${p.comprimento}cm`;
 
-        // Se a peça for muito fina (como as do lado direito na foto), ajusta visualmente a orientação do texto
         const larguraPxPeca = p.largura * pxPorCm;
         if (larguraPxPeca < 35) {
           div.innerHTML = `<span style="writing-mode: vertical-rl; transform: rotate(180deg);" class="text-[8px]">${p.nome}</span>`;
