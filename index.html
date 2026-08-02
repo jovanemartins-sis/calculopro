@@ -3,13 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>CalculaJá Pro v2.8 Enterprise</title>
+  <title>CalculaJá Pro v2.9 Enterprise</title>
   <!-- Tailwind CSS via CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- FontAwesome Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
-<body class="bg-slate-100 text-slate-800 font-sans antialiased min-h-screen text-[64%]" data-versao="2.8-enterprise">
+<body class="bg-slate-100 text-slate-800 font-sans antialiased min-h-screen text-[64%]" data-versao="2.9-enterprise">
 
   <!-- TELA DE LOGIN / AUTENTICAÇÃO -->
   <div id="authModal" class="fixed inset-0 bg-slate-900/95 z-50 flex items-center justify-center p-4">
@@ -18,7 +18,7 @@
         <div class="inline-flex items-center justify-center w-14 h-14 bg-cyan-600 text-white rounded-xl shadow-lg mb-2">
           <i class="fa-solid fa-cubes text-xl"></i>
         </div>
-        <h2 class="text-xl font-bold text-slate-900">CalculaJá Pro <span class="text-xs text-cyan-600 font-normal">v2.8 Enterprise</span></h2>
+        <h2 class="text-xl font-bold text-slate-900">CalculaJá Pro <span class="text-xs text-cyan-600 font-normal">v2.9 Enterprise</span></h2>
         <p class="text-xs text-slate-500">Insira suas credenciais ou entre com o acesso rápido</p>
       </div>
 
@@ -47,7 +47,7 @@
       <div class="flex items-center space-x-3 justify-start w-full md:w-auto">
         <h1 class="text-sm font-bold text-cyan-400 flex items-center">
           <i class="fa-solid fa-cubes mr-2"></i> CalculaJá Pro 
-          <span class="text-xs text-cyan-200 font-bold ml-1.5 bg-cyan-900 px-2 py-0.5 rounded border border-cyan-500/50">v2.8 Enterprise</span>
+          <span class="text-xs text-cyan-200 font-bold ml-1.5 bg-cyan-900 px-2 py-0.5 rounded border border-cyan-500/50">v2.9 Enterprise</span>
         </h1>
       </div>
       <nav class="flex items-center space-x-2 overflow-x-auto py-1 justify-start w-full md:w-auto">
@@ -171,6 +171,9 @@
         </div>
 
         <div class="flex justify-end gap-3 pt-2">
+          <button type="button" onclick="calcularCustos()" class="bg-slate-800 hover:bg-slate-700 text-white px-5 py-2.5 rounded-lg text-xs font-bold transition shadow cursor-pointer flex items-center">
+            <i class="fa-solid fa-calculator mr-2 text-[8px]"></i> Calcular Custos
+          </button>
           <button type="button" onclick="processarECalcular()" class="bg-cyan-600 hover:bg-cyan-700 text-white px-6 py-2.5 rounded-lg text-xs font-bold transition shadow cursor-pointer flex items-center">
             Gerar Desenho RIP <i class="fa-solid fa-arrow-right ml-2 text-[8px]"></i>
           </button>
@@ -417,6 +420,7 @@
       appData.suprimentos.forEach(sup => {
         const opt = document.createElement('option');
         opt.value = sup.largura;
+        opt.dataset.preco = sup.preco;
         opt.textContent = `${sup.nome} - Largura: ${sup.largura}cm (R$ ${Number(sup.preco).toFixed(2)}/m)`;
         select.appendChild(opt);
       });
@@ -434,6 +438,58 @@
         <td class="p-2 text-center"><button type="button" onclick="this.closest('tr').remove()" class="text-red-500 hover:text-red-700 font-bold"><i class="fa-solid fa-trash text-[8px]"></i></button></td>
       `;
       tbody.appendChild(tr);
+    }
+
+    function calcularCustos() {
+      const selectBobina = document.getElementById('selectBobinaGlobal');
+      const precoMetro = selectBobina && selectBobina.selectedOptions[0] ? parseFloat(selectBobina.selectedOptions[0].dataset.preco) || 0 : 0;
+      const maoDeObra = parseFloat(document.getElementById('mao').value) || 0;
+      const lucroPercent = parseFloat(document.getElementById('lucro').value) || 0;
+      const impostoPercent = parseFloat(document.getElementById('imposto').value) || 0;
+
+      const linhas = document.querySelectorAll('#partes tr');
+      let totalMetros = 0;
+      const larguraBobina = parseFloat(selectBobina.value) || 100;
+      let pecas = [];
+
+      linhas.forEach((tr, index) => {
+        const nome = tr.querySelector('.parte-nome')?.value || `Peça ${index + 1}`;
+        const largura = parseFloat(tr.querySelector('.parte-largura')?.value) || 0;
+        const comprimento = parseFloat(tr.querySelector('.parte-comprimento')?.value) || 0;
+        const qtd = parseInt(tr.querySelector('.parte-qtd')?.value) || 0;
+
+        if (largura > 0 && comprimento > 0 && qtd > 0) {
+          for (let i = 0; i < qtd; i++) {
+            pecas.push({ largura, comprimento });
+          }
+        }
+      });
+
+      if (pecas.length === 0) {
+        alert("Adicione pelo menos uma peça válida para calcular os custos.");
+        return;
+      }
+
+      let cursorX = 0, cursorY = 0, linhaAlturaMax = 0, maxComp = 0;
+      pecas.forEach((peca) => {
+        if (cursorX + peca.largura > larguraBobina) {
+          cursorX = 0;
+          cursorY += linhaAlturaMax;
+          linhaAlturaMax = 0;
+        }
+        if (peca.comprimento > linhaAlturaMax) linhaAlturaMax = peca.comprimento;
+        const endY = cursorY + peca.comprimento;
+        if (endY > maxComp) maxComp = endY;
+        cursorX += peca.largura;
+      });
+
+      totalMetros = maxComp / 100;
+      const custoMaterial = totalMetros * precoMetro;
+      const custoBruto = custoMaterial + maoDeObra;
+      const fatorAcrescimo = 1 + ((lucroPercent + impostoPercent) / 100);
+      const precoFinal = custoBruto * fatorAcrescimo;
+
+      alert(`--- RELATÓRIO DE CUSTOS ---\nMetragem Linear: ${totalMetros.toFixed(2)} metros\nCusto Material: R$ ${custoMaterial.toFixed(2)}\nMão de Obra: R$ ${maoDeObra.toFixed(2)}\nPreço Final Venda: R$ ${precoFinal.toFixed(2)}`);
     }
 
     function abrirModal(titulo, htmlConteudo, callbackSalvar) {
@@ -610,7 +666,7 @@
       }
 
       let cursorX = 0, cursorY = 0, linhaAlturaMax = 0, maxComp = 0, svgElements = '';
-      const scale = 2.5;
+      const scale = 2.5; // Escala: 1cm = 2.5px. Logo, 5cm = 12.5px
 
       pecas.forEach((peca) => {
         if (cursorX + peca.largura > larguraBobina) {
@@ -638,11 +694,25 @@
 
       const canvasWidth = larguraBobina * scale;
       const canvasHeight = Math.max(300, (maxComp + 50) * scale);
+      const passoGrid = 5 * scale; // Regras de 5cm x 5cm
+
+      let linhasReguaX = '';
+      for (let x = passoGrid; x < canvasWidth; x += passoGrid) {
+        linhasReguaX += `<div style="position: absolute; left: ${x}px; top: 0; width: 1px; height: 100%; border-left: 1px dashed rgba(255,255,255,0.08); pointer-events: none;"></div>`;
+      }
+
+      let linhasReguaY = '';
+      for (let y = passoGrid; y < canvasHeight; y += passoGrid) {
+        linhasReguaY += `<div style="position: absolute; left: 0; top: ${y}px; width: 100%; height: 1px; border-top: 1px dashed rgba(255,255,255,0.08); pointer-events: none;"></div>`;
+      }
       
       document.getElementById('painelDesenhoResultado').innerHTML = `
         <div class="relative bg-slate-950 border rounded shadow-inner overflow-hidden" style="width: ${canvasWidth}px; height: ${canvasHeight}px;">
+          ${linhasReguaX}
+          ${linhasReguaY}
           ${svgElements}
-          <div style="position: absolute; left: ${canvasWidth}px; top: 0; height: 100%; border-right: 2px dashed #f43f5e; z-index: 20;"></div>
+          <!-- Linha vertical delimitando o fim exato da bobina -->
+          <div style="position: absolute; left: ${canvasWidth}px; top: 0; height: 100%; border-right: 2px dashed #f43f5e; z-index: 20;" title="Fim da Bobina"></div>
         </div>`;
     }
 
