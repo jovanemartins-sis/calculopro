@@ -3,13 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>CalculaJá Pro v2.9 Enterprise</title>
+  <title>CalculaJá Pro v3.0 Enterprise</title>
   <!-- Tailwind CSS via CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- FontAwesome Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
-<body class="bg-slate-100 text-slate-800 font-sans antialiased min-h-screen text-[64%]" data-versao="2.9-enterprise">
+<body class="bg-slate-100 text-slate-800 font-sans antialiased min-h-screen text-[64%]" data-versao="3.0-enterprise">
 
   <!-- TELA DE LOGIN / AUTENTICAÇÃO -->
   <div id="authModal" class="fixed inset-0 bg-slate-900/95 z-50 flex items-center justify-center p-4">
@@ -18,7 +18,7 @@
         <div class="inline-flex items-center justify-center w-14 h-14 bg-cyan-600 text-white rounded-xl shadow-lg mb-2">
           <i class="fa-solid fa-cubes text-xl"></i>
         </div>
-        <h2 class="text-xl font-bold text-slate-900">CalculaJá Pro <span class="text-xs text-cyan-600 font-normal">v2.9 Enterprise</span></h2>
+        <h2 class="text-xl font-bold text-slate-900">CalculaJá Pro <span class="text-xs text-cyan-600 font-normal">v3.0 Enterprise</span></h2>
         <p class="text-xs text-slate-500">Insira suas credenciais ou entre com o acesso rápido</p>
       </div>
 
@@ -47,7 +47,7 @@
       <div class="flex items-center space-x-3 justify-start w-full md:w-auto">
         <h1 class="text-sm font-bold text-cyan-400 flex items-center">
           <i class="fa-solid fa-cubes mr-2"></i> CalculaJá Pro 
-          <span class="text-xs text-cyan-200 font-bold ml-1.5 bg-cyan-900 px-2 py-0.5 rounded border border-cyan-500/50">v2.9 Enterprise</span>
+          <span class="text-xs text-cyan-200 font-bold ml-1.5 bg-cyan-900 px-2 py-0.5 rounded border border-cyan-500/50">v3.0 Enterprise</span>
         </h1>
       </div>
       <nav class="flex items-center space-x-2 overflow-x-auto py-1 justify-start w-full md:w-auto">
@@ -267,7 +267,13 @@
                 <i class="fa-solid fa-network-wired mr-2 text-[8px]"></i> Módulo de Desenho Técnico e Nesting (RIP)
               </h3>
             </div>
-            <div class="flex items-center space-x-3">
+            <div class="flex flex-wrap items-center gap-2">
+              <div class="flex items-center bg-slate-800 border border-slate-700 rounded-lg p-1">
+                <span class="text-[10px] text-slate-300 px-2 font-bold uppercase">Zoom:</span>
+                <button type="button" onclick="alterarZoom(-0.5)" class="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-700 text-white hover:bg-slate-600 transition cursor-pointer">-</button>
+                <span id="labelZoom" class="px-2 text-[10px] font-bold text-cyan-400">2.5x</span>
+                <button type="button" onclick="alterarZoom(0.5)" class="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-700 text-white hover:bg-slate-600 transition cursor-pointer">+</button>
+              </div>
               <div class="flex items-center bg-slate-800 border border-slate-700 rounded-lg p-1">
                 <span class="text-[10px] text-slate-300 px-2 font-bold uppercase">Tema:</span>
                 <button type="button" onclick="alternarTemaDesenho('escuro')" id="btnTemaEscuro" class="px-2.5 py-1 rounded text-[10px] font-bold bg-cyan-600 text-white transition cursor-pointer">Escuro</button>
@@ -351,7 +357,8 @@
       suprimentos: JSON.parse(localStorage.getItem('calculaja_suprimentos') || '[{"id":1, "nome":"Bobina Lona 1.35m", "largura":135, "preco":25.00}, {"id":2, "nome":"Bobina Adesivo 1.00m", "largura":100, "preco":18.50}]'),
       orcamentos: JSON.parse(localStorage.getItem('calculaja_orcamentos') || '[]'),
       temaDesenho: localStorage.getItem('calculaja_tema_desenho') || 'escuro',
-      logado: localStorage.getItem('calculaja_logado') === 'true'
+      logado: localStorage.getItem('calculaja_logado') === 'true',
+      escalaZoom: 2.5
     };
 
     function salvarStorage(chave) {
@@ -363,6 +370,7 @@
       atualizarSelectBobinas();
       renderizarTabelas();
       addParteVazia();
+      aplicarTemaVisual();
     });
 
     function verificarSessao() {
@@ -641,6 +649,13 @@
       }
     }
 
+    function alterarZoom(delta) {
+      appData.escalaZoom = Math.max(1.0, Math.min(5.0, appData.escalaZoom + delta));
+      const lbl = document.getElementById('labelZoom');
+      if (lbl) lbl.textContent = appData.escalaZoom.toFixed(1) + 'x';
+      processarECalcular();
+    }
+
     function processarECalcular() {
       mudarAba('desenho');
       const larguraBobina = parseFloat(document.getElementById('selectBobinaGlobal').value) || 100;
@@ -666,7 +681,7 @@
       }
 
       let cursorX = 0, cursorY = 0, linhaAlturaMax = 0, maxComp = 0, svgElements = '';
-      const scale = 2.5; // Escala: 1cm = 2.5px. Logo, 5cm = 12.5px
+      const scale = appData.escalaZoom; // Escala ajustável pelo Zoom (5cm x 5cm de régua)
 
       pecas.forEach((peca) => {
         if (cursorX + peca.largura > larguraBobina) {
@@ -694,24 +709,28 @@
 
       const canvasWidth = larguraBobina * scale;
       const canvasHeight = Math.max(300, (maxComp + 50) * scale);
-      const passoGrid = 5 * scale; // Regras de 5cm x 5cm
+      const passoGrid = 5 * scale; // Régua quadriculada rigorosa de 5cm x 5cm
 
       let linhasReguaX = '';
       for (let x = passoGrid; x < canvasWidth; x += passoGrid) {
-        linhasReguaX += `<div style="position: absolute; left: ${x}px; top: 0; width: 1px; height: 100%; border-left: 1px dashed rgba(255,255,255,0.08); pointer-events: none;"></div>`;
+        linhasReguaX += `<div style="position: absolute; left: ${x}px; top: 0; width: 1px; height: 100%; border-left: 1px dashed rgba(255,255,255,0.12); pointer-events: none;"></div>`;
       }
 
       let linhasReguaY = '';
       for (let y = passoGrid; y < canvasHeight; y += passoGrid) {
-        linhasReguaY += `<div style="position: absolute; left: 0; top: ${y}px; width: 100%; height: 1px; border-top: 1px dashed rgba(255,255,255,0.08); pointer-events: none;"></div>`;
+        linhasReguaY += `<div style="position: absolute; left: 0; top: ${y}px; width: 100%; height: 1px; border-top: 1px dashed rgba(255,255,255,0.12); pointer-events: none;"></div>`;
       }
       
+      const isEscuro = appData.temaDesenho === 'escuro';
+      const corFundoCanvas = isEscuro ? 'bg-slate-900/90' : 'bg-white/90 border-slate-300';
+      const corWrapper = isEscuro ? 'bg-slate-950' : 'bg-slate-100';
+
       document.getElementById('painelDesenhoResultado').innerHTML = `
-        <div class="relative bg-slate-950 border rounded shadow-inner overflow-hidden" style="width: ${canvasWidth}px; height: ${canvasHeight}px;">
+        <div class="relative ${corWrapper} border rounded shadow-inner overflow-hidden" style="width: ${canvasWidth}px; height: ${canvasHeight}px;">
           ${linhasReguaX}
           ${linhasReguaY}
           ${svgElements}
-          <!-- Linha vertical delimitando o fim exato da bobina -->
+          <!-- Linha vertical exata delimitando o fim da bobina -->
           <div style="position: absolute; left: ${canvasWidth}px; top: 0; height: 100%; border-right: 2px dashed #f43f5e; z-index: 20;" title="Fim da Bobina"></div>
         </div>`;
     }
@@ -719,6 +738,25 @@
     function alternarTemaDesenho(tema) {
       appData.temaDesenho = tema;
       localStorage.setItem('calculaja_tema_desenho', tema);
+      aplicarTemaVisual();
+      processarECalcular();
+    }
+
+    function aplicarTemaVisual() {
+      const wrapper = document.getElementById('painelTemaWrapper');
+      const btnEscuro = document.getElementById('btnTemaEscuro');
+      const btnClaro = document.getElementById('btnTemaClaro');
+      if (!wrapper) return;
+
+      if (appData.temaDesenho === 'escuro') {
+        wrapper.className = "bg-slate-900 text-white p-5 rounded-xl shadow-inner space-y-4 transition-colors duration-300";
+        if (btnEscuro) btnEscuro.className = "px-2.5 py-1 rounded text-[10px] font-bold bg-cyan-600 text-white transition cursor-pointer";
+        if (btnClaro) btnClaro.className = "px-2.5 py-1 rounded text-[10px] font-bold bg-transparent text-slate-400 hover:text-white transition cursor-pointer";
+      } else {
+        wrapper.className = "bg-white text-slate-800 p-5 rounded-xl shadow-inner space-y-4 border border-slate-200 transition-colors duration-300";
+        if (btnEscuro) btnEscuro.className = "px-2.5 py-1 rounded text-[10px] font-bold bg-transparent text-slate-600 hover:text-slate-900 transition cursor-pointer";
+        if (btnClaro) btnClaro.className = "px-2.5 py-1 rounded text-[10px] font-bold bg-cyan-600 text-white transition cursor-pointer";
+      }
     }
 
     function exportarBackup() {
