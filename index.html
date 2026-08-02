@@ -277,7 +277,7 @@
               <h3 class="text-xs font-bold text-cyan-400 uppercase tracking-widest flex items-center">
                 <i class="fa-solid fa-network-wired mr-2"></i> Módulo de Desenho Técnico e Nesting (RIP)
               </h3>
-              <p class="text-[11px] text-slate-400 mt-0.5">Visualizador RIP com algoritmo de impressora, linha vertical de fim de bobina (ex: 135cm) e seletor de tema</p>
+              <p class="text-[11px] text-slate-400 mt-0.5">Visualizador RIP com algoritmo de impressora, linha vertical limpa de fim de bobina e seletor de tema</p>
             </div>
             
             <div class="flex items-center space-x-3 flex-wrap gap-2">
@@ -317,7 +317,7 @@
             </div>
           </div>
 
-          <!-- Container Gráfico do Desenho RIP com Linha Vertical de Fim de Bobina -->
+          <!-- Container Gráfico do Desenho RIP com Linha Vertical Limpa de Fim de Bobina -->
           <div id="painelGraficoWrapper" class="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-3 transition-colors duration-300">
             <div id="topoGraficoLegenda" class="flex justify-between items-center text-[11px] text-slate-400 border-b border-slate-800/80 pb-2">
               <span class="font-bold flex items-center"><i class="fa-solid fa-eye mr-1 text-cyan-400"></i> Visualizador RIP (Baseado na Largura da Bobina & Linha Vertical de Fim)</span>
@@ -327,7 +327,7 @@
               </div>
             </div>
 
-            <!-- Área Gráfica com Réguas e Linha Vertical de Fim de Bobina -->
+            <!-- Área Gráfica com Réguas e Linha Vertical Limpa -->
             <div class="relative w-full overflow-auto bg-slate-950 rounded-lg p-2 border border-slate-800 transition-colors duration-300" id="scrollAreaCanvas">
               <div id="painelDesenhoResultado" class="relative bg-slate-900/90 rounded-lg min-h-[340px] flex items-center justify-center transition-colors duration-300">
                 <div class="text-center space-y-2 text-slate-400">
@@ -524,7 +524,7 @@
       }
     }
 
-    // Algoritmo de Impressão com Largura Exata da Bobina e Linha Vertical de Fim de Bobina
+    // Algoritmo de Impressão com Linha Vertical Limpa de Fim de Bobina (sem retângulo de fundo)
     function processarECalcular() {
       mudarAba('desenho');
       
@@ -612,7 +612,7 @@
       const aproveitamento = Math.min(100, Math.max(1, Math.round((areaPecas / areaTotalBobina) * 100)));
       document.getElementById('statAproveitamento').textContent = aproveitamento + '%';
 
-      // Réguas e Linha VERTICAL de Fim de Bobina (na largura exata configurada, ex: 135cm)
+      // Réguas e Linha VERTICAL de Fim de Bobina (sem retângulo de fundo, texto limpo)
       const scale = 2.5;
       const canvasWidth = Math.max((larguraBobina + 20) * scale, larguraBobina * scale);
       const canvasHeight = Math.max(300, (maxComprimentoAlcancado + 50) * scale);
@@ -646,13 +646,13 @@
           </div>`;
       }
 
-      // Linha VERTICAL de Fim de Bobina posicionada exatamente na largura selecionada (ex: 135cm)
+      // Linha VERTICAL de Fim de Bobina exata sem fundo/caixa sobre a linha tracejada
       const fimBobinaLeftPx = larguraBobina * scale;
       const linhaVerticalFimBobinaHTML = `
         <div style="position: absolute; left: ${fimBobinaLeftPx}px; top: 0; height: 100%; z-index: 20;" class="flex flex-col items-center">
           <div class="h-full border-r-2 border-dashed border-rose-500 relative">
-            <span class="absolute -left-3 top-2 bg-rose-500 text-white text-[9px] font-bold px-1.5 py-1 rounded shadow writing-mode-vertical whitespace-nowrap" style="writing-mode: vertical-lr; text-orientation: mixed;">
-              <i class="fa-solid fa-scissors mb-1"></i> FIM DA BOBINA (${larguraBobina} cm)
+            <span class="absolute -left-3 top-2 text-rose-500 text-[9px] font-extrabold whitespace-nowrap drop-shadow" style="writing-mode: vertical-lr; text-orientation: mixed;">
+              FIM DA BOBINA ${larguraBobina} CM
             </span>
           </div>
         </div>`;
@@ -675,7 +675,7 @@
               <div class="absolute inset-0">${reguaYHTML}</div>
             </div>
 
-            <!-- Área de Plotagem com Malha e Linha VERTICAL de Fim de Bobina -->
+            <!-- Área de Plotagem com Malha e Linha VERTICAL Limpa de Fim de Bobina -->
             <div class="relative ${bgPlotClass} border rounded shadow-inner overflow-hidden" style="width: ${canvasWidth}px; height: ${canvasHeight}px;">
               <div class="absolute inset-0 ${gridColorClass} bg-[size:20px_20px] opacity-70"></div>
               ${svgElements}
