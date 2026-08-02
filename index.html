@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Calulaja Pro - Gestão de Custos e Módulo de Desenho</title>
+    <title>Calulaja Pro - Login e Gestão</title>
     <style>
         :root {
             --primary-color: #1f4e79;
@@ -29,12 +29,59 @@
             padding: 20px;
             display: flex;
             justify-content: center;
+            align-items: center;
+            min-height: 100vh;
         }
 
-        .container {
+        /* Tela de Login */
+        #tela-login {
+            width: 100%;
+            max-width: 400px;
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+            text-align: center;
+        }
+
+        #tela-login h1 {
+            color: var(--primary-color);
+            margin-bottom: 8px;
+            font-size: 24px;
+        }
+
+        #tela-login p {
+            color: var(--text-muted);
+            font-size: 13px;
+            margin-bottom: 25px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+            text-align: left;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-muted);
+            margin-bottom: 5px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        /* Sistema Principal (Escondido até fazer login) */
+        #sistema-app {
+            display: none;
             width: 100%;
             max-width: 900px;
-            display: flex;
             flex-direction: column;
             gap: 20px;
         }
@@ -61,7 +108,56 @@
             color: var(--text-muted);
         }
 
-        /* Chave Toggle Switch Compacta */
+        .btn-logout {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .btn-logout:hover {
+            background: #c0392b;
+        }
+
+        /* Navegação de Abas */
+        .nav-tabs {
+            display: flex;
+            gap: 10px;
+            background: var(--card-bg);
+            padding: 10px 15px;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.03);
+        }
+
+        .tab-btn {
+            background: #f1f3f5;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            color: var(--text-muted);
+            transition: all 0.2s;
+        }
+
+        .tab-btn.active {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .page-content {
+            display: none;
+        }
+
+        .page-content.active {
+            display: block;
+        }
+
+        /* Toggle Switch */
         .toggle-wrapper {
             display: flex;
             align-items: center;
@@ -70,6 +166,7 @@
             padding: 10px 15px;
             border-radius: 8px;
             border: 1px solid var(--border-color);
+            margin-bottom: 20px;
         }
 
         .switch {
@@ -79,11 +176,7 @@
             height: 24px;
         }
 
-        .switch input {
-            opacity: 0;
-            width: 0;
-            height: 0;
-        }
+        .switch input { opacity: 0; width: 0; height: 0; }
 
         .slider {
             position: absolute;
@@ -106,20 +199,12 @@
             border-radius: 50%;
         }
 
-        input:checked + .slider {
-            background-color: var(--accent-green);
-        }
+        input:checked + .slider { background-color: var(--accent-green); }
+        input:checked + .slider:before { transform: translateX(20px); }
 
-        input:checked + .slider:before {
-            transform: translateX(20px);
-        }
+        .toggle-label { font-weight: 600; font-size: 14px; }
 
-        .toggle-label {
-            font-weight: 600;
-            font-size: 14px;
-        }
-
-        /* Estilo do Card Principal e Tabela */
+        /* Cards e Tabelas */
         .card {
             background: var(--card-bg);
             padding: 25px;
@@ -154,24 +239,12 @@
             font-weight: 600;
         }
 
-        tr:hover {
-            background-color: #f9fbfd;
-        }
+        tr:hover { background-color: #f9fbfd; }
 
-        .text-right {
-            text-align: right;
-        }
+        .text-right { text-align: right; }
+        .text-center { text-align: center; }
+        .total-row { font-weight: bold; background-color: #eef2f7; }
 
-        .text-center {
-            text-align: center;
-        }
-
-        .total-row {
-            font-weight: bold;
-            background-color: #eef2f7;
-        }
-
-        /* Resumo Financeiro */
         .summary-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -191,17 +264,8 @@
             background: #f1f9f5;
         }
 
-        .summary-box span {
-            display: block;
-            font-size: 12px;
-            color: var(--text-muted);
-            margin-bottom: 5px;
-        }
-
-        .summary-box strong {
-            font-size: 18px;
-            color: var(--text-main);
-        }
+        .summary-box span { display: block; font-size: 12px; color: var(--text-muted); margin-bottom: 5px; }
+        .summary-box strong { font-size: 18px; color: var(--text-main); }
 
         .btn-action {
             margin-top: 20px;
@@ -216,138 +280,202 @@
             transition: background 0.2s;
         }
 
-        .btn-action:hover {
-            background-color: var(--primary-hover);
-        }
+        .btn-action:hover { background-color: var(--primary-hover); }
     </style>
 </head>
 <body>
 
-    <div class="container">
-        <!-- Cabeçalho com o Toggle Integrado -->
+    <!-- TELA DE LOGIN -->
+    <div id="tela-login">
+        <h1>Calulaja Pro</h1>
+        <p>Acesse sua conta para gerenciar custos e projetos</p>
+        
+        <div class="form-group">
+            <label>Usuário / E-mail</label>
+            <input type="text" id="loginUser" placeholder="Digite seu usuário" value="admin">
+        </div>
+        
+        <div class="form-group">
+            <label>Senha</label>
+            <input type="password" id="loginPass" placeholder="Digite sua senha" value="123456">
+        </div>
+
+        <button class="btn-action" onclick="fazerLogin()">Entrar no Sistema</button>
+    </div>
+
+    <!-- SISTEMA PRINCIPAL (PÁGINAS / ABAS) -->
+    <div id="sistema-app" class="container">
         <header>
             <div>
                 <h1>Calulaja Pro</h1>
                 <p>Módulo de Custos, Precificação e Automação</p>
             </div>
-            
-            <div class="toggle-wrapper">
-                <label class="switch">
-                    <input type="checkbox" id="toggleDesenho" checked onchange="atualizarModuloDesenho()">
-                    <span class="slider"></span>
-                </label>
-                <span class="toggle-label" id="statusTexto">Módulo Desenho: Ativo</span>
-            </div>
+            <button class="btn-logout" onclick="fazerLogout()">Sair / Logout</button>
         </header>
 
-        <!-- Detalhamento de Custos -->
-        <div class="card">
-            <h2>Detalhamento de Custos do Produto</h2>
-            <div style="overflow-x: auto;">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Item / Insumo</th>
-                            <th class="text-center">Unidade</th>
-                            <th class="text-right">Qtd Gasta</th>
-                            <th class="text-right">Valor Unitário</th>
-                            <th class="text-right">Valor Gasto</th>
-                            <th class="text-right">% Custo Total</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>Material / Bobina de Impressão</td>
-                            <td class="text-center">m²</td>
-                            <td class="text-right">1,25</td>
-                            <td class="text-right">R$ 18,50</td>
-                            <td class="text-right">R$ 23,13</td>
-                            <td class="text-right">41,3%</td>
-                        </tr>
-                        <tr>
-                            <td>Tinta / Insumos de Impressão</td>
-                            <td class="text-center">ml</td>
-                            <td class="text-right">100,00</td>
-                            <td class="text-right">R$ 0,08</td>
-                            <td class="text-right">R$ 8,00</td>
-                            <td class="text-right">14,3%</td>
-                        </tr>
-                        <tr>
-                            <td>Mão de Obra Direta (Operação)</td>
-                            <td class="text-center">Horas</td>
-                            <td class="text-right">0,33</td>
-                            <td class="text-right">R$ 30,00</td>
-                            <td class="text-right">R$ 10,00</td>
-                            <td class="text-right">17,9%</td>
-                        </tr>
-                        <tr>
-                            <td>Embalagem (Tubete/Plástico/Caixa)</td>
-                            <td class="text-center">Unid.</td>
-                            <td class="text-right">1,00</td>
-                            <td class="text-right">R$ 6,50</td>
-                            <td class="text-right">R$ 6,50</td>
-                            <td class="text-right">11,6%</td>
-                        </tr>
-                        <tr>
-                            <td>Custos Operacionais / Energia</td>
-                            <td class="text-center">Ciclo</td>
-                            <td class="text-right">1,00</td>
-                            <td class="text-right">R$ 3,50</td>
-                            <td class="text-right">R$ 3,50</td>
-                            <td class="text-right">6,3%</td>
-                        </tr>
-                        <tr>
-                            <td>Impostos e Taxas Operacionais</td>
-                            <td class="text-center">%</td>
-                            <td class="text-right">1,00</td>
-                            <td class="text-right">R$ 4,87</td>
-                            <td class="text-right">R$ 4,87</td>
-                            <td class="text-right">8,6%</td>
-                        </tr>
-                        <tr class="total-row">
-                            <td colspan="4">TOTAL DO CUSTO</td>
-                            <td class="text-right">R$ 56,00</td>
-                            <td class="text-right">100,0%</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
+        <!-- Navegação de Abas -->
+        <div class="nav-tabs">
+            <button class="tab-btn active" onclick="trocarPagina('custos', this)">1. Custos e Precificação</button>
+            <button class="tab-btn" onclick="trocarPagina('desenho', this)">2. Módulo de Desenho</button>
+        </div>
 
-            <!-- Cards de Resumo e Precificação -->
-            <div class="summary-grid">
-                <div class="summary-box">
-                    <span>Custo Total Direto</span>
-                    <strong>R$ 56,00</strong>
+        <!-- PÁGINA 1: CUSTOS E PRECIFICAÇÃO -->
+        <div id="pagina-custos" class="page-content active">
+            <div class="card">
+                <h2>Detalhamento de Custos do Produto</h2>
+                <div style="overflow-x: auto;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Item / Insumo</th>
+                                <th class="text-center">Unidade</th>
+                                <th class="text-right">Qtd Gasta</th>
+                                <th class="text-right">Valor Unitário</th>
+                                <th class="text-right">Valor Gasto</th>
+                                <th class="text-right">% Custo Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Material / Bobina de Impressão</td>
+                                <td class="text-center">m²</td>
+                                <td class="text-right">1,25</td>
+                                <td class="text-right">R$ 18,50</td>
+                                <td class="text-right">R$ 23,13</td>
+                                <td class="text-right">41,3%</td>
+                            </tr>
+                            <tr>
+                                <td>Tinta / Insumos de Impressão</td>
+                                <td class="text-center">ml</td>
+                                <td class="text-right">100,00</td>
+                                <td class="text-right">R$ 0,08</td>
+                                <td class="text-right">R$ 8,00</td>
+                                <td class="text-right">14,3%</td>
+                            </tr>
+                            <tr>
+                                <td>Mão de Obra Direta (Operação)</td>
+                                <td class="text-center">Horas</td>
+                                <td class="text-right">0,33</td>
+                                <td class="text-right">R$ 30,00</td>
+                                <td class="text-right">R$ 10,00</td>
+                                <td class="text-right">17,9%</td>
+                            </tr>
+                            <tr>
+                                <td>Embalagem (Tubete/Plástico/Caixa)</td>
+                                <td class="text-center">Unid.</td>
+                                <td class="text-right">1,00</td>
+                                <td class="text-right">R$ 6,50</td>
+                                <td class="text-right">R$ 6,50</td>
+                                <td class="text-right">11,6%</td>
+                            </tr>
+                            <tr>
+                                <td>Custos Operacionais / Energia</td>
+                                <td class="text-center">Ciclo</td>
+                                <td class="text-right">1,00</td>
+                                <td class="text-right">R$ 3,50</td>
+                                <td class="text-right">R$ 3,50</td>
+                                <td class="text-right">6,3%</td>
+                            </tr>
+                            <tr>
+                                <td>Impostos e Taxas Operacionais</td>
+                                <td class="text-center">%</td>
+                                <td class="text-right">1,00</td>
+                                <td class="text-right">R$ 4,87</td>
+                                <td class="text-right">R$ 4,87</td>
+                                <td class="text-right">8,6%</td>
+                            </tr>
+                            <tr class="total-row">
+                                <td colspan="4">TOTAL DO CUSTO</td>
+                                <td class="text-right">R$ 56,00</td>
+                                <td class="text-right">100,0%</td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
-                <div class="summary-box">
-                    <span>Margem de Lucro (30%)</span>
-                    <strong>R$ 16,80</strong>
-                </div>
-                <div class="summary-box highlight">
-                    <span>Preço de Venda Sugerido</span>
-                    <strong>R$ 72,80</strong>
-                </div>
-            </div>
 
-            <button class="btn-action" onclick="salvarCalculo()">Salvar e Processar Produto</button>
+                <div class="summary-grid">
+                    <div class="summary-box">
+                        <span>Custo Total Direto</span>
+                        <strong>R$ 56,00</strong>
+                    </div>
+                    <div class="summary-box">
+                        <span>Margem de Lucro (30%)</span>
+                        <strong>R$ 16,80</strong>
+                    </div>
+                    <div class="summary-box highlight">
+                        <span>Preço de Venda Sugerido</span>
+                        <strong>R$ 72,80</strong>
+                    </div>
+                </div>
+
+                <button class="btn-action" onclick="alert('Custos salvos com sucesso!')">Salvar Dados de Custos</button>
+            </div>
+        </div>
+
+        <!-- PÁGINA 2: MÓDULO DE DESENHO -->
+        <div id="pagina-desenho" class="page-content">
+            <div class="card">
+                <h2>Configurações do Módulo de Desenho</h2>
+                
+                <div class="toggle-wrapper">
+                    <label class="switch">
+                        <input type="checkbox" id="toggleDesenho" checked onchange="atualizarModuloDesenho()">
+                        <span class="slider"></span>
+                    </label>
+                    <span class="toggle-label" id="statusTexto">Módulo Desenho: Ativo</span>
+                </div>
+
+                <p style="color: var(--text-muted); font-size: 14px; margin-bottom: 20px;">
+                    Quando esta chave estiver ativa, o sistema gerará automaticamente os arquivos de desenho estrutural ou gráfico vinculados aos lotes de produção.
+                </p>
+
+                <button class="btn-action" onclick="salvarConfigDesenho()">Salvar Configuração do Módulo</button>
+            </div>
         </div>
     </div>
 
     <script>
-        function atualizarModuloDesenho() {
-            const isChecked = document.getElementById('toggleDesenho').checked;
-            const statusLabel = document.getElementById('statusTexto');
-            
-            if (isChecked) {
-                statusLabel.textContent = "Módulo Desenho: Ativo";
+        function fazerLogin() {
+            const user = document.getElementById('loginUser').value;
+            const pass = document.getElementById('loginPass').value;
+
+            if (user.trim() !== "" && pass.trim() !== "") {
+                // Esconde a tela de login e mostra o sistema completo com as páginas e abas
+                document.getElementById('tela-login').style.display = 'none';
+                document.getElementById('sistema-app').style.display = 'flex';
+                document.body.style.alignItems = 'flex-start'; // Ajusta o layout para o topo
             } else {
-                statusLabel.textContent = "Módulo Desenho: Inativo";
+                alert("Por favor, preencha os campos de login!");
             }
         }
 
-        function salvarCalculo() {
+        function fazerLogout() {
+            document.getElementById('sistema-app').style.display = 'none';
+            document.getElementById('tela-login').style.display = 'block';
+            document.body.style.alignItems = 'center'; // Centraliza a tela de login novamente
+        }
+
+        function trocarPagina(paginaId, botao) {
+            document.querySelectorAll('.page-content').forEach(page => {
+                page.classList.remove('active');
+            });
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            document.getElementById('pagina-' + paginaId).classList.add('active');
+            botao.classList.add('active');
+        }
+
+        function atualizarModuloDesenho() {
+            const isChecked = document.getElementById('toggleDesenho').checked;
+            const statusLabel = document.getElementById('statusTexto');
+            statusLabel.textContent = isChecked ? "Módulo Desenho: Ativo" : "Módulo Desenho: Inativo";
+        }
+
+        function salvarConfigDesenho() {
             const desenhoAtivo = document.getElementById('toggleDesenho').checked;
-            alert("Dados salvos com sucesso! Módulo de Desenho está: " + (desenhoAtivo ? "ATIVO" : "INATIVO"));
+            alert("Configuração salva com sucesso! Módulo de Desenho: " + (desenhoAtivo ? "ATIVO" : "INATIVO"));
         }
     </script>
 </body>
