@@ -1,485 +1,1401 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Calulaja Pro - Sistema Completo</title>
-    <style>
-        :root {
-            --primary-color: #1f4e79;
-            --primary-hover: #153859;
-            --accent-green: #2ecc71;
-            --bg-color: #f4f7f6;
-            --card-bg: #ffffff;
-            --text-main: #333333;
-            --text-muted: #666666;
-            --border-color: #e0e0e0;
-        }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-
-        body {
-            background-color: var(--bg-color);
-            color: var(--text-main);
-            padding: 20px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-        }
-
-        /* Tela de Login */
-        #tela-login {
-            width: 100%;
-            max-width: 400px;
-            background: var(--card-bg);
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.08);
-            text-align: center;
-        }
-
-        #tela-login h1 {
-            color: var(--primary-color);
-            margin-bottom: 8px;
-            font-size: 24px;
-        }
-
-        #tela-login p {
-            color: var(--text-muted);
-            font-size: 13px;
-            margin-bottom: 25px;
-        }
-
-        .form-group {
-            margin-bottom: 15px;
-            text-align: left;
-        }
-
-        .form-group label {
-            display: block;
-            font-size: 12px;
-            font-weight: 600;
-            color: var(--text-muted);
-            margin-bottom: 5px;
-        }
-
-        .form-group input {
-            width: 100%;
-            padding: 10px 12px;
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
-            font-size: 14px;
-        }
-
-        /* Sistema Principal (Escondido até fazer login) */
-        #sistema-app {
-            display: none;
-            width: 100%;
-            max-width: 900px;
-            flex-direction: column;
-            gap: 20px;
-        }
-
-        header {
-            background: var(--card-bg);
-            padding: 20px 25px;
-            border-radius: 10px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 15px;
-        }
-
-        header h1 {
-            font-size: 22px;
-            color: var(--primary-color);
-        }
-
-        header p {
-            font-size: 13px;
-            color: var(--text-muted);
-        }
-
-        .btn-logout {
-            background: #e74c3c;
-            color: white;
-            border: none;
-            padding: 8px 15px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 13px;
-            font-weight: 600;
-            transition: background 0.2s;
-        }
-
-        .btn-logout:hover {
-            background: #c0392b;
-        }
-
-        /* Navegação de Abas / Páginas */
-        .nav-tabs {
-            display: flex;
-            gap: 10px;
-            background: var(--card-bg);
-            padding: 10px 15px;
-            border-radius: 10px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.03);
-            overflow-x: auto;
-        }
-
-        .tab-btn {
-            background: #f1f3f5;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: 600;
-            color: var(--text-muted);
-            transition: all 0.2s;
-            white-space: nowrap;
-        }
-
-        .tab-btn.active {
-            background: var(--primary-color);
-            color: white;
-        }
-
-        /* Conteúdo das Páginas */
-        .page-content {
-            display: none;
-        }
-
-        .page-content.active {
-            display: block;
-        }
-
-        /* Toggle Switch para o Módulo de Desenho */
-        .toggle-wrapper {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            background: #f8f9fa;
-            padding: 12px 15px;
-            border-radius: 8px;
-            border: 1px solid var(--border-color);
-            margin-bottom: 20px;
-        }
-
-        .switch {
-            position: relative;
-            display: inline-block;
-            width: 44px;
-            height: 24px;
-        }
-
-        .switch input { opacity: 0; width: 0; height: 0; }
-
-        .slider {
-            position: absolute;
-            cursor: pointer;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background-color: #ccc;
-            transition: 0.3s;
-            border-radius: 24px;
-        }
-
-        .slider:before {
-            position: absolute;
-            content: "";
-            height: 18px;
-            width: 18px;
-            left: 3px;
-            bottom: 3px;
-            background-color: white;
-            transition: 0.3s;
-            border-radius: 50%;
-        }
-
-        input:checked + .slider { background-color: var(--accent-green); }
-        input:checked + .slider:before { transform: translateX(20px); }
-
-        .toggle-label { font-weight: 600; font-size: 14px; }
-
-        /* Cards, Tabelas e Grid */
-        .card {
-            background: var(--card-bg);
-            padding: 25px;
-            border-radius: 10px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-        }
-
-        .card h2 {
-            font-size: 18px;
-            color: var(--primary-color);
-            margin-bottom: 15px;
-            border-bottom: 2px solid var(--bg-color);
-            padding-bottom: 8px;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 10px;
-            font-size: 14px;
-        }
-
-        th, td {
-            padding: 12px;
-            text-align: left;
-            border-bottom: 1px solid var(--border-color);
-        }
-
-        th {
-            background-color: var(--primary-color);
-            color: white;
-            font-weight: 600;
-        }
-
-        tr:hover { background-color: #f9fbfd; }
-
-        .text-right { text-align: right; }
-        .text-center { text-align: center; }
-        .total-row { font-weight: bold; background-color: #eef2f7; }
-
-        .summary-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-            margin-top: 20px;
-        }
-
-        .summary-box {
-            background: #f8f9fa;
-            padding: 15px;
-            border-radius: 8px;
-            border-left: 4px solid var(--primary-color);
-        }
-
-        .summary-box.highlight {
-            border-left-color: var(--accent-green);
-            background: #f1f9f5;
-        }
-
-        .summary-box span { display: block; font-size: 12px; color: var(--text-muted); margin-bottom: 5px; }
-        .summary-box strong { font-size: 18px; color: var(--text-main); }
-
-        .btn-action {
-            margin-top: 20px;
-            background-color: var(--primary-color);
-            color: white;
-            border: none;
-            padding: 12px 20px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: 600;
-            width: 100%;
-            transition: background 0.2s;
-        }
-
-        .btn-action:hover { background-color: var(--primary-hover); }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CalculaJá Pro - Sistema Integrado Completo</title>
+  <!-- Tailwind CSS via CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- Firebase SDKs (Compat) -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
 </head>
-<body>
+<body class="bg-slate-100 text-slate-800 font-sans antialiased min-h-screen text-[64%]" data-versao="3.7-master">
 
-    <!-- TELA DE LOGIN -->
-    <div id="tela-login">
-        <h1>Calulaja Pro</h1>
-        <p>Acesse sua conta para gerenciar custos e projetos</p>
-        
-        <div class="form-group">
-            <label>Usuário / E-mail</label>
-            <input type="text" id="loginUser" placeholder="Digite seu usuário" value="admin">
+  <!-- TELA DE LOGIN / AUTENTICAÇÃO FIREBASE (Inicia oculta para evitar piscar no celular) -->
+  <div id="authModal" class="hidden fixed inset-0 bg-slate-900/90 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-8 space-y-6 border border-slate-200">
+      <div class="text-center space-y-2">
+        <div class="inline-flex items-center justify-center w-14 h-14 bg-cyan-600 text-white rounded-xl shadow-lg mb-2">
+          <i class="fa-solid fa-cubes text-2xl"></i>
         </div>
-        
-        <div class="form-group">
-            <label>Senha</label>
-            <input type="password" id="loginPass" placeholder="Digite sua senha" value="123456">
-        </div>
+        <h2 class="text-xl font-bold text-slate-900">CalculaJá Pro <span class="text-xs text-cyan-600 font-normal">v3.7 Master</span></h2>
+        <p class="text-xs text-slate-500">Insira as credenciais fornecidas pelo administrador para acessar o sistema</p>
+      </div>
 
-        <button class="btn-action" onclick="fazerLogin()">Entrar no Sistema</button>
+      <div class="space-y-4">
+        <div>
+          <label class="block text-xs font-bold text-slate-600 mb-1">E-mail de Acesso</label>
+          <input type="email" id="loginEmail" placeholder="seu.email@exemplo.com" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-xs text-slate-900 outline-none focus:border-cyan-500">
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-600 mb-1">Senha</label>
+          <input type="password" id="loginSenha" placeholder="••••••••" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-xs text-slate-900 outline-none focus:border-cyan-500">
+          <div class="text-right mt-1.5">
+            <button type="button" onclick="esqueciSenha()" class="text-[11px] text-cyan-600 hover:text-cyan-800 font-medium cursor-pointer">
+              Esqueci minha senha
+            </button>
+          </div>
+        </div>
+        <button type="button" onclick="fazerLoginEmail()" class="w-full bg-cyan-600 hover:bg-cyan-700 text-white py-2.5 rounded-lg text-xs font-bold transition shadow cursor-pointer">
+          Entrar no Sistema
+        </button>
+      </div>
+      <p id="authError" class="text-center text-xs text-red-500 font-medium"></p>
     </div>
+  </div>
 
-    <!-- SISTEMA PRINCIPAL (PÁGINAS / ABAS) -->
-    <div id="sistema-app" class="container">
-        <header>
+  <!-- APLICATIVO PRINCIPAL (Inicia oculto até o Firebase validar a sessão) -->
+  <div id="appContainer" class="hidden min-h-screen flex flex-col">
+    
+    <!-- Navegação por Abas -->
+    <header class="flex flex-col md:flex-row justify-between items-center bg-slate-900 px-6 py-3 border-b border-slate-800 text-white shadow-md gap-3">
+      <div class="flex items-center space-x-3 justify-start w-full md:w-auto">
+        <h1 class="text-sm font-bold text-cyan-400 flex items-center">
+          <i class="fa-solid fa-cubes mr-2"></i> CalculaJá Pro 
+          <span class="text-xs text-cyan-200 font-bold ml-1.5 bg-cyan-900 px-2 py-0.5 rounded border border-cyan-500/50">v3.7</span>
+        </h1>
+      </div>
+      <nav class="flex items-center space-x-2 overflow-x-auto py-1 justify-start w-full md:w-auto">
+        <button onclick="mudarAba('dados')" id="btnAbaDados" class="px-3 py-1.5 rounded text-xs font-medium bg-cyan-600 text-white transition cursor-pointer shadow whitespace-nowrap flex items-center justify-start">
+          <i class="fa-solid fa-list-check mr-1.5"></i> Orçamento
+        </button>
+        <button onclick="mudarAba('clientes')" id="btnAbaClientes" class="px-3 py-1.5 rounded text-xs font-medium bg-slate-800 text-slate-300 hover:bg-slate-700 transition cursor-pointer whitespace-nowrap flex items-center justify-start">
+          <i class="fa-solid fa-users mr-1.5"></i> Clientes
+        </button>
+        <button onclick="mudarAba('fornecedores')" id="btnAbaFornecedores" class="px-3 py-1.5 rounded text-xs font-medium bg-slate-800 text-slate-300 hover:bg-slate-700 transition cursor-pointer whitespace-nowrap flex items-center justify-start">
+          <i class="fa-solid fa-truck-field mr-1.5"></i> Fornecedores
+        </button>
+        <button onclick="mudarAba('suprimentos')" id="btnAbaSuprimentos" class="px-3 py-1.5 rounded text-xs font-medium bg-slate-800 text-slate-300 hover:bg-slate-700 transition cursor-pointer whitespace-nowrap flex items-center justify-start">
+          <i class="fa-solid fa-boxes-stacked mr-1.5"></i> Suprimentos
+        </button>
+        <button onclick="mudarAba('desenho')" id="btnAbaDesenho" class="px-3 py-1.5 rounded text-xs font-medium bg-slate-800 text-slate-300 hover:bg-slate-700 transition cursor-pointer whitespace-nowrap flex items-center justify-start">
+          <i class="fa-solid fa-network-wired mr-1.5"></i> Desenho (RIP)
+        </button>
+        <button onclick="mudarAba('meusOrcamentos')" id="btnAbaMeusOrcamentos" class="px-3 py-1.5 rounded text-xs font-medium bg-slate-800 text-slate-300 hover:bg-slate-700 transition cursor-pointer whitespace-nowrap flex items-center justify-start">
+          <i class="fa-solid fa-folder-open mr-1.5"></i> Orçamentos Salvos
+        </button>
+        <button onclick="mudarAba('backup')" id="btnAbaBackup" class="px-3 py-1.5 rounded text-xs font-medium bg-slate-800 text-slate-300 hover:bg-slate-700 transition cursor-pointer whitespace-nowrap flex items-center justify-start">
+          <i class="fa-solid fa-database mr-1.5"></i> Backup
+        </button>
+        <button onclick="fazerLogout()" class="text-slate-400 hover:text-red-400 text-xs px-3 py-1.5 rounded bg-slate-800 hover:bg-slate-700 transition cursor-pointer whitespace-nowrap flex items-center justify-start" title="Sair">
+          <i class="fa-solid fa-power-off mr-1.5"></i> Sair
+        </button>
+      </nav>
+    </header>
+
+    <main class="p-4 max-w-7xl mx-auto space-y-4 flex-grow w-full">
+      
+      <!-- ABA 1: ORÇAMENTO E PEÇAS -->
+      <section id="abaDados" class="space-y-4">
+        
+        <div class="bg-cyan-900/15 border border-cyan-500/30 p-3 rounded-xl flex flex-col md:flex-row items-center justify-between gap-3">
+          <div class="flex items-center space-x-2 w-full md:w-auto">
+            <div class="bg-cyan-600 text-white p-2 rounded-lg text-xs">
+              <i class="fa-solid fa-tape"></i>
+            </div>
             <div>
-                <h1>Calulaja Pro</h1>
-                <p>Módulo de Custos, Precificação e Automação</p>
+              <label class="block text-[11px] font-bold text-slate-700 uppercase">Selecione a Bobina=></label>
+              <p class="text-[10px] text-slate-500">Define o limite horizontal de toda a folha/nesting do projeto</p>
             </div>
-            <button class="btn-logout" onclick="fazerLogout()">Sair / Logout</button>
-        </header>
-
-        <!-- Navegação por Abas -->
-        <div class="nav-tabs">
-            <button class="tab-btn active" onclick="trocarPagina('custos', this)">1. Custos e Precificação</button>
-            <button class="tab-btn" onclick="trocarPagina('desenho', this)">2. Módulo de Desenho</button>
+          </div>
+          <div class="w-full md:w-80">
+            <select id="selectBobinaGlobal" class="w-full bg-white border border-cyan-500/50 rounded px-3 py-2 text-xs font-bold text-slate-800 outline-none focus:ring-2 focus:ring-cyan-500" onchange="mudarBobinaGlobal(this)">
+            </select>
+          </div>
         </div>
 
-        <!-- PÁGINA 1: CUSTOS E PRECIFICAÇÃO -->
-        <div id="pagina-custos" class="page-content active">
-            <div class="card">
-                <h2>Detalhamento de Custos do Produto</h2>
-                <div style="overflow-x: auto;">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Item / Insumo</th>
-                                <th class="text-center">Unidade</th>
-                                <th class="text-right">Qtd Gasta</th>
-                                <th class="text-right">Valor Unitário</th>
-                                <th class="text-right">Valor Gasto</th>
-                                <th class="text-right">% Custo Total</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>Material / Bobina de Impressão</td>
-                                <td class="text-center">m²</td>
-                                <td class="text-right">1,25</td>
-                                <td class="text-right">R$ 18,50</td>
-                                <td class="text-right">R$ 23,13</td>
-                                <td class="text-right">41,3%</td>
-                            </tr>
-                            <tr>
-                                <td>Tinta / Insumos de Impressão</td>
-                                <td class="text-center">ml</td>
-                                <td class="text-right">100,00</td>
-                                <td class="text-right">R$ 0,08</td>
-                                <td class="text-right">R$ 8,00</td>
-                                <td class="text-right">14,3%</td>
-                            </tr>
-                            <tr>
-                                <td>Mão de Obra Direta (Operação)</td>
-                                <td class="text-center">Horas</td>
-                                <td class="text-right">0,33</td>
-                                <td class="text-right">R$ 30,00</td>
-                                <td class="text-right">R$ 10,00</td>
-                                <td class="text-right">17,9%</td>
-                            </tr>
-                            <tr>
-                                <td>Embalagem (Tubete/Plástico/Caixa)</td>
-                                <td class="text-center">Unid.</td>
-                                <td class="text-right">1,00</td>
-                                <td class="text-right">R$ 6,50</td>
-                                <td class="text-right">R$ 6,50</td>
-                                <td class="text-right">11,6%</td>
-                            </tr>
-                            <tr>
-                                <td>Custos Operacionais / Energia</td>
-                                <td class="text-center">Ciclo</td>
-                                <td class="text-right">1,00</td>
-                                <td class="text-right">R$ 3,50</td>
-                                <td class="text-right">R$ 3,50</td>
-                                <td class="text-right">6,3%</td>
-                            </tr>
-                            <tr>
-                                <td>Impostos e Taxas Operacionais</td>
-                                <td class="text-center">%</td>
-                                <td class="text-right">1,00</td>
-                                <td class="text-right">R$ 4,87</td>
-                                <td class="text-right">R$ 4,87</td>
-                                <td class="text-right">8,6%</td>
-                            </tr>
-                            <tr class="total-row">
-                                <td colspan="4">TOTAL DO CUSTO</td>
-                                <td class="text-right">R$ 56,00</td>
-                                <td class="text-right">100,0%</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-
-                <div class="summary-grid">
-                    <div class="summary-box">
-                        <span>Custo Total Direto</span>
-                        <strong>R$ 56,00</strong>
-                    </div>
-                    <div class="summary-box">
-                        <span>Margem de Lucro (30%)</span>
-                        <strong>R$ 16,80</strong>
-                    </div>
-                    <div class="summary-box highlight">
-                        <span>Preço de Venda Sugerido</span>
-                        <strong>R$ 72,80</strong>
-                    </div>
-                </div>
-
-                <button class="btn-action" onclick="alert('Dados de custos salvos com sucesso!')">Salvar Dados de Custos</button>
+        <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 grid grid-cols-1 md:grid-cols-3 gap-3">
+          <div>
+            <label class="block text-[11px] font-bold text-slate-600 mb-1">Cliente</label>
+            <div class="flex gap-2">
+              <input type="text" id="cliente" placeholder="Nome do Cliente" class="w-full bg-slate-50 border border-slate-300 rounded px-3 py-1.5 text-xs text-slate-900 outline-none focus:border-cyan-500">
+              <button type="button" onclick="mudarAba('clientes')" class="bg-slate-800 hover:bg-slate-700 text-white px-3 py-1 rounded text-xs font-bold transition shrink-0 cursor-pointer" title="Selecionar ou Cadastrar Cliente">
+                <i class="fa-solid fa-user-plus"></i>
+              </button>
             </div>
+          </div>
+          <div>
+            <label class="block text-[11px] font-bold text-slate-600 mb-1">Produto / Projeto</label>
+            <input type="text" id="produto" placeholder="Ex: Fachada / Adesivos" class="w-full bg-slate-50 border border-slate-300 rounded px-3 py-1.5 text-xs text-slate-900 outline-none focus:border-cyan-500">
+          </div>
+          <div class="grid grid-cols-3 gap-2">
+            <div>
+              <label class="block text-[10px] font-bold text-slate-600 mb-1">Mão de Obra (R$)</label>
+              <input type="number" id="mao" value="0" class="w-full bg-slate-50 border border-slate-300 rounded px-2 py-1.5 text-xs text-slate-900 outline-none focus:border-cyan-500">
+            </div>
+            <div>
+              <label class="block text-[10px] font-bold text-slate-600 mb-1">Lucro (%)</label>
+              <input type="number" id="lucro" value="30" class="w-full bg-slate-50 border border-slate-300 rounded px-2 py-1.5 text-xs text-slate-900 outline-none focus:border-cyan-500">
+            </div>
+            <div>
+              <label class="block text-[10px] font-bold text-slate-600 mb-1">Imposto (%)</label>
+              <input type="number" id="imposto" value="0" class="w-full bg-slate-50 border border-slate-300 rounded px-2 py-1.5 text-xs text-slate-900 outline-none focus:border-cyan-500">
+            </div>
+          </div>
         </div>
 
-        <!-- PÁGINA 2: MÓDULO DE DESENHO -->
-        <div id="pagina-desenho" class="page-content">
-            <div class="card">
-                <h2>Configurações do Módulo de Desenho</h2>
-                
-                <div class="toggle-wrapper">
-                    <label class="switch">
-                        <input type="checkbox" id="toggleDesenho" checked onchange="atualizarModuloDesenho()">
-                        <span class="slider"></span>
-                    </label>
-                    <span class="toggle-label" id="statusTexto">Módulo Desenho: Ativo</span>
-                </div>
+        <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 space-y-3">
+          <div class="flex justify-between items-center">
+            <h2 class="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center"><i class="fa-solid fa-scissors mr-1 text-cyan-600"></i> Peças e Cortes do Projeto</h2>
+            <button type="button" onclick="addParteVazia()" class="bg-slate-800 hover:bg-slate-700 text-white px-3 py-1 rounded text-xs font-bold transition cursor-pointer flex items-center">
+              <i class="fa-solid fa-plus mr-1"></i> Adicionar Peça
+            </button>
+          </div>
 
-                <p style="color: var(--text-muted); font-size: 14px; margin-bottom: 20px;">
-                    Quando esta chave estiver ativa, o sistema gerará automaticamente os arquivos de desenho estrutural ou gráfico vinculados aos lotes de produção.
-                </p>
-
-                <button class="btn-action" onclick="salvarConfigDesenho()">Salvar Configuração do Módulo</button>
-            </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse text-xs">
+              <thead>
+                <tr class="bg-slate-100 text-slate-600 border-b border-slate-200">
+                  <th class="p-2">Nome da Peça</th>
+                  <th class="p-2">Largura (cm)</th>
+                  <th class="p-2">Comprimento (cm)</th>
+                  <th class="p-2">Qtd</th>
+                  <th class="p-2 text-center">Ações</th>
+                </tr>
+              </thead>
+              <tbody id="partes" class="divide-y divide-slate-100"></tbody>
+            </table>
+          </div>
         </div>
+
+        <div class="flex justify-end pt-2">
+          <button type="button" onclick="processarECalcular()" class="bg-cyan-600 hover:bg-cyan-700 text-white px-6 py-2.5 rounded-lg text-xs font-bold transition shadow cursor-pointer flex items-center">
+            Calcular e Gerar Desenho RIP <i class="fa-solid fa-arrow-right ml-2"></i>
+          </button>
+        </div>
+      </section>
+
+      <!-- ABA: CADASTRO DE CLIENTES COM FILTRO -->
+      <section id="abaClientes" class="hidden space-y-4">
+        <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 space-y-4">
+          <div class="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-slate-100 pb-3 gap-3">
+            <div>
+              <h2 class="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center"><i class="fa-solid fa-users mr-1 text-cyan-600"></i> Cadastro de Clientes (Física e CNPJ)</h2>
+              <p class="text-[11px] text-slate-400">Gerencie sua carteira de clientes com dados completos para orçamento.</p>
+            </div>
+            <div class="flex flex-col md:flex-row items-center gap-2 w-full md:w-auto">
+              <div class="relative w-full md:w-64">
+                <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400"><i class="fa-solid fa-search"></i></span>
+                <input type="text" id="filtroClientes" oninput="filtrarClientesTabela()" placeholder="Filtrar por nome, CPF/CNPJ..." class="w-full bg-slate-50 border border-slate-300 rounded pl-9 pr-3 py-1.5 text-xs text-slate-900 outline-none focus:border-cyan-500">
+              </div>
+              <button type="button" onclick="abrirModalCliente()" class="bg-cyan-600 hover:bg-cyan-700 text-white px-3 py-1.5 rounded text-xs font-bold transition cursor-pointer flex items-center whitespace-nowrap">
+                <i class="fa-solid fa-user-plus mr-1"></i> Novo Cliente
+              </button>
+            </div>
+          </div>
+
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse text-xs">
+              <thead>
+                <tr class="bg-slate-100 text-slate-600 border-b border-slate-200">
+                  <th class="p-2">Tipo</th>
+                  <th class="p-2">Nome / Razão Social</th>
+                  <th class="p-2">CPF / CNPJ</th>
+                  <th class="p-2">Telefone</th>
+                  <th class="p-2">E-mail</th>
+                  <th class="p-2 text-center">Ações</th>
+                </tr>
+              </thead>
+              <tbody id="tabelaClientes" class="divide-y divide-slate-100">
+                <tr><td colspan="6" class="p-4 text-center text-slate-400">Carregando clientes...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ABA: CADASTRO DE FORNECEDORES -->
+      <section id="abaFornecedores" class="hidden space-y-4">
+        <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 space-y-4">
+          <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+            <div>
+              <h2 class="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center"><i class="fa-solid fa-truck-field mr-1 text-cyan-600"></i> Cadastro de Fornecedores</h2>
+              <p class="text-[11px] text-slate-400">Mantenha os contatos e informações de seus fornecedores de insumos e mídias.</p>
+            </div>
+            <button type="button" onclick="abrirModalFornecedor()" class="bg-cyan-600 hover:bg-cyan-700 text-white px-3 py-1.5 rounded text-xs font-bold transition cursor-pointer flex items-center">
+              <i class="fa-solid fa-plus mr-1"></i> Novo Fornecedor
+            </button>
+          </div>
+
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse text-xs">
+              <thead>
+                <tr class="bg-slate-100 text-slate-600 border-b border-slate-200">
+                  <th class="p-2">Empresa / Fornecedor</th>
+                  <th class="p-2">CNPJ</th>
+                  <th class="p-2">Contato / Responsável</th>
+                  <th class="p-2">Telefone</th>
+                  <th class="p-2">Segmento / Materiais</th>
+                  <th class="p-2 text-center">Ações</th>
+                </tr>
+              </thead>
+              <tbody id="tabelaFornecedores" class="divide-y divide-slate-100">
+                <tr><td colspan="6" class="p-4 text-center text-slate-400">Carregando fornecedores...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ABA 2: CADASTRO DE SUPRIMENTOS COM FILTRO -->
+      <section id="abaSuprimentos" class="hidden space-y-4">
+        <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 space-y-4">
+          <div class="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-slate-100 pb-3 gap-3">
+            <div>
+              <h2 class="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center"><i class="fa-solid fa-boxes-stacked mr-1 text-cyan-600"></i> Gerenciamento de Bobinas e Papéis</h2>
+              <p class="text-[11px] text-slate-400">Cadastre e edite a largura e os custos dos materiais disponíveis para impressão.</p>
+            </div>
+            <div class="flex flex-col md:flex-row items-center gap-2 w-full md:w-auto">
+              <div class="relative w-full md:w-64">
+                <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400"><i class="fa-solid fa-search"></i></span>
+                <input type="text" id="filtroSuprimentos" oninput="filtrarSuprimentosTabela()" placeholder="Filtrar por nome do material..." class="w-full bg-slate-50 border border-slate-300 rounded pl-9 pr-3 py-1.5 text-xs text-slate-900 outline-none focus:border-cyan-500">
+              </div>
+              <button type="button" onclick="abrirModalSuprimento()" class="bg-cyan-600 hover:bg-cyan-700 text-white px-3 py-1.5 rounded text-xs font-bold transition cursor-pointer flex items-center whitespace-nowrap">
+                <i class="fa-solid fa-plus mr-1"></i> Nova Bobina / Material
+              </button>
+            </div>
+          </div>
+
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse text-xs">
+              <thead>
+                <tr class="bg-slate-100 text-slate-600 border-b border-slate-200">
+                  <th class="p-2">Nome do Material / Bobina</th>
+                  <th class="p-2">Largura (cm) [Máx 150cm]</th>
+                  <th class="p-2">Preço por m² (R$)</th>
+                  <th class="p-2 text-center">Ações</th>
+                </tr>
+              </thead>
+              <tbody id="tabelaSuprimentos" class="divide-y divide-slate-100"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ABA 3: DESENHO (RIP NESTING) -->
+      <section id="abaDesenho" class="hidden space-y-4">
+        <div class="bg-slate-900 text-white p-5 rounded-xl shadow-inner space-y-4">
+          <div class="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-slate-800 pb-3 gap-2">
+            <div>
+              <h3 class="text-xs font-bold text-cyan-400 uppercase tracking-widest flex items-center"><i class="fa-solid fa-network-wired mr-1"></i> Desenho (Simulação de Corte)</h3>
+              <p id="infoClienteDesenho" class="text-[11px] text-slate-400">Aguardando processamento de dados...</p>
+            </div>
+            <div class="flex items-center space-x-3">
+              <div class="flex items-center bg-slate-950 rounded-lg border border-slate-800 px-2 py-1 space-x-1">
+                <span class="text-[10px] text-slate-400 font-mono mr-1">Zoom:</span>
+                <button type="button" onclick="ajustarZoom(-0.2)" class="text-slate-300 hover:text-white px-1.5 py-0.5 text-xs font-bold cursor-pointer" title="Diminuir Zoom"><i class="fa-solid fa-magnifying-glass-minus"></i></button>
+                <span id="labelZoom" class="text-xs font-mono text-cyan-400 w-12 text-center">100%</span>
+                <button type="button" onclick="ajustarZoom(0.2)" class="text-slate-300 hover:text-white px-1.5 py-0.5 text-xs font-bold cursor-pointer" title="Aumentar Zoom"><i class="fa-solid fa-magnifying-glass-plus"></i></button>
+              </div>
+              <div class="text-left md:text-right bg-slate-950 px-4 py-2 rounded-lg border border-slate-800">
+                <span id="valorFinalDesenho" class="text-sm font-bold text-emerald-400">R$ 0.00</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- ÁREA DO VISUALIZADOR COM RÉGUAS DINÂMICAS -->
+          <div class="relative bg-white rounded border border-[#b5b5b5] overflow-hidden shadow-inner text-slate-800 flex flex-col h-[580px]">
+            <div class="flex h-8 border-b border-[#b5b5b5] bg-[#ececec] relative z-20 shrink-0">
+              <div class="w-12 h-full border-r border-[#b5b5b5] flex items-center justify-center text-[11px] font-bold font-sans text-slate-700 z-30 shrink-0 bg-[#e2e2e2]">cm</div>
+              <div class="flex-grow relative overflow-hidden" id="containerReguaX">
+                <div id="tracosReguaSuperior" class="absolute top-0 bottom-0 left-0 h-full"></div>
+              </div>
+            </div>
+
+            <div class="flex flex-grow relative overflow-hidden">
+              <div class="w-12 bg-[#ececec] border-r border-[#b5b5b5] relative z-20 shrink-0 overflow-hidden" id="containerReguaY">
+                <div id="tracosReguaLateral" class="absolute top-0 left-0 right-0 w-full"></div>
+              </div>
+
+              <div class="flex-grow bg-white overflow-auto relative z-10" id="viewportPlotagem">
+                <div id="malhaGridFundo" class="absolute top-0 left-0 pointer-events-none z-0"></div>
+                <div id="bordaLimiteBobina" class="absolute top-0 left-0 border-r-2 border-dashed border-red-500 bg-slate-50/20 pointer-events-none z-0"></div>
+
+                <div id="containerPlotagem" class="absolute top-0 left-0 origin-top-left z-10">
+                  <div class="absolute top-12 left-12 text-slate-400 text-xs font-medium">Aguardando cálculo do projeto...</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="flex flex-wrap justify-between items-center pt-2 gap-2">
+            <button type="button" onclick="mudarAba('dados')" class="bg-slate-800 hover:bg-slate-700 text-slate-300 px-4 py-2 rounded text-xs transition cursor-pointer flex items-center">
+              <i class="fa-solid fa-arrow-left mr-2"></i> Voltar para Orçamento
+            </button>
+            <div class="flex items-center space-x-2">
+              <button type="button" onclick="salvarOrcamentoServidor()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded text-xs font-bold transition cursor-pointer flex items-center shadow">
+                <i class="fa-solid fa-cloud-arrow-up mr-2"></i> Salvar no Servidor (Adm)
+              </button>
+              <button type="button" onclick="exportarCSV()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded text-xs font-bold transition cursor-pointer flex items-center shadow">
+                <i class="fa-solid fa-file-excel mr-2"></i> Exportar CSV / Dados
+              </button>
+              <button type="button" onclick="salvarPDF()" class="bg-cyan-600 hover:bg-cyan-700 text-white px-4 py-2 rounded text-xs font-bold transition cursor-pointer flex items-center shadow">
+                <i class="fa-solid fa-file-pdf mr-2"></i> Salvar / Imprimir PDF
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ABA 4: MEUS ORÇAMENTOS -->
+      <section id="abaMeusOrcamentos" class="hidden space-y-4">
+        <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 space-y-4">
+          <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+            <div>
+              <h2 class="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center"><i class="fa-solid fa-folder-open mr-1 text-cyan-600"></i> Orçamentos Salvos na Nuvem</h2>
+              <p class="text-[11px] text-slate-400">Visualize, carregue ou remova seus orçamentos salvos diretamente no servidor.</p>
+            </div>
+            <button type="button" onclick="carregarMeusOrcamentos()" class="bg-cyan-600 hover:bg-cyan-700 text-white px-3 py-1.5 rounded text-xs font-bold transition cursor-pointer flex items-center">
+              <i class="fa-solid fa-rotate mr-1"></i> Atualizar Lista
+            </button>
+          </div>
+
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse text-xs">
+              <thead>
+                <tr class="bg-slate-100 text-slate-600 border-b border-slate-200">
+                  <th class="p-2">Data / Hora</th>
+                  <th class="p-2">Cliente</th>
+                  <th class="p-2">Produto / Projeto</th>
+                  <th class="p-2">Bobina</th>
+                  <th class="p-2">Valor Total</th>
+                  <th class="p-2 text-center">Ações</th>
+                </tr>
+              </thead>
+              <tbody id="tabelaMeusOrcamentos" class="divide-y divide-slate-100">
+                <tr><td colspan="6" class="p-4 text-center text-slate-400">Clique em "Atualizar Lista" para carregar seus orçamentos.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ABA 5: BACKUP -->
+      <section id="abaBackup" class="hidden space-y-4">
+        <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 space-y-6">
+          <div class="border-b border-slate-100 pb-3">
+            <h2 class="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center"><i class="fa-solid fa-database mr-1 text-cyan-600"></i> Central de Backup e Restauração</h2>
+            <p class="text-[11px] text-slate-400">Exporte ou importe todos os dados do sistema em formato JSON.</p>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="bg-slate-50 border border-slate-200 p-4 rounded-xl space-y-3">
+              <h3 class="text-xs font-bold text-slate-800 flex items-center"><i class="fa-solid fa-download mr-1 text-emerald-600"></i> Fazer Backup do Sistema</h3>
+              <p class="text-[11px] text-slate-500">Baixe um arquivo contendo todas as configurações de bobinas, clientes e fornecedores.</p>
+              <button type="button" onclick="fazerBackupJSON()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded text-xs font-bold transition cursor-pointer flex items-center">
+                <i class="fa-solid fa-file-arrow-down mr-2"></i> Baixar Arquivo de Backup (.json)
+              </button>
+            </div>
+
+            <div class="bg-slate-50 border border-slate-200 p-4 rounded-xl space-y-3">
+              <h3 class="text-xs font-bold text-slate-800 flex items-center"><i class="fa-solid fa-upload mr-1 text-cyan-600"></i> Restaurar Dados</h3>
+              <p class="text-[11px] text-slate-500">Selecione um arquivo de backup (.json) gerado anteriormente.</p>
+              <input type="file" id="inputArquivoBackup" accept=".json" class="block w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-cyan-50 file:text-cyan-700 hover:file:bg-cyan-100 cursor-pointer">
+              <button type="button" onclick="restaurarBackupJSON()" class="bg-cyan-600 hover:bg-cyan-700 text-white px-4 py-2 rounded text-xs font-bold transition cursor-pointer flex items-center">
+                <i class="fa-solid fa-file-arrow-up mr-2"></i> Carregar e Restaurar Backup
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- MODAL SUPRIMENTO -->
+  <div id="modalSuprimento" class="hidden fixed inset-0 bg-slate-900/80 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-xl shadow-xl max-w-sm w-full p-6 space-y-4 border border-slate-200">
+      <h3 class="text-xs font-bold text-slate-800 uppercase flex items-center"><i class="fa-solid fa-plus-circle text-cyan-600 mr-1"></i> Adicionar Nova Bobina</h3>
+      <div class="space-y-3 text-xs">
+        <div>
+          <label class="block font-bold text-slate-600 mb-1">Nome do Material</label>
+          <input type="text" id="novoNomeSup" placeholder="Ex: Lona Fosca" class="w-full border rounded px-3 py-1.5 outline-none focus:border-cyan-500">
+        </div>
+        <div>
+          <label class="block font-bold text-slate-600 mb-1">Largura em cm (Máximo 150cm)</label>
+          <input type="number" id="novaLarguraSup" value="135" min="10" max="150" class="w-full border rounded px-3 py-1.5 outline-none focus:border-cyan-500">
+        </div>
+        <div>
+          <label class="block font-bold text-slate-600 mb-1">Preço por m² (R$)</label>
+          <input type="number" id="novoPrecoSup" value="20.00" step="0.5" class="w-full border rounded px-3 py-1.5 outline-none focus:border-cyan-500">
+        </div>
+      </div>
+      <div class="flex justify-end space-x-2 pt-2">
+        <button type="button" onclick="fecharModalSuprimento()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 px-3 py-1.5 rounded text-xs font-bold cursor-pointer">Cancelar</button>
+        <button type="button" onclick="salvarNovoSuprimento()" class="bg-cyan-600 hover:bg-cyan-700 text-white px-3 py-1.5 rounded text-xs font-bold cursor-pointer">Salvar</button>
+      </div>
     </div>
+  </div>
 
-    <script>
-        function fazerLogin() {
-            const user = document.getElementById('loginUser').value;
-            const pass = document.getElementById('loginPass').value;
+  <!-- MODAL CLIENTE -->
+  <div id="modalCliente" class="hidden fixed inset-0 bg-slate-900/80 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-xl shadow-xl max-w-md w-full p-6 space-y-4 border border-slate-200">
+      <h3 id="tituloModalCliente" class="text-xs font-bold text-slate-800 uppercase flex items-center"><i class="fa-solid fa-user-plus text-cyan-600 mr-1"></i> Cadastrar Cliente</h3>
+      <input type="hidden" id="editClienteId" value="">
+      <div class="space-y-3 text-xs">
+        <div>
+          <label class="block font-bold text-slate-600 mb-1">Tipo de Cliente</label>
+          <select id="cliTipo" onchange="alternarCamposClienteTipo()" class="w-full border rounded px-3 py-1.5 outline-none focus:border-cyan-500">
+            <option value="Fisica">Pessoa Física</option>
+            <option value="Juridica">Pessoa Jurídica (CNPJ)</option>
+          </select>
+        </div>
+        <div>
+          <label id="labelNomeCli" class="block font-bold text-slate-600 mb-1">Nome Completo</label>
+          <input type="text" id="cliNome" placeholder="Nome do cliente" class="w-full border rounded px-3 py-1.5 outline-none focus:border-cyan-500">
+        </div>
+        <div>
+          <label id="labelDocCli" class="block font-bold text-slate-600 mb-1">CPF</label>
+          <input type="text" id="cliDoc" placeholder="000.000.000-00" class="w-full border rounded px-3 py-1.5 outline-none focus:border-cyan-500">
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="block font-bold text-slate-600 mb-1">Telefone / WhatsApp</label>
+            <input type="text" id="cliTelefone" placeholder="(00) 00000-0000" class="w-full border rounded px-3 py-1.5 outline-none focus:border-cyan-500">
+          </div>
+          <div>
+            <label class="block font-bold text-slate-600 mb-1">E-mail</label>
+            <input type="email" id="cliEmail" placeholder="email@exemplo.com" class="w-full border rounded px-3 py-1.5 outline-none focus:border-cyan-500">
+          </div>
+        </div>
+        <div>
+          <label class="block font-bold text-slate-600 mb-1">Endereço Completo</label>
+          <input type="text" id="cliEndereco" placeholder="Rua, Número, Bairro, Cidade/SP" class="w-full border rounded px-3 py-1.5 outline-none focus:border-cyan-500">
+        </div>
+      </div>
+      <div class="flex justify-end space-x-2 pt-2">
+        <button type="button" onclick="fecharModalCliente()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 px-3 py-1.5 rounded text-xs font-bold cursor-pointer">Cancelar</button>
+        <button type="button" onclick="salvarClienteNoBanco()" class="bg-cyan-600 hover:bg-cyan-700 text-white px-3 py-1.5 rounded text-xs font-bold cursor-pointer">Salvar Cliente</button>
+      </div>
+    </div>
+  </div>
 
-            if (user.trim() !== "" && pass.trim() !== "") {
-                document.getElementById('tela-login').style.display = 'none';
-                document.getElementById('sistema-app').style.display = 'flex';
-                document.body.style.alignItems = 'flex-start';
-            } else {
-                alert("Por favor, preencha os campos de login!");
+  <!-- MODAL FORNECEDOR -->
+  <div id="modalFornecedor" class="hidden fixed inset-0 bg-slate-900/80 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-xl shadow-xl max-w-md w-full p-6 space-y-4 border border-slate-200">
+      <h3 id="tituloModalFornecedor" class="text-xs font-bold text-slate-800 uppercase flex items-center"><i class="fa-solid fa-truck-field text-cyan-600 mr-1"></i> Cadastrar Fornecedor</h3>
+      <input type="hidden" id="editFornecedorId" value="">
+      <div class="space-y-3 text-xs">
+        <div>
+          <label class="block font-bold text-slate-600 mb-1">Nome da Empresa / Fornecedor</label>
+          <input type="text" id="fornNome" placeholder="Ex: Distribuidora de Mídias SP" class="w-full border rounded px-3 py-1.5 outline-none focus:border-cyan-500">
+        </div>
+        <div>
+          <label class="block font-bold text-slate-600 mb-1">CNPJ</label>
+          <input type="text" id="fornCnpj" placeholder="00.000.000/0001-00" class="w-full border rounded px-3 py-1.5 outline-none focus:border-cyan-500">
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="block font-bold text-slate-600 mb-1">Nome do Contato</label>
+            <input type="text" id="fornContato" placeholder="Nome do representante" class="w-full border rounded px-3 py-1.5 outline-none focus:border-cyan-500">
+          </div>
+          <div>
+            <label class="block font-bold text-slate-600 mb-1">Telefone</label>
+            <input type="text" id="fornTelefone" placeholder="(00) 00000-0000" class="w-full border rounded px-3 py-1.5 outline-none focus:border-cyan-500">
+          </div>
+        </div>
+        <div>
+          <label class="block font-bold text-slate-600 mb-1">Segmento / Materiais Fornecidos</label>
+          <input type="text" id="fornSegmento" placeholder="Ex: Lonas, Vinis, Tintas" class="w-full border rounded px-3 py-1.5 outline-none focus:border-cyan-500">
+        </div>
+      </div>
+      <div class="flex justify-end space-x-2 pt-2">
+        <button type="button" onclick="fecharModalFornecedor()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 px-3 py-1.5 rounded text-xs font-bold cursor-pointer">Cancelar</button>
+        <button type="button" onclick="salvarFornecedorNoBanco()" class="bg-cyan-600 hover:bg-cyan-700 text-white px-3 py-1.5 rounded text-xs font-bold cursor-pointer">Salvar Fornecedor</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Script JavaScript Integrado -->
+  <script>
+    const VERSAO_SISTEMA = "3.7 Master";
+    console.log("CalculaJá Pro carregado - Versão atual:", VERSAO_SISTEMA);
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyBK2M_6YeHCV_mNOrh2v8FO8g6BcOFBlFw",
+      authDomain: "calculo-pro.firebaseapp.com",
+      projectId: "calculo-pro",
+    };
+    if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+
+    let ESCALA_BASE = 24; 
+    let zoomAtual = 1.0;
+    let escalaPxPorCm = ESCALA_BASE;
+    
+    const LARGURA_REGUA_X_MAX = 150; 
+    const ALTURA_REGUA_Y_MAX = 5000; 
+    
+    let larguraBobinaAtual = 150; 
+    let alturaTotalLayout = 300;  
+    let pecasEmCache = [];
+    let valorOrcamentoCalculado = 0;
+    let unsubSessao = null; 
+
+    let clientesEmCache = [];
+    let bobinas = [
+      { id: 1, nome: "Vinil Brilho 1.00m", largura: 100, preco: 15.00 }, 
+      { id: 2, nome: "Lona Frontlight 1.35m", largura: 135, preco: 18.50 },
+      { id: 3, nome: "Lona Heavy 1.50m", largura: 150, preco: 22.00 }
+    ];
+
+    auth.onAuthStateChanged(user => {
+      if (unsubSessao) {
+        unsubSessao();
+        unsubSessao = null;
+      }
+
+      if (user) {
+        document.getElementById("authModal").classList.add("hidden");
+        document.getElementById("appContainer").classList.remove("hidden");
+        
+        const meuDeviceId = localStorage.getItem("calculaja_device_id");
+        
+        unsubSessao = db.collection("usuarios").doc(user.uid).onSnapshot((doc) => {
+          if (doc.exists) {
+            const dados = doc.data();
+            if (dados.ativoDeviceId && dados.ativoDeviceId !== meuDeviceId) {
+              alert("Sua conta foi acessada em outro dispositivo. Este aparelho foi desconectado.");
+              auth.signOut();
             }
+          }
+        });
+
+        const viewport = document.getElementById('viewportPlotagem');
+        viewport.addEventListener('scroll', function() {
+            document.getElementById('tracosReguaSuperior').style.transform = `translateX(-${viewport.scrollLeft}px)`;
+            document.getElementById('tracosReguaLateral').style.transform = `translateY(-${viewport.scrollTop}px)`;
+        });
+
+        atualizarSelectGlobalBobinas();
+        renderizarTabelaSuprimentos();
+        carregarClientesServidor();
+        carregarFornecedoresServidor();
+        carregarMeusOrcamentos();
+        
+        setTimeout(() => {
+          calcularEscalaFit150();
+        }, 50);
+      } else {
+        document.getElementById("appContainer").classList.add("hidden");
+        document.getElementById("authModal").classList.remove("hidden");
+      }
+    });
+
+    function calcularEscalaFit150() {
+      const viewport = document.getElementById('viewportPlotagem');
+      if(!viewport) return;
+      const larguraDisponivel = viewport.clientWidth - 40;
+      if(larguraDisponivel > 0) {
+        ESCALA_BASE = larguraDisponivel / 150;
+        escalaPxPorCm = ESCALA_BASE * zoomAtual;
+        if(pecasEmCache.length > 0) {
+          renderizarPecasNoCanvas();
+        } else {
+          gerarDimensoesReguas();
+        }
+      }
+    }
+
+    function ajustarZoom(delta) {
+      zoomAtual += delta;
+      if (zoomAtual < 0.2) zoomAtual = 0.2;
+      if (zoomAtual > 2.5) zoomAtual = 2.5;
+      
+      document.getElementById("labelZoom").innerText = Math.round(zoomAtual * 100) + "%";
+      escalaPxPorCm = ESCALA_BASE * zoomAtual;
+      
+      if(pecasEmCache.length > 0) {
+        renderizarPecasNoCanvas();
+      } else {
+        gerarDimensoesReguas();
+      }
+    }
+
+    function gerarDimensoesReguas() {
+      const larguraReguaX = Math.min(LARGURA_REGUA_X_MAX, larguraBobinaAtual);
+      const sup = document.getElementById("tracosReguaSuperior");
+      let htmlSup = "";
+      for(let cm = 0; cm <= larguraReguaX; cm++) {
+        let leftPx = cm * escalaPxPorCm;
+        let numLabel = cm > 0 && cm % 10 === 0 ? `<span class="absolute bottom-[11px] text-[10px] text-black font-bold font-sans" style="transform: translateX(-50%);">${cm}</span>` : '';
+        
+        htmlSup += `
+          <div class="absolute bottom-0 h-full" style="left: ${leftPx}px; width: 1px;">
+            ${numLabel}
+            <div class="absolute bottom-0 w-[1px] bg-black h-[10px]" style="transform: translateX(-50%);"></div>
+          </div>
+        `;
+        if (cm < larguraReguaX) {
+          for(let mm = 1; mm < 10; mm++) {
+            let mmLeft = leftPx + mm * (escalaPxPorCm / 10);
+            let hTick = (mm === 5) ? 'h-[6px]' : 'h-[3px]';
+            let cTick = (mm === 5) ? 'bg-[#555]' : 'bg-[#888]';
+            htmlSup += `<div class="absolute bottom-0 w-[1px] ${cTick} ${hTick}" style="left: ${mmLeft}px; transform: translateX(-50%);"></div>`;
+          }
+        }
+      }
+      sup.style.width = (larguraReguaX * escalaPxPorCm + 100) + "px";
+      sup.innerHTML = htmlSup;
+
+      const alturaReguaY = Math.max(200, Math.min(ALTURA_REGUA_Y_MAX, alturaTotalLayout + 50));
+      const lat = document.getElementById("tracosReguaLateral");
+      let htmlLat = "";
+      for(let cm = 0; cm <= alturaReguaY; cm += 10) { 
+        let topPx = cm * escalaPxPorCm;
+        let numLabelY = cm > 0 ? `<span class="absolute right-[11px] text-[10px] text-black font-bold font-sans" style="transform: translateY(-50%);">${cm}</span>` : '';
+        
+        htmlLat += `
+          <div class="absolute right-0 w-full" style="top: ${topPx}px; height: 1px;">
+            ${numLabelY}
+            <div class="absolute right-0 h-[1px] bg-black w-[10px]" style="transform: translateY(-50%);"></div>
+          </div>
+        `;
+      }
+      lat.style.height = (alturaReguaY * escalaPxPorCm + 100) + "px";
+      lat.innerHTML = htmlLat;
+
+      const malhaGrid = document.getElementById("malhaGridFundo");
+      let htmlMalha = "";
+      for(let x = 0; x <= larguraBobinaAtual; x += 10) {
+        htmlMalha += `<div class="absolute top-0 bottom-0 border-l border-[#dfdfdf] border-dashed" style="left: ${x * escalaPxPorCm}px; height: ${alturaReguaY * escalaPxPorCm}px;"></div>`;
+      }
+      malhaGrid.style.width = (larguraBobinaAtual * escalaPxPorCm) + "px";
+      malhaGrid.style.height = (alturaReguaY * escalaPxPorCm) + "px";
+      malhaGrid.innerHTML = htmlMalha;
+
+      const bordaBobina = document.getElementById("bordaLimiteBobina");
+      bordaBobina.style.left = "0px";
+      bordaBobina.style.width = (larguraBobinaAtual * escalaPxPorCm) + "px";
+      bordaBobina.style.height = (alturaReguaY * escalaPxPorCm) + "px";
+    }
+
+    window.onload = function() {
+      addParteVazia("Painel Fachada", "120", "80", 1);
+      addParteVazia("Adesivo Vitrine", "40", "50", 2);
+    };
+
+    function mudarAba(aba) {
+      document.getElementById("abaDados").classList.add("hidden");
+      document.getElementById("abaClientes").classList.add("hidden");
+      document.getElementById("abaFornecedores").classList.add("hidden");
+      document.getElementById("abaSuprimentos").classList.add("hidden");
+      document.getElementById("abaDesenho").classList.add("hidden");
+      document.getElementById("abaMeusOrcamentos").classList.add("hidden");
+      document.getElementById("abaBackup").classList.add("hidden");
+
+      if (aba === 'dados') document.getElementById("abaDados").classList.remove("hidden");
+      if (aba === 'clientes') {
+        document.getElementById("abaClientes").classList.remove("hidden");
+        carregarClientesServidor();
+      }
+      if (aba === 'fornecedores') {
+        document.getElementById("abaFornecedores").classList.remove("hidden");
+        carregarFornecedoresServidor();
+      }
+      if (aba === 'suprimentos') {
+        document.getElementById("abaSuprimentos").classList.remove("hidden");
+        renderizarTabelaSuprimentos();
+      }
+      if (aba === 'desenho') {
+        document.getElementById("abaDesenho").classList.remove("hidden");
+        calcularEscalaFit150();
+        if(pecasEmCache.length === 0) gerarDimensoesReguas();
+      }
+      if (aba === 'meusOrcamentos') {
+        document.getElementById("abaMeusOrcamentos").classList.remove("hidden");
+        carregarMeusOrcamentos();
+      }
+      if (aba === 'backup') {
+        document.getElementById("abaBackup").classList.remove("hidden");
+      }
+    }
+
+    // CLIENTES GESTÃO COM FILTRO
+    function abrirModalCliente(id="", tipo="Fisica", nome="", doc="", tel="", email="", endereco="") {
+      document.getElementById("editClienteId").value = id;
+      document.getElementById("cliTipo").value = tipo;
+      document.getElementById("cliNome").value = nome;
+      document.getElementById("cliDoc").value = doc;
+      document.getElementById("cliTelefone").value = tel;
+      document.getElementById("cliEmail").value = email;
+      document.getElementById("cliEndereco").value = endereco;
+      
+      alternarCamposClienteTipo();
+      document.getElementById("tituloModalCliente").innerHTML = `<i class="fa-solid fa-user-plus text-cyan-600 mr-1"></i> ${id ? 'Editar Cliente' : 'Cadastrar Novo Cliente'}`;
+      document.getElementById("modalCliente").classList.remove("hidden");
+    }
+
+    function fecharModalCliente() {
+      document.getElementById("modalCliente").classList.add("hidden");
+    }
+
+    function alternarCamposClienteTipo() {
+      const tipo = document.getElementById("cliTipo").value;
+      const labelDoc = document.getElementById("labelDocCli");
+      const labelNome = document.getElementById("labelNomeCli");
+      if(tipo === "Juridica") {
+        labelNome.innerText = "Razão Social / Nome Fantasia";
+        labelDoc.innerText = "CNPJ";
+        document.getElementById("cliDoc").placeholder = "00.000.000/0001-00";
+      } else {
+        labelNome.innerText = "Nome Completo";
+        labelDoc.innerText = "CPF";
+        document.getElementById("cliDoc").placeholder = "000.000.000-00";
+      }
+    }
+
+    function salvarClienteNoBanco() {
+      const user = auth.currentUser;
+      if (!user) return;
+
+      const id = document.getElementById("editClienteId").value;
+      const tipo = document.getElementById("cliTipo").value;
+      const nome = document.getElementById("cliNome").value.trim();
+      const doc = document.getElementById("cliDoc").value.trim();
+      const telefone = document.getElementById("cliTelefone").value.trim();
+      const email = document.getElementById("cliEmail").value.trim();
+      const endereco = document.getElementById("cliEndereco").value.trim();
+
+      if (!nome) {
+        alert("O nome do cliente é obrigatório.");
+        return;
+      }
+
+      const dadosCli = {
+        userId: user.uid,
+        tipo,
+        nome,
+        doc,
+        telefone,
+        email,
+        endereco,
+        atualizadoEm: firebase.firestore.FieldValue.serverTimestamp()
+      };
+
+      const promessa = id ? db.collection("clientes").doc(id).set(dadosCli, { merge: true }) : db.collection("clientes").add(dadosCli);
+
+      promessa.then(() => {
+        fecharModalCliente();
+        carregarClientesServidor();
+      }).catch(err => alert("Erro ao salvar cliente: " + err.message));
+    }
+
+    function carregarClientesServidor() {
+      const user = auth.currentUser;
+      const tbody = document.getElementById("tabelaClientes");
+      if (!user) return;
+
+      tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-slate-400">Carregando clientes...</td></tr>`;
+
+      db.collection("clientes")
+        .where("userId", "==", user.uid)
+        .get()
+        .then(snapshot => {
+          clientesEmCache = [];
+          snapshot.forEach(doc => {
+            clientesEmCache.push({ id: doc.id, ...doc.data() });
+          });
+          renderizarListaClientes(clientesEmCache);
+        })
+        .catch(err => {
+          tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-red-500">Erro: ${err.message}</td></tr>`;
+        });
+    }
+
+    function renderizarListaClientes(lista) {
+      const tbody = document.getElementById("tabelaClientes");
+      if (lista.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-slate-400">Nenhum cliente encontrado.</td></tr>`;
+        return;
+      }
+      let html = "";
+      lista.forEach(c => {
+        html += `
+          <tr class="hover:bg-slate-50">
+            <td class="p-2"><span class="px-2 py-0.5 rounded text-[10px] font-bold ${c.tipo === 'Juridica' ? 'bg-indigo-100 text-indigo-700' : 'bg-cyan-100 text-cyan-700'}">${c.tipo === 'Juridica' ? 'CNPJ' : 'Física'}</span></td>
+            <td class="p-2 font-medium">${c.nome}</td>
+            <td class="p-2 font-mono">${c.doc || '-'}</td>
+            <td class="p-2">${c.telefone || '-'}</td>
+            <td class="p-2">${c.email || '-'}</td>
+            <td class="p-2 text-center space-x-2">
+              <button onclick="selecionarClienteParaOrcamento('${c.nome}')" class="text-emerald-600 hover:text-emerald-800 cursor-pointer" title="Usar no Orçamento"><i class="fa-solid fa-check"></i></button>
+              <button onclick="abrirModalCliente('${c.id}', '${c.tipo}', '${c.nome}', '${c.doc}', '${c.telefone}', '${c.email}', '${c.endereco}')" class="text-cyan-600 hover:text-cyan-800 cursor-pointer"><i class="fa-solid fa-pen"></i></button>
+              <button onclick="deletarClienteServidor('${c.id}')" class="text-red-500 hover:text-red-700 cursor-pointer"><i class="fa-solid fa-trash"></i></button>
+            </td>
+          </tr>
+        `;
+      });
+      tbody.innerHTML = html;
+    }
+
+    function filtrarClientesTabela() {
+      const termo = document.getElementById("filtroClientes").value.toLowerCase().trim();
+      const filtrados = clientesEmCache.filter(c => 
+        (c.nome && c.nome.toLowerCase().includes(termo)) || 
+        (c.doc && c.doc.toLowerCase().includes(termo)) ||
+        (c.email && c.email.toLowerCase().includes(termo))
+      );
+      renderizarListaClientes(filtrados);
+    }
+
+    function selecionarClienteParaOrcamento(nomeCli) {
+      document.getElementById("cliente").value = nomeCli;
+      mudarAba('dados');
+    }
+
+    function deletarClienteServidor(id) {
+      if (confirm("Deseja excluir este cliente?")) {
+        db.collection("clientes").doc(id).delete()
+          .then(() => carregarClientesServidor())
+          .catch(err => alert("Erro: " + err.message));
+      }
+    }
+
+    // FORNECEDORES GESTÃO
+    function abrirModalFornecedor(id="", nome="", cnpj="", contato="", telefone="", segmento="") {
+      document.getElementById("editFornecedorId").value = id;
+      document.getElementById("fornNome").value = nome;
+      document.getElementById("fornCnpj").value = cnpj;
+      document.getElementById("fornContato").value = contato;
+      document.getElementById("fornTelefone").value = telefone;
+      document.getElementById("fornSegmento").value = segmento;
+      
+      document.getElementById("tituloModalFornecedor").innerHTML = `<i class="fa-solid fa-truck-field text-cyan-600 mr-1"></i> ${id ? 'Editar Fornecedor' : 'Cadastrar Novo Fornecedor'}`;
+      document.getElementById("modalFornecedor").classList.remove("hidden");
+    }
+
+    function fecharModalFornecedor() {
+      document.getElementById("modalFornecedor").classList.add("hidden");
+    }
+
+    function salvarFornecedorNoBanco() {
+      const user = auth.currentUser;
+      if (!user) return;
+
+      const id = document.getElementById("editFornecedorId").value;
+      const nome = document.getElementById("fornNome").value.trim();
+      const cnpj = document.getElementById("fornCnpj").value.trim();
+      const contato = document.getElementById("fornContato").value.trim();
+      const telefone = document.getElementById("fornTelefone").value.trim();
+      const segmento = document.getElementById("fornSegmento").value.trim();
+
+      if (!nome) {
+        alert("O nome da empresa fornecedora é obrigatório.");
+        return;
+      }
+
+      const dadosForn = {
+        userId: user.uid,
+        nome,
+        cnpj,
+        contato,
+        telefone,
+        segmento,
+        atualizadoEm: firebase.firestore.FieldValue.serverTimestamp()
+      };
+
+      const promessa = id ? db.collection("fornecedores").doc(id).set(dadosForn, { merge: true }) : db.collection("fornecedores").add(dadosForn);
+
+      promessa.then(() => {
+        fecharModalFornecedor();
+        carregarFornecedoresServidor();
+      }).catch(err => alert("Erro ao salvar fornecedor: " + err.message));
+    }
+
+    function carregarFornecedoresServidor() {
+      const user = auth.currentUser;
+      const tbody = document.getElementById("tabelaFornecedores");
+      if (!user) return;
+
+      tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-slate-400">Carregando fornecedores...</td></tr>`;
+
+      db.collection("fornecedores")
+        .where("userId", "==", user.uid)
+        .get()
+        .then(snapshot => {
+          if (snapshot.empty) {
+            tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-slate-400">Nenhum fornecedor cadastrado.</td></tr>`;
+            return;
+          }
+          let html = "";
+          snapshot.forEach(doc => {
+            const f = doc.data();
+            const id = doc.id;
+            html += `
+              <tr class="hover:bg-slate-50">
+                <td class="p-2 font-medium">${f.nome}</td>
+                <td class="p-2 font-mono">${f.cnpj || '-'}</td>
+                <td class="p-2">${f.contato || '-'}</td>
+                <td class="p-2">${f.telefone || '-'}</td>
+                <td class="p-2"><span class="bg-slate-100 text-slate-700 px-2 py-0.5 rounded text-[10px] font-semibold">${f.segmento || 'Geral'}</span></td>
+                <td class="p-2 text-center space-x-2">
+                  <button onclick="abrirModalFornecedor('${id}', '${f.nome}', '${f.cnpj}', '${f.contato}', '${f.telefone}', '${f.segmento}')" class="text-cyan-600 hover:text-cyan-800 cursor-pointer"><i class="fa-solid fa-pen"></i></button>
+                  <button onclick="deletarFornecedorServidor('${id}')" class="text-red-500 hover:text-red-700 cursor-pointer"><i class="fa-solid fa-trash"></i></button>
+                </td>
+              </tr>
+            `;
+          });
+          tbody.innerHTML = html;
+        })
+        .catch(err => {
+          tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-red-500">Erro: ${err.message}</td></tr>`;
+        });
+    }
+
+    function deletarFornecedorServidor(id) {
+      if (confirm("Deseja excluir este fornecedor?")) {
+        db.collection("fornecedores").doc(id).delete()
+          .then(() => carregarFornecedoresServidor())
+          .catch(err => alert("Erro: " + err.message));
+      }
+    }
+
+    function atualizarSelectGlobalBobinas() {
+      const select = document.getElementById("selectBobinaGlobal");
+      if(!select) return;
+      select.innerHTML = bobinas.map(b => `<option value="${b.largura}" ${b.largura === larguraBobinaAtual ? 'selected' : ''}>${b.nome} (${b.largura}cm) - R$ ${b.preco.toFixed(2)}/m²</option>`).join('');
+    }
+
+    function mudarBobinaGlobal(selectEl) {
+      larguraBobinaAtual = parseFloat(selectEl.value) || 150;
+      if(larguraBobinaAtual > 150) larguraBobinaAtual = 150;
+      calcularEscalaFit150();
+    }
+
+    // SUPRIMENTOS COM FILTRO
+    function renderizarTabelaSuprimentos() {
+      const termo = document.getElementById("filtroSuprimentos") ? document.getElementById("filtroSuprimentos").value.toLowerCase().trim() : "";
+      const tbody = document.getElementById("tabelaSuprimentos");
+      
+      const bobinasFiltradas = bobinas.filter(b => b.nome.toLowerCase().includes(termo));
+
+      if (bobinasFiltradas.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-slate-400">Nenhum suprimento encontrado.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = bobinasFiltradas.map(b => `
+        <tr class="hover:bg-slate-50" id="linha-sup-${b.id}">
+          <td class="p-2">
+            <span class="view-mode-${b.id} font-medium">${b.nome}</span>
+            <input type="text" id="edit-nome-${b.id}" value="${b.nome}" class="edit-mode-${b.id} hidden w-full border rounded px-2 py-1 text-xs">
+          </td>
+          <td class="p-2">
+            <span class="view-mode-${b.id}">${b.largura} cm</span>
+            <input type="number" id="edit-largura-${b.id}" value="${b.largura}" min="10" max="150" class="edit-mode-${b.id} hidden w-24 border rounded px-2 py-1 text-xs">
+          </td>
+          <td class="p-2">
+            <span class="view-mode-${b.id}">R$ ${b.preco.toFixed(2)}</span>
+            <input type="number" id="edit-preco-${b.id}" value="${b.preco}" step="0.5" class="edit-mode-${b.id} hidden w-24 border rounded px-2 py-1 text-xs">
+          </td>
+          <td class="p-2 text-center space-x-2">
+            <button onclick="ativarEdicaoSuprimento(${b.id})" id="btn-edit-${b.id}" class="view-mode-${b.id} text-cyan-600 hover:text-cyan-800 cursor-pointer" title="Editar"><i class="fa-solid fa-pen"></i></button>
+            <button onclick="salvarEdicaoSuprimento(${b.id})" id="btn-save-${b.id}" class="edit-mode-${b.id} hidden text-emerald-600 hover:text-emerald-800 cursor-pointer" title="Salvar"><i class="fa-solid fa-check"></i></button>
+            <button onclick="removerSuprimento(${b.id})" class="text-red-500 hover:text-red-700 cursor-pointer" title="Remover"><i class="fa-solid fa-trash"></i></button>
+          </td>
+        </tr>
+      `).join('');
+      atualizarSelectGlobalBobinas();
+    }
+
+    function filtrarSuprimentosTabela() {
+      renderizarTabelaSuprimentos();
+    }
+
+    function ativarEdicaoSuprimento(id) {
+      document.querySelectorAll(`.view-mode-${id}`).forEach(el => el.classList.add("hidden"));
+      document.querySelectorAll(`.edit-mode-${id}`).forEach(el => el.classList.remove("hidden"));
+    }
+
+    function salvarEdicaoSuprimento(id) {
+      const novoNome = document.getElementById(`edit-nome-${id}`).value.trim();
+      let novaLargura = parseFloat(document.getElementById(`edit-largura-${id}`).value) || 100;
+      const novoPreco = parseFloat(document.getElementById(`edit-preco-${id}`).value) || 15.00;
+
+      if(!novoNome) {
+        alert("O nome da bobina não pode ficar vazio.");
+        return;
+      }
+      if(novaLargura > 150) {
+        novaLargura = 150;
+        alert("A largura máxima permitida é de 150cm.");
+      }
+
+      const bobinaObj = bobinas.find(b => b.id === id);
+      if(bobinaObj) {
+        bobinaObj.nome = novoNome;
+        bobinaObj.largura = novaLargura;
+        bobinaObj.preco = novoPreco;
+      }
+
+      renderizarTabelaSuprimentos();
+    }
+
+    function abrirModalSuprimento() {
+      document.getElementById("modalSuprimento").classList.remove("hidden");
+    }
+
+    function fecharModalSuprimento() {
+      document.getElementById("modalSuprimento").classList.add("hidden");
+    }
+
+    function salvarNovoSuprimento() {
+      const nome = document.getElementById("novoNomeSup").value.trim();
+      let largura = parseFloat(document.getElementById("novaLarguraSup").value) || 100;
+      const preco = parseFloat(document.getElementById("novoPrecoSup").value) || 20.00;
+
+      if(!nome) {
+        alert("Insira um nome para o suprimento.");
+        return;
+      }
+      if(largura > 150) {
+        largura = 150;
+        alert("A largura máxima permitida é de 150cm.");
+      }
+
+      bobinas.push({ id: Date.now(), nome, largura, preco });
+      fecharModalSuprimento();
+      renderizarTabelaSuprimentos();
+    }
+
+    function removerSuprimento(id) {
+      if(bobinas.length <= 1) {
+        alert("É necessário manter pelo menos uma bobina cadastrada.");
+        return;
+      }
+      bobinas = bobinas.filter(b => b.id !== id);
+      renderizarTabelaSuprimentos();
+    }
+
+    function addParteVazia(nome="", w="", h="", q=1) {
+      const tbody = document.getElementById("partes");
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td class="p-2"><input type="text" value="${nome}" class="nomeParte w-full border rounded px-2 py-1 text-xs"></td>
+        <td class="p-2"><input type="number" value="${w}" class="larguraParte w-24 border rounded px-2 py-1 text-xs"></td>
+        <td class="p-2"><input type="number" value="${h}" class="comprimentoParte w-24 border rounded px-2 py-1 text-xs"></td>
+        <td class="p-2"><input type="number" value="${q}" class="qtdParte w-16 border rounded px-2 py-1 text-xs"></td>
+        <td class="p-2 text-center"><button onclick="this.closest('tr').remove()" class="text-red-500 cursor-pointer"><i class="fa-solid fa-trash"></i></button></td>
+      `;
+      tbody.appendChild(tr);
+    }
+
+    function processarECalcular() {
+      const cliente = document.getElementById("cliente").value || "Cliente Geral";
+      const produto = document.getElementById("produto").value || "Serviço";
+      const maoObra = parseFloat(document.getElementById("mao").value) || 0;
+      const margemLucro = parseFloat(document.getElementById("lucro").value) || 30;
+      const imposto = parseFloat(document.getElementById("imposto").value) || 0;
+
+      const bobinaSelecionadaObj = bobinas.find(b => b.largura === larguraBobinaAtual) || bobinas[0];
+      const precoPorM2 = bobinaSelecionadaObj ? bobinaSelecionadaObj.preco : 20.00;
+
+      const linhas = document.querySelectorAll("#partes tr");
+      pecasEmCache = [];
+      let cursorX = 0, cursorY = 0, alturaLinha = 0;
+      let maxAlturaAtingida = 100;
+      let areaTotalM2 = 0;
+
+      linhas.forEach((tr, index) => {
+        const nome = tr.querySelector(".nomeParte").value || `P ${index+1}`;
+        const w = parseFloat(tr.querySelector(".larguraParte").value) || 0;
+        const h = parseFloat(tr.querySelector(".comprimentoParte").value) || 0;
+        const q = parseInt(tr.querySelector(".qtdParte").value) || 1;
+
+        if (w > larguraBobinaAtual) {
+          alert(`A peça "${nome}" (${w}cm) excede a largura da bobina selecionada (${larguraBobinaAtual}cm)!`);
+          return;
         }
 
-        function fazerLogout() {
-            document.getElementById('sistema-app').style.display = 'none';
-            document.getElementById('tela-login').style.display = 'block';
-            document.body.style.alignItems = 'center';
-        }
-
-        function trocarPagina(paginaId, botao) {
-            document.querySelectorAll('.page-content').forEach(page => {
-                page.classList.remove('active');
-            });
-            document.querySelectorAll('.tab-btn').forEach(btn => {
-                btn.classList.remove('active');
-            });
+        if (w>0 && h>0) {
+          for(let i=0; i<q; i++) {
+            if (cursorX + w > larguraBobinaAtual) {
+              cursorX = 0;
+              cursorY += alturaLinha;
+              alturaLinha = 0;
+            }
             
-            document.getElementById('pagina-' + paginaId).classList.add('active');
-            botao.classList.add('active');
-        }
+            pecasEmCache.push({ 
+              nome, 
+              largura: w, 
+              comprimento: h, 
+              larguraBobina: larguraBobinaAtual, 
+              posX: cursorX, 
+              posY: cursorY,
+              cor: `#${Math.floor(Math.abs(Math.sin(index+i+1)*16777215)).toString(16).padStart(6,'0')}` 
+            });
 
-        function atualizarModuloDesenho() {
-            const isChecked = document.getElementById('toggleDesenho').checked;
-            const statusLabel = document.getElementById('statusTexto');
-            statusLabel.textContent = isChecked ? "Módulo Desenho: Ativo" : "Módulo Desenho: Inativo";
-        }
+            areaTotalM2 += (w / 100) * (h / 100);
 
-        function salvarConfigDesenho() {
-            const desenhoAtivo = document.getElementById('toggleDesenho').checked;
-            alert("Configuração salva com sucesso! Módulo de Desenho: " + (desenhoAtivo ? "ATIVO" : "INATIVO"));
+            cursorX += w;
+            if (h > alturaLinha) alturaLinha = h;
+            let fimPecaY = cursorY + h;
+            if (fimPecaY > maxAlturaAtingida) maxAlturaAtingida = fimPecaY;
+          }
         }
-    </script>
+      });
+
+      alturaTotalLayout = maxAlturaAtingida + 50; 
+      
+      const custoMaterial = areaTotalM2 * precoPorM2;
+      const subtotal = custoMaterial + maoObra;
+      const fatorLucro = 1 + (margemLucro / 100);
+      const fatorImposto = 1 - (imposto / 100);
+      
+      valorOrcamentoCalculado = fatorImposto > 0 ? (subtotal * fatorLucro) / fatorImposto : subtotal * fatorLucro;
+
+      document.getElementById("infoClienteDesenho").innerText = `Cliente: ${cliente} | Produto: ${produto} | Bobina: ${larguraBobinaAtual}cm`;
+      document.getElementById("valorFinalDesenho").innerText = `R$ ${valorOrcamentoCalculado.toFixed(2)}`;
+
+      renderizarPecasNoCanvas();
+      mudarAba('desenho');
+    }
+
+    function renderizarPecasNoCanvas() {
+      const container = document.getElementById("containerPlotagem");
+      let html = "";
+      
+      pecasEmCache.forEach(p => {
+        let xPx = p.posX * escalaPxPorCm;
+        let yPx = p.posY * escalaPxPorCm;
+        let wPx = p.largura * escalaPxPorCm;
+        let hPx = p.comprimento * escalaPxPorCm;
+
+        html += `
+          <div style="position: absolute; left: ${xPx}px; top: ${yPx}px; width: ${wPx}px; height: ${hPx}px; background-color: ${p.cor};" 
+               class="border border-white/60 flex flex-col items-center justify-center text-[11px] text-white overflow-hidden shadow-sm">
+            <span class="bg-black/60 px-1 rounded truncate shadow">${p.nome}</span>
+            <span class="bg-black/40 px-1 rounded mt-0.5 font-mono text-[9px]">${p.largura}x${p.comprimento}cm</span>
+          </div>
+        `;
+      });
+
+      gerarDimensoesReguas();
+
+      const alturaReguaY = Math.max(200, Math.min(ALTURA_REGUA_Y_MAX, alturaTotalLayout));
+      container.style.width = (larguraBobinaAtual * escalaPxPorCm) + "px";
+      container.style.height = (alturaReguaY * escalaPxPorCm) + "px";
+      container.innerHTML = html;
+    }
+
+    function salvarOrcamentoServidor() {
+      const user = auth.currentUser;
+      if (!user) {
+        alert("Você precisa estar logado.");
+        return;
+      }
+      if (pecasEmCache.length === 0) {
+        alert("Nenhum cálculo efetuado.");
+        return;
+      }
+
+      const cliente = document.getElementById("cliente").value || "Cliente Geral";
+      const produto = document.getElementById("produto").value || "Serviço";
+
+      const dadosOrcamento = {
+        userId: user.uid,
+        userEmail: user.email,
+        cliente: cliente,
+        produto: produto,
+        larguraBobina: larguraBobinaAtual,
+        valorTotal: valorOrcamentoCalculado,
+        pecas: pecasEmCache,
+        dataCriacao: firebase.firestore.FieldValue.serverTimestamp(),
+        dataStr: new Date().toLocaleString('pt-BR')
+      };
+
+      db.collection("orcamentos").add(dadosOrcamento)
+        .then(() => {
+          alert("Orçamento salvo com sucesso!");
+          mudarAba('meusOrcamentos');
+        })
+        .catch((error) => {
+          alert("Erro ao salvar: " + error.message);
+        });
+    }
+
+    function carregarMeusOrcamentos() {
+      const user = auth.currentUser;
+      const tbody = document.getElementById("tabelaMeusOrcamentos");
+      if (!user) return;
+
+      tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-slate-400">Carregando...</td></tr>`;
+
+      db.collection("orcamentos")
+        .where("userId", "==", user.uid)
+        .get()
+        .then((querySnapshot) => {
+          if (querySnapshot.empty) {
+            tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-slate-400">Nenhum orçamento salvo na nuvem ainda.</td></tr>`;
+            return;
+          }
+
+          let html = "";
+          querySnapshot.forEach((doc) => {
+            const o = doc.data();
+            const idDoc = doc.id;
+            html += `
+              <tr class="hover:bg-slate-50">
+                <td class="p-2 font-mono text-[11px] text-slate-600">${o.dataStr || 'Data recente'}</td>
+                <td class="p-2 font-medium">${o.cliente}</td>
+                <td class="p-2">${o.produto}</td>
+                <td class="p-2">${o.larguraBobina} cm</td>
+                <td class="p-2 font-bold text-emerald-600">R$ ${Number(o.valorTotal).toFixed(2)}</td>
+                <td class="p-2 text-center space-x-2">
+                  <button onclick='carregarOrcamentoDoServidor(${JSON.stringify(o.pecas).replace(/'/g, "&apos;")}, "${o.cliente}", "${o.produto}", ${o.larguraBobina}, ${o.valorTotal})' class="text-cyan-600 hover:text-cyan-800 cursor-pointer font-medium"><i class="fa-solid fa-eye mr-1"></i> Ver</button>
+                  <button onclick="deletarOrcamentoServidor('${idDoc}')" class="text-red-500 hover:text-red-700 cursor-pointer"><i class="fa-solid fa-trash"></i></button>
+                </td>
+              </tr>
+            `;
+          });
+          tbody.innerHTML = html;
+        })
+        .catch((error) => {
+          tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-red-500">Erro: ${error.message}</td></tr>`;
+        });
+    }
+
+    function carregarOrcamentoDoServidor(pecas, cliente, produto, larguraBobina, valorTotal) {
+      pecasEmCache = pecas;
+      larguraBobinaAtual = larguraBobina;
+      valorOrcamentoCalculado = valorTotal;
+
+      document.getElementById("cliente").value = cliente;
+      document.getElementById("produto").value = produto;
+      document.getElementById("infoClienteDesenho").innerText = `Cliente: ${cliente} | Produto: ${produto} | Bobina: ${larguraBobinaAtual}cm`;
+      document.getElementById("valorFinalDesenho").innerText = `R$ ${valorOrcamentoCalculado.toFixed(2)}`;
+
+      atualizarSelectGlobalBobinas();
+      mudarAba('desenho');
+    }
+
+    function deletarOrcamentoServidor(idDoc) {
+      if(confirm("Deseja excluir este orçamento?")) {
+        db.collection("orcamentos").doc(idDoc).delete()
+          .then(() => carregarMeusOrcamentos())
+          .catch((error) => alert("Erro: " + error.message));
+      }
+    }
+
+    function exportarCSV() {
+      if(pecasEmCache.length === 0) {
+        alert("Nenhum dado calculado.");
+        return;
+      }
+      const cliente = document.getElementById("cliente").value || "Cliente";
+      const produto = document.getElementById("produto").value || "Produto";
+      
+      let csvContent = "data:text/csv;charset=utf-8,";
+      csvContent += "Cliente,Produto,Peca,Largura(cm),Comprimento(cm),PosX(cm),PosY(cm),ValorTotal\n";
+      
+      pecasEmCache.forEach(p => {
+        csvContent += `"${cliente}","${produto}","${p.nome}",${p.largura},${p.comprimento},${p.posX},${p.posY},"${valorOrcamentoCalculado.toFixed(2)}"\n`;
+      });
+
+      const encodedUri = encodeURI(csvContent);
+      const link = document.createElement("a");
+      link.setAttribute("href", encodedUri);
+      link.setAttribute("download", `orcamento_${cliente.replace(/\s+/g, '_')}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
+    function salvarPDF() {
+      window.print();
+    }
+
+    function fazerBackupJSON() {
+      const dadosBackup = { bobinas: bobinas, versao: VERSAO_SISTEMA, data: new Date().toISOString() };
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(dadosBackup, null, 2));
+      const downloadAnchor = document.createElement('a');
+      downloadAnchor.setAttribute("href", dataStr);
+      downloadAnchor.setAttribute("download", `backup_calculajapro.json`);
+      document.body.appendChild(downloadAnchor);
+      downloadAnchor.click();
+      downloadAnchor.remove();
+    }
+
+    function restaurarBackupJSON() {
+      const fileInput = document.getElementById("inputArquivoBackup");
+      if(fileInput.files.length === 0) {
+        alert("Selecione um arquivo .json.");
+        return;
+      }
+      const file = fileInput.files[0];
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          const dados = JSON.parse(e.target.result);
+          if(dados.bobinas && Array.isArray(dados.bobinas)) {
+            bobinas = dados.bobinas;
+            renderizarTabelaSuprimentos();
+            alert("Restaurado com sucesso!");
+            mudarAba('suprimentos');
+          } else {
+            alert("Arquivo inválido.");
+          }
+        } catch(err) {
+          alert("Erro: " + err.message);
+        }
+      };
+      reader.readAsText(file);
+    }
+    
+    function fazerLoginEmail() {
+      const email = document.getElementById("loginEmail").value.trim();
+      const senha = document.getElementById("loginSenha").value;
+      const erroEl = document.getElementById("authError");
+      erroEl.textContent = "";
+
+      if (!email || !senha) {
+        erroEl.textContent = "Preencha o e-mail e a senha.";
+        return;
+      }
+
+      auth.signInWithEmailAndPassword(email, senha)
+        .then((userCredential) => {
+          const user = userCredential.user;
+          let deviceId = localStorage.getItem("calculaja_device_id");
+          if (!deviceId) {
+            deviceId = "dev_" + Math.random().toString(36).substring(2) + Date.now();
+            localStorage.setItem("calculaja_device_id", deviceId);
+          }
+
+          return db.collection("usuarios").doc(user.uid).set({
+            email: user.email,
+            ativoDeviceId: deviceId,
+            ultimoLogin: firebase.firestore.FieldValue.serverTimestamp()
+          }, { merge: true });
+        })
+        .catch((error) => {
+          erroEl.textContent = "E-mail ou senha incorretos.";
+        });
+    }
+
+    function esqueciSenha() {
+      const email = document.getElementById("loginEmail").value.trim();
+      const erroEl = document.getElementById("authError");
+      erroEl.textContent = "";
+      if (!email) {
+        erroEl.textContent = "Digite seu e-mail no campo acima.";
+        return;
+      }
+      auth.sendPasswordResetEmail(email)
+        .then(() => alert("E-mail de redefinição enviado!"))
+        .catch((error) => erroEl.textContent = "Erro: " + error.message);
+    }
+
+    function fazerLogout() {
+      auth.signOut();
+    }
+  </script>
 </body>
 </html>
