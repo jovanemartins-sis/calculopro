@@ -524,7 +524,7 @@
       }
     }
 
-    // Algoritmo de Impressão com Linha Vertical Limpa de Fim de Bobina (sem retângulo de fundo)
+    // Algoritmo de Impressão com Linha Vertical Limpa de Fim de Bobina (sem retângulo de fundo e sem texto rotacionado)
     function processarECalcular() {
       mudarAba('desenho');
       
@@ -612,7 +612,7 @@
       const aproveitamento = Math.min(100, Math.max(1, Math.round((areaPecas / areaTotalBobina) * 100)));
       document.getElementById('statAproveitamento').textContent = aproveitamento + '%';
 
-      // Réguas e Linha VERTICAL de Fim de Bobina (sem retângulo de fundo, texto limpo)
+      // Réguas e Linha VERTICAL de Fim de Bobina (sem texto indicativo/retângulo, linha limpa)
       const scale = 2.5;
       const canvasWidth = Math.max((larguraBobina + 20) * scale, larguraBobina * scale);
       const canvasHeight = Math.max(300, (maxComprimentoAlcancado + 50) * scale);
@@ -646,15 +646,11 @@
           </div>`;
       }
 
-      // Linha VERTICAL de Fim de Bobina exata sem fundo/caixa sobre a linha tracejada
+      // Linha VERTICAL de Fim de Bobina exata sem texto/caixa
       const fimBobinaLeftPx = larguraBobina * scale;
       const linhaVerticalFimBobinaHTML = `
         <div style="position: absolute; left: ${fimBobinaLeftPx}px; top: 0; height: 100%; z-index: 20;" class="flex flex-col items-center">
-          <div class="h-full border-r-2 border-dashed border-rose-500 relative">
-            <span class="absolute -left-3 top-2 text-rose-500 text-[9px] font-extrabold whitespace-nowrap drop-shadow" style="writing-mode: vertical-lr; text-orientation: mixed;">
-              FIM DA BOBINA ${larguraBobina} CM
-            </span>
-          </div>
+          <div class="h-full border-r-2 border-dashed border-rose-500"></div>
         </div>`;
 
       const bgReguaClass = isClaro ? 'bg-slate-200 border-cyan-600/30' : 'bg-slate-950 border-cyan-500/40';
