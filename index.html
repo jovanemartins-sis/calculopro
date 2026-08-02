@@ -475,7 +475,6 @@
       const impostoPercent = parseFloat(document.getElementById('imposto').value) || 0;
 
       const linhas = document.querySelectorAll('#partes tr');
-      let totalMetros = 0;
       const larguraBobina = parseFloat(selectBobina.value) || 100;
       let pecas = [];
 
@@ -487,7 +486,7 @@
 
         if (largura > 0 && comprimento > 0 && qtd > 0) {
           for (let i = 0; i < qtd; i++) {
-            pecas.push({ largura, comprimento });
+            pecas.push({ nome, largura, comprimento, area: largura * comprimento });
           }
         }
       });
@@ -497,26 +496,61 @@
         return;
       }
 
-      let cursorX = 0, cursorY = 0, linhaAlturaMax = 0, maxComp = 0;
-      pecas.forEach((peca) => {
-        if (cursorX + peca.largura > larguraBobina) {
-          cursorX = 0;
-          cursorY += linhaAlturaMax;
-          linhaAlturaMax = 0;
+      // Ordenar peças da maior para a menor área para otimizar o encaixe em Shelf/Nesting 2D
+      pecas.sort((a, b) => b.area - a.area);
+
+      let linhasPrateleiras = []; // Cada prateleira guarda { y, alturaMax, larguraOcupada, pecas: [] }
+      let maxCompTotal = 0;
+      const gap = 0.5; // Espaçamento de 0.5cm entre as peças para ajuste fino
+
+      pecas.forEach(peca => {
+        let colocada = false;
+        // Tenta encaixar em alguma prateleira existente que tenha espaço horizontal e suporte a altura
+        for (let prateleira of linhasPrateleiras) {
+          let espacoNecessario = prateleira.pecas.length > 0 ? peca.largura + gap : peca.largura;
+          if (prateleira.larguraOcupada + espacoNecessario <= larguraBobina) {
+            // Encaixa nesta prateleira
+            peca.x = prateleira.larguraOcupada > 0 ? prateleira.larguraOcupada + gap : 0;
+            peca.y = prateleira.y;
+            prateleira.larguraOcupada += espacoNecessario;
+            if (peca.comprimento > prateleira.alturaMax) {
+              let diff = peca.comprimento - prateleira.alturaMax;
+              prateleira.alturaMax = peca.comprimento;
+              maxCompTotal += diff; // Ajusta o comprimento total se a altura da linha crescer
+            }
+            prateleira.pecas.push(peca);
+            colocada = true;
+            break;
+          }
         }
-        if (peca.comprimento > linhaAlturaMax) linhaAlturaMax = peca.comprimento;
-        const endY = cursorY + peca.comprimento;
-        if (endY > maxComp) maxComp = endY;
-        cursorX += peca.largura;
+
+        if (!colocada) {
+          // Cria uma nova prateleira abaixo da última
+          let novoY = linhasPrateleiras.length > 0 ? linhasPrateleiras[linhasPrateleiras.length - 1].y + linhasPrateleiras[linhasPrateleiras.length - 1].alturaMax + gap : 0;
+          let novaPrateleira = {
+            y: novoY,
+            alturaMax: peca.comprimento,
+            larguraOcupada: peca.largura,
+            pecas: [peca]
+          };
+          peca.x = 0;
+          peca.y = novoY;
+          linhasPrateleiras.push(novaPrateleira);
+          maxCompTotal = novoY + peca.comprimento;
+        }
       });
 
-      totalMetros = maxComp / 100;
+      let totalMetros = maxCompTotal / 100;
+      let areaTotalPecas = pecas.reduce((acc, p) => acc + p.area, 0);
+      let areaTotalBobina = larguraBobina * maxCompTotal;
+      let aproveitamento = areaTotalBobina > 0 ? ((areaTotalPecas / areaTotalBobina) * 100).toFixed(1) : 0;
+
       const custoMaterial = totalMetros * precoMetro;
       const custoBruto = custoMaterial + maoDeObra;
       const fatorAcrescimo = 1 + ((lucroPercent + impostoPercent) / 100);
       const precoFinal = custoBruto * fatorAcrescimo;
 
-      alert(`--- RELATÓRIO DE CUSTOS ---\nMetragem Linear: ${totalMetros.toFixed(2)} metros\nCusto Material: R$ ${custoMaterial.toFixed(2)}\nMão de Obra: R$ ${maoDeObra.toFixed(2)}\nPreço Final Venda: R$ ${precoFinal.toFixed(2)}`);
+      alert(`--- RELATÓRIO DE CUSTOS OTIMIZADOS ---\nMetragem Linear: ${totalMetros.toFixed(2)} metros\nAproveitamento: ${aproveitamento}%\nCusto Material: R$ ${custoMaterial.toFixed(2)}\nMão de Obra: R$ ${maoDeObra.toFixed(2)}\nPreço Final Venda: R$ ${precoFinal.toFixed(2)}`);
     }
 
     function abrirModal(titulo, htmlConteudo, callbackSalvar) {
@@ -716,7 +750,7 @@
 
         if (largura > 0 && comprimento > 0 && qtd > 0) {
           for (let i = 0; i < qtd; i++) {
-            pecas.push({ nome, largura, comprimento });
+            pecas.push({ nome, largura, comprimento, area: largura * comprimento });
           }
         }
       });
@@ -726,33 +760,67 @@
         return;
       }
 
-      // Simulação de Nesting/Layout
-      let cursorX = 0, cursorY = 0, linhaAlturaMax = 0, maxComp = 0;
-      let pecasPosicionadas = [];
+      // Ordenar peças da maior para a menor área (Algoritmo de Nesting 2D por Prateleiras/Shelf com encaixe de sobras)
+      pecas.sort((a, b) => b.area - a.area);
+
+      let linhasPrateleiras = [];
+      let maxCompTotal = 0;
+      const gap = 0.5; // Ajuste fino: espaçamento milimétrico entre os cortes
 
       pecas.forEach(peca => {
-        if (cursorX + peca.largura > larguraBobina) {
-          cursorX = 0;
-          cursorY += linhaAlturaMax;
-          linhaAlturaMax = 0;
+        let colocada = false;
+        for (let prateleira of linhasPrateleiras) {
+          let espacoNecessario = prateleira.pecas.length > 0 ? peca.largura + gap : peca.largura;
+          if (prateleira.larguraOcupada + espacoNecessario <= larguraBobina) {
+            peca.x = prateleira.larguraOcupada > 0 ? prateleira.larguraOcupada + gap : 0;
+            peca.y = prateleira.y;
+            prateleira.larguraOcupada += espacoNecessario;
+            if (peca.comprimento > prateleira.alturaMax) {
+              let diff = peca.comprimento - prateleira.alturaMax;
+              prateleira.alturaMax = peca.comprimento;
+              maxCompTotal += diff;
+            }
+            prateleira.pecas.push(peca);
+            colocada = true;
+            break;
+          }
         }
-        if (peca.comprimento > linhaAlturaMax) linhaAlturaMax = peca.comprimento;
-        pecasPosicionadas.push({ ...peca, x: cursorX, y: cursorY });
-        cursorX += peca.largura;
-        const endY = cursorY + peca.comprimento;
-        if (endY > maxComp) maxComp = endY;
+
+        if (!colocada) {
+          let novoY = linhasPrateleiras.length > 0 ? linhasPrateleiras[linhasPrateleiras.length - 1].y + linhasPrateleiras[linhasPrateleiras.length - 1].alturaMax + gap : 0;
+          let novaPrateleira = {
+            y: novoY,
+            alturaMax: peca.comprimento,
+            larguraOcupada: peca.largura,
+            pecas: [peca]
+          };
+          peca.x = 0;
+          peca.y = novoY;
+          linhasPrateleiras.push(novaPrateleira);
+          maxCompTotal = novoY + peca.comprimento;
+        }
       });
 
-      const totalMetros = maxComp / 100;
+      // Coletar todas as peças posicionadas de volta em uma lista linear para renderização
+      let pecasPosicionadas = [];
+      linhasPrateleiras.forEach(p => {
+        p.pecas.forEach(item => pecasPosicionadas.push(item));
+      });
+
+      const totalMetros = maxCompTotal / 100;
+      let areaTotalPecas = pecas.reduce((acc, p) => acc + p.area, 0);
+      let areaTotalBobina = larguraBobina * maxCompTotal;
+      let aproveitamento = areaTotalBobina > 0 ? ((areaTotalPecas / areaTotalBobina) * 100).toFixed(1) : 0;
+
       document.getElementById('statComprimentoTotal').textContent = totalMetros.toFixed(2) + ' metros';
       document.getElementById('statTotalPecas').textContent = pecas.length + ' unidades';
       document.getElementById('statLarguraBobina').textContent = larguraBobina + ' cm';
-      document.getElementById('statAproveitamento').textContent = '85%';
+      document.getElementById('statAproveitamento').textContent = aproveitamento + '%';
 
       // Fator de escala base (cada 1 cm real = appData.escalaZoom pixels)
       const pxPorCm = appData.escalaZoom;
       const larguraCanvasPx = larguraBobina * pxPorCm;
-      const alturaCanvasPx = Math.max(maxComp, 300) * pxPorCm;
+      const alturaCanvasPx = Math.max(maxCompTotal, 300) * pxPorCm;
 
       // Desenhar Bobina no Painel
       const painel = document.getElementById('painelDesenhoResultado');
@@ -772,7 +840,7 @@
       });
 
       // Renderizar as Réguas (Escala com marcações a cada 5cm)
-      gerarReguas(larguraBobina, Math.max(maxComp, 300), pxPorCm);
+      gerarReguas(larguraBobina, Math.max(maxCompTotal, 300), pxPorCm);
     }
 
     function gerarReguas(larguraMaxCm, alturaMaxCm, pxPorCm) {
@@ -784,17 +852,12 @@
 
       const larguraTotalPx = larguraMaxCm * pxPorCm;
       const alturaTotalPx = alturaMaxCm * pxPorCm;
-
-      // Cada 5 cm reais terá uma marcação principal com número
-      // O intervalo entre marcações menores (subdivisões) pode ser de 1cm ou 5cm
       const passoCm = 5; 
 
       // Montando Régua Horizontal (X)
       reguaH.style.width = larguraTotalPx + 'px';
       for (let cm = 0; cm <= larguraMaxCm; cm += passoCm) {
         const posPx = cm * pxPorCm;
-        
-        // Traço da marcação
         const traco = document.createElement('div');
         traco.className = 'absolute bottom-0 bg-slate-500';
         traco.style.left = posPx + 'px';
@@ -802,7 +865,6 @@
         traco.style.height = (cm % 10 === 0 ? '12px' : '6px');
         reguaH.appendChild(traco);
 
-        // Número da escala (a cada 10cm para não sobrecarregar, ou a cada 5cm se houver espaço)
         if (cm % 10 === 0 || larguraMaxCm <= 100) {
           const rotulo = document.createElement('span');
           rotulo.className = 'absolute bottom-[13px] text-[8px] text-slate-400 transform -translate-x-1/2';
@@ -816,8 +878,6 @@
       reguaV.style.height = alturaTotalPx + 'px';
       for (let cm = 0; cm <= alturaMaxCm; cm += passoCm) {
         const posPx = cm * pxPorCm;
-
-        // Traço da marcação
         const traco = document.createElement('div');
         traco.className = 'absolute right-0 bg-slate-500';
         traco.style.top = posPx + 'px';
@@ -825,7 +885,6 @@
         traco.style.width = (cm % 10 === 0 ? '12px' : '6px');
         reguaV.appendChild(traco);
 
-        // Número da escala
         if (cm % 10 === 0 || alturaMaxCm <= 150) {
           const rotulo = document.createElement('span');
           rotulo.className = 'absolute right-[14px] text-[8px] text-slate-400 transform -translate-y-1/2 text-right';
