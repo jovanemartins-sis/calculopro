@@ -1,15 +1,225 @@
-<script type="module">
-    // Importa as funções do Realtime Database do Firebase v10
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getDatabase, ref, set, get, child, remove } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CalculaJá Pro</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  <!-- FontAwesome para ícones -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-slate-900 text-slate-100 font-sans antialiased min-h-screen flex flex-col">
 
-    // Configuração apontando para o seu projeto calculo-pro
+  <!-- Container Principal do Aplicativo -->
+  <div id="appContainer" class="flex-1 flex flex-col max-w-7xl w-full mx-auto p-4 gap-4">
+    
+    <!-- Cabeçalho -->
+    <header class="bg-slate-800 border border-slate-700 p-4 rounded-xl shadow-md flex flex-wrap justify-between items-center gap-4">
+      <div class="flex items-center gap-3">
+        <div class="bg-cyan-600 p-2.5 rounded-lg text-white shadow">
+          <i class="fa-solid fa-calculator text-lg"></i>
+        </div>
+        <div>
+          <h1 class="text-lg font-bold text-white tracking-wide">CalculaJá Pro</h1>
+          <p class="text-xs text-slate-400">Sistema de Gestão e Custos</p>
+        </div>
+      </div>
+
+      <!-- Abas de Navegação -->
+      <nav class="flex flex-wrap gap-2">
+        <button id="btnAbaDados" onclick="mudarAba('dados')" class="px-3 py-1.5 rounded text-xs font-medium bg-cyan-600 text-white transition cursor-pointer shadow flex items-center gap-2">
+          <i class="fa-solid fa-chart-pie"></i> Orçamento
+        </button>
+        <button id="btnAbaClientes" onclick="mudarAba('clientes')" class="px-3 py-1.5 rounded text-xs font-medium bg-slate-800 text-slate-300 hover:bg-slate-700 transition cursor-pointer flex items-center gap-2">
+          <i class="fa-solid fa-users"></i> Clientes
+        </button>
+        <button id="btnAbaFornecedores" onclick="mudarAba('fornecedores')" class="px-3 py-1.5 rounded text-xs font-medium bg-slate-800 text-slate-300 hover:bg-slate-700 transition cursor-pointer flex items-center gap-2">
+          <i class="fa-solid fa-truck-field"></i> Fornecedores
+        </button>
+        <button id="btnAbaSuprimentos" onclick="mudarAba('suprimentos')" class="px-3 py-1.5 rounded text-xs font-medium bg-slate-800 text-slate-300 hover:bg-slate-700 transition cursor-pointer flex items-center gap-2">
+          <i class="fa-solid fa-boxes-stacked"></i> Suprimentos
+        </button>
+        <button id="btnAbaDesenho" onclick="mudarAba('desenho')" class="px-3 py-1.5 rounded text-xs font-medium bg-slate-800 text-slate-300 hover:bg-slate-700 transition cursor-pointer flex items-center gap-2">
+          <i class="fa-solid fa-shapes"></i> Desenho Técnico
+        </button>
+      </nav>
+    </header>
+
+    <!-- Conteúdo das Abas -->
+    <main class="flex-1 flex flex-col gap-4">
+
+      <!-- ABA 1: ORÇAMENTOS E PEÇAS -->
+      <section id="abaDados" class="flex flex-col gap-4">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <!-- Seleção de Cliente -->
+          <div class="bg-slate-800 border border-slate-700 p-4 rounded-xl shadow">
+            <label class="block text-xs font-bold text-slate-300 mb-1">Cliente</label>
+            <select id="selectClienteOrcamento" class="w-full bg-slate-900 border border-slate-700 p-2 text-xs rounded text-slate-200 outline-none focus:border-cyan-500">
+              <option value="">-- Selecione o Cliente --</option>
+            </select>
+          </div>
+          <!-- Seleção de Bobina / Material -->
+          <div class="bg-slate-800 border border-slate-700 p-4 rounded-xl shadow">
+            <label class="block text-xs font-bold text-slate-300 mb-1">Material / Bobina Global</label>
+            <select id="selectBobinaGlobal" class="w-full bg-slate-900 border border-slate-700 p-2 text-xs rounded text-slate-200 outline-none focus:border-cyan-500"></select>
+          </div>
+          <!-- Ações Rápidas -->
+          <div class="bg-slate-800 border border-slate-700 p-4 rounded-xl shadow flex items-end gap-2">
+            <button onclick="processarECalcular()" class="flex-1 bg-cyan-600 hover:bg-cyan-500 text-white font-bold py-2 px-3 rounded text-xs transition cursor-pointer shadow">
+              <i class="fa-solid fa-calculator mr-1"></i> Calcular Projeto
+            </button>
+          </div>
+        </div>
+
+        <!-- Tabela de Peças -->
+        <div class="bg-slate-800 border border-slate-700 rounded-xl shadow overflow-hidden flex flex-col">
+          <div class="p-3 bg-slate-800/80 border-b border-slate-700 flex justify-between items-center">
+            <h2 class="text-xs font-bold uppercase tracking-wider text-slate-300"><i class="fa-solid fa-list-check mr-2 text-cyan-400"></i>Peças do Orçamento</h2>
+            <button onclick="addParteVazia()" class="bg-slate-700 hover:bg-slate-600 text-white text-xs font-bold py-1 px-3 rounded transition cursor-pointer">
+              <i class="fa-solid fa-plus mr-1"></i> Adicionar Peça
+            </button>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse text-xs">
+              <thead>
+                <tr class="bg-slate-900/50 text-slate-400 border-b border-slate-700">
+                  <th class="p-2.5">Nome da Peça</th>
+                  <th class="p-2.5">Largura (cm)</th>
+                  <th class="p-2.5">Comprimento (cm)</th>
+                  <th class="p-2.5">Qtd</th>
+                  <th class="p-2.5 text-center">Ações</th>
+                </tr>
+              </thead>
+              <tbody id="partes" class="divide-y divide-slate-700/50"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ABA 2: CLIENTES -->
+      <section id="abaClientes" class="hidden flex flex-col gap-4">
+        <div class="bg-slate-800 border border-slate-700 rounded-xl shadow overflow-hidden flex flex-col">
+          <div class="p-3 bg-slate-800/80 border-b border-slate-700 flex justify-between items-center">
+            <h2 class="text-xs font-bold uppercase tracking-wider text-slate-300"><i class="fa-solid fa-users mr-2 text-cyan-400"></i>Lista de Clientes</h2>
+            <button onclick="abrirModalCliente()" class="bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-bold py-1 px-3 rounded transition cursor-pointer shadow">
+              <i class="fa-solid fa-user-plus mr-1"></i> Novo Cliente
+            </button>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse text-xs">
+              <thead>
+                <tr class="bg-slate-900/50 text-slate-400 border-b border-slate-700">
+                  <th class="p-2.5">Nome / Razão Social</th>
+                  <th class="p-2.5">CPF / CNPJ</th>
+                  <th class="p-2.5">Telefone</th>
+                  <th class="p-2.5 text-center">Ações</th>
+                </tr>
+              </thead>
+              <tbody id="tabelaClientes" class="divide-y divide-slate-700/50"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ABA 3: FORNECEDORES -->
+      <section id="abaFornecedores" class="hidden flex flex-col gap-4">
+        <div class="bg-slate-800 border border-slate-700 rounded-xl shadow overflow-hidden flex flex-col">
+          <div class="p-3 bg-slate-800/80 border-b border-slate-700 flex justify-between items-center">
+            <h2 class="text-xs font-bold uppercase tracking-wider text-slate-300"><i class="fa-solid fa-truck-field mr-2 text-cyan-400"></i>Lista de Fornecedores</h2>
+            <button onclick="abrirModalFornecedor()" class="bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-bold py-1 px-3 rounded transition cursor-pointer shadow">
+              <i class="fa-solid fa-plus mr-1"></i> Novo Fornecedor
+            </button>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse text-xs">
+              <thead>
+                <tr class="bg-slate-900/50 text-slate-400 border-b border-slate-700">
+                  <th class="p-2.5">Empresa</th>
+                  <th class="p-2.5">CNPJ</th>
+                  <th class="p-2.5">Contato</th>
+                  <th class="p-2.5 text-center">Ações</th>
+                </tr>
+              </thead>
+              <tbody id="tabelaFornecedores" class="divide-y divide-slate-700/50"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ABA 4: SUPRIMENTOS -->
+      <section id="abaSuprimentos" class="hidden flex flex-col gap-4">
+        <div class="bg-slate-800 border border-slate-700 rounded-xl shadow overflow-hidden flex flex-col">
+          <div class="p-3 bg-slate-800/80 border-b border-slate-700 flex justify-between items-center">
+            <h2 class="text-xs font-bold uppercase tracking-wider text-slate-300"><i class="fa-solid fa-boxes-stacked mr-2 text-cyan-400"></i>Suprimentos e Bobinas</h2>
+            <button onclick="abrirModalSuprimento()" class="bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-bold py-1 px-3 rounded transition cursor-pointer shadow">
+              <i class="fa-solid fa-plus mr-1"></i> Novo Suprimento
+            </button>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse text-xs">
+              <thead>
+                <tr class="bg-slate-900/50 text-slate-400 border-b border-slate-700">
+                  <th class="p-2.5">Nome do Material</th>
+                  <th class="p-2.5">Largura</th>
+                  <th class="p-2.5">Preço por Metro</th>
+                  <th class="p-2.5 text-center">Ações</th>
+                </tr>
+              </thead>
+              <tbody id="tabelaSuprimentos" class="divide-y divide-slate-700/50"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ABA 5: DESENHO TÉCNICO -->
+      <section id="abaDesenho" class="hidden flex flex-col gap-4">
+        <div class="bg-slate-800 border border-slate-700 p-4 rounded-xl shadow flex justify-between items-center">
+          <div>
+            <h2 class="text-sm font-bold text-white"><i class="fa-solid fa-shapes mr-2 text-cyan-400"></i>Pré-visualização do Corte</h2>
+            <p class="text-xs text-slate-400">Ajuste o zoom e verifique a disposição das peças.</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <button onclick="alterarZoom(-0.5)" class="bg-slate-700 hover:bg-slate-600 text-white px-2.5 py-1 rounded text-xs font-bold cursor-pointer">-</button>
+            <span id="labelZoom" class="text-xs font-bold w-12 text-center">2.5x</span>
+            <button onclick="alterarZoom(0.5)" class="bg-slate-700 hover:bg-slate-600 text-white px-2.5 py-1 rounded text-xs font-bold cursor-pointer">+</button>
+          </div>
+        </div>
+        <div class="bg-slate-900 border border-slate-700 rounded-xl p-4 min-h-[300px] flex items-center justify-center text-slate-500 text-xs">
+          Nenhum desenho gerado no momento. Clique em Calcular Projeto.
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- Modal Dinâmico de Cadastros -->
+  <div id="modalDinamico" class="fixed inset-0 bg-black/70 backdrop-blur-xs flex items-center justify-center p-4 hidden z-50">
+    <div class="bg-slate-800 border border-slate-700 w-full max-w-md rounded-xl shadow-2xl overflow-hidden flex flex-col">
+      <div class="p-3.5 bg-slate-800/90 border-b border-slate-700 flex justify-between items-center">
+        <h3 id="modalTitulo" class="text-xs font-bold uppercase tracking-wider text-cyan-400">Cadastro</h3>
+        <button onclick="fecharModal()" class="text-slate-400 hover:text-white text-sm cursor-pointer"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div id="modalCorpo" class="p-4 flex flex-col gap-3 text-slate-200 text-xs"></div>
+      <div class="p-3 bg-slate-900/50 border-t border-slate-700 flex justify-end gap-2">
+        <button onclick="fecharModal()" class="bg-slate-700 hover:bg-slate-600 text-slate-300 font-medium py-1.5 px-3 rounded text-xs transition cursor-pointer">Cancelar</button>
+        <button id="btnSalvarModal" class="bg-cyan-600 hover:bg-cyan-500 text-white font-bold py-1.5 px-3 rounded text-xs transition cursor-pointer shadow">Salvar Registro</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts do Firebase (Compat Mode para abrir direto sem restrições) -->
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+
+  <script>
+    // Configuração oficial do seu Realtime Database
     const firebaseConfig = {
       databaseURL: "https://calculo-pro-default-rtdb.firebaseio.com"
     };
 
-    const app = initializeApp(firebaseConfig);
-    const db = getDatabase(app);
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
     window.db = db;
 
     window.appData = {
@@ -20,7 +230,6 @@
     };
 
     window.addEventListener('DOMContentLoaded', async () => {
-      verificarSessao();
       await carregarDadosDoFirebase();
       atualizarSelectBobinas();
       renderizarTabelas();
@@ -29,25 +238,14 @@
       addParteExemplo("Peça 2", 10, 20, 4);
     });
 
-    // Função blindada para evitar erros de tela branca
-    function verificarSessao() {
-      const auth = document.getElementById('authModal');
-      const app = document.getElementById('appContainer');
-      if (auth) auth.classList.add('hidden');
-      if (app) app.classList.remove('hidden');
-    }
-
-    window.fazerLogin = function() { verificarSessao(); }
-    window.fazerLogout = function() { alert("Sessão encerrada"); }
-
     window.mudarAba = function(abaId) {
       ['dados', 'clientes', 'fornecedores', 'suprimentos', 'desenho'].forEach(aba => {
         const el = document.getElementById('aba' + aba.charAt(0).toUpperCase() + aba.slice(1));
         const btn = document.getElementById('btnAba' + aba.charAt(0).toUpperCase() + aba.slice(1));
         if (el) el.classList.toggle('hidden', aba !== abaId);
         if (btn) btn.className = aba === abaId 
-          ? "px-2.5 py-1.5 rounded text-[10px] font-medium bg-cyan-600 text-white transition cursor-pointer shadow whitespace-nowrap flex items-center justify-start"
-          : "px-2.5 py-1.5 rounded text-[10px] font-medium bg-slate-800 text-slate-300 hover:bg-slate-700 transition cursor-pointer whitespace-nowrap flex items-center justify-start";
+          ? "px-3 py-1.5 rounded text-xs font-medium bg-cyan-600 text-white transition cursor-pointer shadow flex items-center gap-2"
+          : "px-3 py-1.5 rounded text-xs font-medium bg-slate-800 text-slate-300 hover:bg-slate-700 transition cursor-pointer flex items-center gap-2";
       });
     }
 
@@ -55,12 +253,10 @@
       document.getElementById('modalDinamico').classList.add('hidden');
     }
 
-    // 1. CARREGAR DADOS DO REALTIME DATABASE
+    // CARREGAR DADOS DO REALTIME DATABASE
     async function carregarDadosDoFirebase() {
       try {
-        const dbRef = ref(window.db);
-        
-        const snapshotClientes = await get(child(dbRef, 'clientes'));
+        const snapshotClientes = await db.ref('clientes').once('value');
         if (snapshotClientes.exists()) {
           window.appData.clientes = [];
           snapshotClientes.forEach((childSnap) => {
@@ -68,7 +264,7 @@
           });
         }
 
-        const snapshotFornecedores = await get(child(dbRef, 'fornecedores'));
+        const snapshotFornecedores = await db.ref('fornecedores').once('value');
         if (snapshotFornecedores.exists()) {
           window.appData.fornecedores = [];
           snapshotFornecedores.forEach((childSnap) => {
@@ -76,7 +272,7 @@
           });
         }
 
-        const snapshotSuprimentos = await get(child(dbRef, 'suprimentos'));
+        const snapshotSuprimentos = await db.ref('suprimentos').once('value');
         if (snapshotSuprimentos.exists()) {
           window.appData.suprimentos = [];
           snapshotSuprimentos.forEach((childSnap) => {
@@ -84,17 +280,17 @@
           });
         }
       } catch (e) {
-        console.error("Erro ao carregar do Realtime Database:", e);
+        console.error("Erro ao carregar dados:", e);
       }
     }
 
-    // 2. SALVAR CLIENTE NO REALTIME DATABASE
+    // SALVAR CLIENTE NO REALTIME DATABASE
     window.abrirModalCliente = function() {
       document.getElementById('modalTitulo').textContent = 'Novo Cliente';
       document.getElementById('modalCorpo').innerHTML = `
-        <div><label class="block text-[10px] font-bold text-slate-600 mb-1">Nome Completo / Razão Social</label><input type="text" id="mNome" class="w-full bg-slate-50 border p-2 text-xs rounded outline-none focus:border-cyan-500"></div>
-        <div><label class="block text-[10px] font-bold text-slate-600 mb-1">CPF / CNPJ</label><input type="text" id="mDoc" class="w-full bg-slate-50 border p-2 text-xs rounded outline-none focus:border-cyan-500"></div>
-        <div><label class="block text-[10px] font-bold text-slate-600 mb-1">Telefone / WhatsApp</label><input type="text" id="mTel" class="w-full bg-slate-50 border p-2 text-xs rounded outline-none focus:border-cyan-500"></div>
+        <div><label class="block font-bold text-slate-400 mb-1">Nome Completo / Razão Social</label><input type="text" id="mNome" class="w-full bg-slate-900 border border-slate-700 p-2 rounded outline-none focus:border-cyan-500 text-slate-200"></div>
+        <div><label class="block font-bold text-slate-400 mb-1">CPF / CNPJ</label><input type="text" id="mDoc" class="w-full bg-slate-900 border border-slate-700 p-2 rounded outline-none focus:border-cyan-500 text-slate-200"></div>
+        <div><label class="block font-bold text-slate-400 mb-1">Telefone / WhatsApp</label><input type="text" id="mTel" class="w-full bg-slate-900 border border-slate-700 p-2 rounded outline-none focus:border-cyan-500 text-slate-200"></div>
       `;
       
       const btn = document.getElementById('btnSalvarModal');
@@ -110,8 +306,8 @@
         };
 
         try {
-          const novaRef = push(ref(window.db, 'clientes'));
-          await set(novaRef, novo);
+          const novaRef = db.ref('clientes').push();
+          await novaRef.set(novo);
           
           window.appData.clientes.push({ id: novaRef.key, ...novo });
           renderizarTabelas();
@@ -126,13 +322,13 @@
       document.getElementById('modalDinamico').classList.remove('hidden');
     }
 
-    // 3. SALVAR FORNECEDOR NO REALTIME DATABASE
+    // SALVAR FORNECEDOR NO REALTIME DATABASE
     window.abrirModalFornecedor = function() {
       document.getElementById('modalTitulo').textContent = 'Novo Fornecedor';
       document.getElementById('modalCorpo').innerHTML = `
-        <div><label class="block text-[10px] font-bold text-slate-600 mb-1">Empresa / Razão Social</label><input type="text" id="mEmpresa" class="w-full bg-slate-50 border p-2 text-xs rounded outline-none focus:border-cyan-500"></div>
-        <div><label class="block text-[10px] font-bold text-slate-600 mb-1">CNPJ</label><input type="text" id="mCNPJ" class="w-full bg-slate-50 border p-2 text-xs rounded outline-none focus:border-cyan-500"></div>
-        <div><label class="block text-[10px] font-bold text-slate-600 mb-1">Contato</label><input type="text" id="mContato" class="w-full bg-slate-50 border p-2 text-xs rounded outline-none focus:border-cyan-500"></div>
+        <div><label class="block font-bold text-slate-400 mb-1">Empresa / Razão Social</label><input type="text" id="mEmpresa" class="w-full bg-slate-900 border border-slate-700 p-2 rounded outline-none focus:border-cyan-500 text-slate-200"></div>
+        <div><label class="block font-bold text-slate-400 mb-1">CNPJ</label><input type="text" id="mCNPJ" class="w-full bg-slate-900 border border-slate-700 p-2 rounded outline-none focus:border-cyan-500 text-slate-200"></div>
+        <div><label class="block font-bold text-slate-400 mb-1">Contato</label><input type="text" id="mContato" class="w-full bg-slate-900 border border-slate-700 p-2 rounded outline-none focus:border-cyan-500 text-slate-200"></div>
       `;
       
       const btn = document.getElementById('btnSalvarModal');
@@ -148,8 +344,8 @@
         };
 
         try {
-          const novaRef = push(ref(window.db, 'fornecedores'));
-          await set(novaRef, novo);
+          const novaRef = db.ref('fornecedores').push();
+          await novaRef.set(novo);
 
           window.appData.fornecedores.push({ id: novaRef.key, ...novo });
           renderizarTabelas();
@@ -163,13 +359,13 @@
       document.getElementById('modalDinamico').classList.remove('hidden');
     }
 
-    // 4. SALVAR SUPRIMENTO NO REALTIME DATABASE
+    // SALVAR SUPRIMENTO NO REALTIME DATABASE
     window.abrirModalSuprimento = function() {
       document.getElementById('modalTitulo').textContent = 'Novo Suprimento / Bobina';
       document.getElementById('modalCorpo').innerHTML = `
-        <div><label class="block text-[10px] font-bold text-slate-600 mb-1">Nome do Material (Ex: Lona 440g)</label><input type="text" id="mNome" class="w-full bg-slate-50 border p-2 text-xs rounded outline-none focus:border-cyan-500"></div>
-        <div><label class="block text-[10px] font-bold text-slate-600 mb-1">Largura (cm)</label><input type="number" id="mLargura" placeholder="Ex: 135" class="w-full bg-slate-50 border p-2 text-xs rounded outline-none focus:border-cyan-500"></div>
-        <div><label class="block text-[10px] font-bold text-slate-600 mb-1">Preço do Metro (R$)</label><input type="number" step="0.01" id="mPreco" placeholder="Ex: 25.00" class="w-full bg-slate-50 border p-2 text-xs rounded outline-none focus:border-cyan-500"></div>
+        <div><label class="block font-bold text-slate-400 mb-1">Nome do Material (Ex: Lona 440g)</label><input type="text" id="mNome" class="w-full bg-slate-900 border border-slate-700 p-2 rounded outline-none focus:border-cyan-500 text-slate-200"></div>
+        <div><label class="block font-bold text-slate-400 mb-1">Largura (cm)</label><input type="number" id="mLargura" placeholder="Ex: 135" class="w-full bg-slate-900 border border-slate-700 p-2 rounded outline-none focus:border-cyan-500 text-slate-200"></div>
+        <div><label class="block font-bold text-slate-400 mb-1">Preço do Metro (R$)</label><input type="number" step="0.01" id="mPreco" placeholder="Ex: 25.00" class="w-full bg-slate-900 border border-slate-700 p-2 rounded outline-none focus:border-cyan-500 text-slate-200"></div>
       `;
       
       const btn = document.getElementById('btnSalvarModal');
@@ -183,8 +379,8 @@
         const novo = { nome, largura, preco: preco || 0, criadoEm: new Date().toISOString() };
 
         try {
-          const novaRef = push(ref(window.db, 'suprimentos'));
-          await set(novaRef, novo);
+          const novaRef = db.ref('suprimentos').push();
+          await novaRef.set(novo);
 
           window.appData.suprimentos.push({ id: novaRef.key, ...novo });
           atualizarSelectBobinas();
@@ -202,25 +398,25 @@
     function renderizarTabelas() {
       const tbodyC = document.getElementById('tabelaClientes');
       if(tbodyC) {
-        tbodyC.innerHTML = window.appData.clientes.length === 0 ? '<tr><td colspan="4" class="p-3 text-center text-slate-400">Nenhum cliente cadastrado.</td></tr>' : '';
+        tbodyC.innerHTML = window.appData.clientes.length === 0 ? '<tr><td colspan="4" class="p-4 text-center text-slate-500">Nenhum cliente cadastrado.</td></tr>' : '';
         window.appData.clientes.forEach((c) => {
-          tbodyC.innerHTML += `<tr class="hover:bg-slate-50"><td class="p-2 font-bold">${c.nome}</td><td class="p-2">${c.doc||'-'}</td><td class="p-2">${c.tel||'-'}</td><td class="p-2 text-center">-</td></tr>`;
+          tbodyC.innerHTML += `<tr class="hover:bg-slate-700/30"><td class="p-2.5 font-bold text-white">${c.nome}</td><td class="p-2.5">${c.doc||'-'}</td><td class="p-2.5">${c.tel||'-'}</td><td class="p-2.5 text-center">-</td></tr>`;
         });
       }
 
       const tbodyF = document.getElementById('tabelaFornecedores');
       if(tbodyF) {
-        tbodyF.innerHTML = window.appData.fornecedores.length === 0 ? '<tr><td colspan="4" class="p-3 text-center text-slate-400">Nenhum fornecedor cadastrado.</td></tr>' : '';
+        tbodyF.innerHTML = window.appData.fornecedores.length === 0 ? '<tr><td colspan="4" class="p-4 text-center text-slate-500">Nenhum fornecedor cadastrado.</td></tr>' : '';
         window.appData.fornecedores.forEach((f) => {
-          tbodyF.innerHTML += `<tr class="hover:bg-slate-50"><td class="p-2 font-bold">${f.empresa}</td><td class="p-2">${f.cnpj||'-'}</td><td class="p-2">${f.contato||'-'}</td><td class="p-2 text-center">-</td></tr>`;
+          tbodyF.innerHTML += `<tr class="hover:bg-slate-700/30"><td class="p-2.5 font-bold text-white">${f.empresa}</td><td class="p-2.5">${f.cnpj||'-'}</td><td class="p-2.5">${f.contato||'-'}</td><td class="p-2.5 text-center">-</td></tr>`;
         });
       }
 
       const tbodyS = document.getElementById('tabelaSuprimentos');
       if(tbodyS) {
-        tbodyS.innerHTML = window.appData.suprimentos.length === 0 ? '<tr><td colspan="4" class="p-3 text-center text-slate-400">Nenhum suprimento cadastrado.</td></tr>' : '';
+        tbodyS.innerHTML = window.appData.suprimentos.length === 0 ? '<tr><td colspan="4" class="p-4 text-center text-slate-500">Nenhum suprimento cadastrado.</td></tr>' : '';
         window.appData.suprimentos.forEach((s) => {
-          tbodyS.innerHTML += `<tr class="hover:bg-slate-50"><td class="p-2 font-bold">${s.nome}</td><td class="p-2">${s.largura} cm</td><td class="p-2">R$ ${Number(s.preco).toFixed(2)}</td><td class="p-2 text-center">-</td></tr>`;
+          tbodyS.innerHTML += `<tr class="hover:bg-slate-700/30"><td class="p-2.5 font-bold text-white">${s.nome}</td><td class="p-2.5">${s.largura} cm</td><td class="p-2.5">R$ ${Number(s.preco).toFixed(2)}</td><td class="p-2.5 text-center">-</td></tr>`;
         });
       }
     }
@@ -256,23 +452,18 @@
       if(tbody) {
         const tr = document.createElement('tr');
         tr.innerHTML = `
-          <td class="p-2"><input type="text" value="${nome}" placeholder="Nome da peça" class="w-full bg-slate-50 border border-slate-300 rounded px-2 py-1 text-xs parte-nome"></td>
-          <td class="p-2"><input type="number" value="${largura}" placeholder="0" class="w-full bg-slate-50 border border-slate-300 rounded px-2 py-1 text-xs parte-largura"></td>
-          <td class="p-2"><input type="number" value="${comp}" placeholder="0" class="w-full bg-slate-50 border border-slate-300 rounded px-2 py-1 text-xs parte-comprimento"></td>
-          <td class="p-2"><input type="number" value="${qtd}" class="w-full bg-slate-50 border border-slate-300 rounded px-2 py-1 text-xs parte-qtd"></td>
-          <td class="p-2 text-center"><button type="button" onclick="this.closest('tr').remove()" class="text-red-500 font-bold"><i class="fa-solid fa-trash text-[8px]"></i></button></td>
+          <td class="p-2"><input type="text" value="${nome}" placeholder="Nome da peça" class="w-full bg-slate-900 border border-slate-700 rounded px-2 py-1.5 text-xs text-slate-200 outline-none focus:border-cyan-500"></td>
+          <td class="p-2"><input type="number" value="${largura}" placeholder="0" class="w-full bg-slate-900 border border-slate-700 rounded px-2 py-1.5 text-xs text-slate-200 outline-none focus:border-cyan-500"></td>
+          <td class="p-2"><input type="number" value="${comp}" placeholder="0" class="w-full bg-slate-900 border border-slate-700 rounded px-2 py-1.5 text-xs text-slate-200 outline-none focus:border-cyan-500"></td>
+          <td class="p-2"><input type="number" value="${qtd}" class="w-full bg-slate-900 border border-slate-700 rounded px-2 py-1.5 text-xs text-slate-200 outline-none focus:border-cyan-500"></td>
+          <td class="p-2 text-center"><button type="button" onclick="this.closest('tr').remove()" class="text-red-400 hover:text-red-300 font-bold p-1 cursor-pointer"><i class="fa-solid fa-trash text-xs"></i></button></td>
         `;
         tbody.appendChild(tr);
       }
     }
 
     window.processarECalcular = function() {
-      alert("Módulo de cálculo e desenho pronto. Adicione suas peças e clique em calcular!");
       window.mudarAba('desenho');
-    }
-
-    window.calcularCustos = function() {
-      alert("Custos calculados com sucesso!");
     }
 
     window.alterarZoom = function(valor) {
@@ -281,3 +472,5 @@
       if(lbl) lbl.textContent = window.appData.escalaZoom.toFixed(1) + 'x';
     }
   </script>
+</body>
+</html>
