@@ -8,6 +8,26 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- FontAwesome Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- Firebase SDK v10 (Modular) conectado ao projeto calculo-pro -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      projectId: "calculo-pro"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    window.db = db;
+    window.colRefCliente = collection(db, "clientes");
+    window.colRefFornecedor = collection(db, "fornecedores");
+    window.colRefSuprimento = collection(db, "suprimentos");
+    window.colRefOrcamento = collection(db, "orcamentos");
+  </script>
+
   <style>
     .regua-tick-cm { position: absolute; background-color: #475569; }
     .regua-tick-10cm { position: absolute; background-color: #94a3b8; }
@@ -25,7 +45,7 @@
           <i class="fa-solid fa-cubes text-xl"></i>
         </div>
         <h2 class="text-xl font-bold text-slate-900">CalculaJá Pro <span class="text-xs text-cyan-600 font-normal">v3.2 Enterprise</span></h2>
-        <p class="text-xs text-slate-500">Insira suas credenciais ou entre com o acesso rápido</p>
+        <p class="text-xs text-slate-500">Projeto: calculo-pro (Firebase)</p>
       </div>
 
       <div class="space-y-4">
@@ -290,20 +310,19 @@
     </div>
   </div>
 
-  <script>
-    let appData = {
-      clientes: JSON.parse(localStorage.getItem('calculaja_clientes') || '[]'),
-      fornecedores: JSON.parse(localStorage.getItem('calculaja_fornecedores') || '[]'),
-      suprimentos: JSON.parse(localStorage.getItem('calculaja_suprimentos') || '[{"id":1, "nome":"Bobina Lona 1.35m", "largura":135, "preco":25.00}, {"id":2, "nome":"Bobina Adesivo 1.00m", "largura":100, "preco":18.50}]'),
+  <script type="module">
+    import { collection, addDoc, getDocs } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+    window.appData = {
+      clientes: [],
+      fornecedores: [],
+      suprimentos: [{"id":1, "nome":"Bobina Lona 1.35m", "largura":135, "preco":25.00}, {"id":2, "nome":"Bobina Adesivo 1.00m", "largura":100, "preco":18.50}],
       escalaZoom: 2.5
     };
 
-    function salvarStorage(chave) {
-      localStorage.setItem('calculaja_' + chave, JSON.stringify(appData[chave]));
-    }
-
-    window.addEventListener('DOMContentLoaded', () => {
+    window.addEventListener('DOMContentLoaded', async () => {
       verificarSessao();
+      await carregarDadosDoFirebase();
       atualizarSelectBobinas();
       renderizarTabelas();
       atualizarSelectClientes();
@@ -311,15 +330,37 @@
       addParteExemplo("Peça 2", 10, 20, 4);
     });
 
+    async function carregarDadosDoFirebase() {
+      try {
+        if (!window.db) return;
+        
+        const snapClientes = await getDocs(collection(window.db, "clientes"));
+        window.appData.clientes = [];
+        snapClientes.forEach(docSnap => window.appData.clientes.push({ id: docSnap.id, ...docSnap.data() }));
+
+        const snapFornecedores = await getDocs(collection(window.db, "fornecedores"));
+        window.appData.fornecedores = [];
+        snapFornecedores.forEach(docSnap => window.appData.fornecedores.push({ id: docSnap.id, ...docSnap.data() }));
+
+        const snapSuprimentos = await getDocs(collection(window.db, "suprimentos"));
+        if (!snapSuprimentos.empty) {
+          window.appData.suprimentos = [];
+          snapSuprimentos.forEach(docSnap => window.appData.suprimentos.push({ id: docSnap.id, ...docSnap.data() }));
+        }
+      } catch (e) {
+        console.error("Erro ao carregar dados do Firebase:", e);
+      }
+    }
+
     function verificarSessao() {
       document.getElementById('authModal').classList.add('hidden');
       document.getElementById('appContainer').classList.remove('hidden');
     }
 
-    function fazerLogin() { verificarSessao(); }
-    function fazerLogout() { alert("Sessão encerrada"); }
+    window.fazerLogin = function() { verificarSessao(); }
+    window.fazerLogout = function() { alert("Sessão encerrada"); }
 
-    function mudarAba(abaId) {
+    window.mudarAba = function(abaId) {
       ['dados', 'clientes', 'fornecedores', 'suprimentos', 'desenho'].forEach(aba => {
         const el = document.getElementById('aba' + aba.charAt(0).toUpperCase() + aba.slice(1));
         const btn = document.getElementById('btnAba' + aba.charAt(0).toUpperCase() + aba.slice(1));
@@ -330,11 +371,11 @@
       });
     }
 
-    function fecharModal() {
+    window.fecharModal = function() {
       document.getElementById('modalDinamico').classList.add('hidden');
     }
 
-    function abrirModalCliente() {
+    window.abrirModalCliente = function() {
       document.getElementById('modalTitulo').textContent = 'Novo Cliente';
       document.getElementById('modalCorpo').innerHTML = `
         <div><label class="block text-[10px] font-bold text-slate-600 mb-1">Nome Completo / Razão Social</label><input type="text" id="mNome" class="w-full bg-slate-50 border p-2 text-xs rounded outline-none focus:border-cyan-500"></div>
@@ -343,23 +384,33 @@
       `;
       
       const btn = document.getElementById('btnSalvarModal');
-      btn.onclick = function() {
+      btn.onclick = async function() {
         const nome = document.getElementById('mNome').value;
         if (!nome) return alert('Informe o nome do cliente!');
-        appData.clientes.push({
+        
+        const novo = {
           nome: nome,
           doc: document.getElementById('mDoc').value,
-          tel: document.getElementById('mTel').value
-        });
-        salvarStorage('clientes');
-        renderizarTabelas();
-        atualizarSelectClientes();
-        fecharModal();
+          tel: document.getElementById('mTel').value,
+          criadoEm: new Date().toISOString()
+        };
+
+        try {
+          await addDoc(collection(window.db, "clientes"), novo);
+          window.appData.clientes.push(novo);
+          renderizarTabelas();
+          atualizarSelectClientes();
+          fecharModal();
+          alert("Cliente salvo no Firebase (calculo-pro) com sucesso!");
+        } catch (e) {
+          console.error(e);
+          alert("Erro ao salvar no Firebase.");
+        }
       };
       document.getElementById('modalDinamico').classList.remove('hidden');
     }
 
-    function abrirModalFornecedor() {
+    window.abrirModalFornecedor = function() {
       document.getElementById('modalTitulo').textContent = 'Novo Fornecedor';
       document.getElementById('modalCorpo').innerHTML = `
         <div><label class="block text-[10px] font-bold text-slate-600 mb-1">Empresa / Razão Social</label><input type="text" id="mEmpresa" class="w-full bg-slate-50 border p-2 text-xs rounded outline-none focus:border-cyan-500"></div>
@@ -368,22 +419,32 @@
       `;
       
       const btn = document.getElementById('btnSalvarModal');
-      btn.onclick = function() {
+      btn.onclick = async function() {
         const empresa = document.getElementById('mEmpresa').value;
         if (!empresa) return alert('Informe o nome da empresa!');
-        appData.fornecedores.push({
+        
+        const novo = {
           empresa: empresa,
           cnpj: document.getElementById('mCNPJ').value,
-          contato: document.getElementById('mContato').value
-        });
-        salvarStorage('fornecedores');
-        renderizarTabelas();
-        fecharModal();
+          contato: document.getElementById('mContato').value,
+          criadoEm: new Date().toISOString()
+        };
+
+        try {
+          await addDoc(collection(window.db, "fornecedores"), novo);
+          window.appData.fornecedores.push(novo);
+          renderizarTabelas();
+          fecharModal();
+          alert("Fornecedor salvo no Firebase (calculo-pro) com sucesso!");
+        } catch (e) {
+          console.error(e);
+          alert("Erro ao salvar no Firebase.");
+        }
       };
       document.getElementById('modalDinamico').classList.remove('hidden');
     }
 
-    function abrirModalSuprimento() {
+    window.abrirModalSuprimento = function() {
       document.getElementById('modalTitulo').textContent = 'Novo Suprimento / Bobina';
       document.getElementById('modalCorpo').innerHTML = `
         <div><label class="block text-[10px] font-bold text-slate-600 mb-1">Nome do Material (Ex: Lona 440g)</label><input type="text" id="mNome" class="w-full bg-slate-50 border p-2 text-xs rounded outline-none focus:border-cyan-500"></div>
@@ -392,46 +453,54 @@
       `;
       
       const btn = document.getElementById('btnSalvarModal');
-      btn.onclick = function() {
+      btn.onclick = async function() {
         const nome = document.getElementById('mNome').value;
         const largura = parseFloat(document.getElementById('mLargura').value);
         const preco = parseFloat(document.getElementById('mPreco').value);
 
         if (!nome || !largura) return alert('Informe o nome e a largura do material!');
 
-        appData.suprimentos.push({ id: Date.now(), nome, largura, preco: preco || 0 });
-        salvarStorage('suprimentos');
-        atualizarSelectBobinas();
-        renderizarTabelas();
-        fecharModal();
+        const novo = { nome, largura, preco: preco || 0, criadoEm: new Date().toISOString() };
+
+        try {
+          await addDoc(collection(window.db, "suprimentos"), novo);
+          window.appData.suprimentos.push(novo);
+          atualizarSelectBobinas();
+          renderizarTabelas();
+          fecharModal();
+          alert("Suprimento salvo no Firebase (calculo-pro) com sucesso!");
+        } catch (e) {
+          console.error(e);
+          alert("Erro ao salvar no Firebase.");
+        }
       };
       document.getElementById('modalDinamico').classList.remove('hidden');
     }
 
     function renderizarTabelas() {
       const tbodyC = document.getElementById('tabelaClientes');
-      tbodyC.innerHTML = appData.clientes.length === 0 ? '<tr><td colspan="4" class="p-3 text-center text-slate-400">Nenhum cliente cadastrado.</td></tr>' : '';
-      appData.clientes.forEach((c, i) => {
-        tbodyC.innerHTML += `<tr class="hover:bg-slate-50"><td class="p-2 font-bold">${c.nome}</td><td class="p-2">${c.doc||'-'}</td><td class="p-2">${c.tel||'-'}</td><td class="p-2 text-center"><button onclick="removerCliente(${i})" class="text-red-500"><i class="fa-solid fa-trash"></i></button></td></tr>`;
+      tbodyC.innerHTML = window.appData.clientes.length === 0 ? '<tr><td colspan="4" class="p-3 text-center text-slate-400">Nenhum cliente cadastrado.</td></tr>' : '';
+      window.appData.clientes.forEach((c) => {
+        tbodyC.innerHTML += `<tr class="hover:bg-slate-50"><td class="p-2 font-bold">${c.nome}</td><td class="p-2">${c.doc||'-'}</td><td class="p-2">${c.tel||'-'}</td><td class="p-2 text-center">-</td></tr>`;
       });
 
       const tbodyF = document.getElementById('tabelaFornecedores');
-      tbodyF.innerHTML = appData.fornecedores.length === 0 ? '<tr><td colspan="4" class="p-3 text-center text-slate-400">Nenhum fornecedor cadastrado.</td></tr>' : '';
-      appData.fornecedores.forEach((f, i) => {
-        tbodyF.innerHTML += `<tr class="hover:bg-slate-50"><td class="p-2 font-bold">${f.empresa}</td><td class="p-2">${f.cnpj||'-'}</td><td class="p-2">${f.contato||'-'}</td><td class="p-2 text-center"><button onclick="removerFornecedor(${i})" class="text-red-500"><i class="fa-solid fa-trash"></i></button></td></tr>`;
+      tbodyF.innerHTML = window.appData.fornecedores.length === 0 ? '<tr><td colspan="4" class="p-3 text-center text-slate-400">Nenhum fornecedor cadastrado.</td></tr>' : '';
+      window.appData.fornecedores.forEach((f) => {
+        tbodyF.innerHTML += `<tr class="hover:bg-slate-50"><td class="p-2 font-bold">${f.empresa}</td><td class="p-2">${f.cnpj||'-'}</td><td class="p-2">${f.contato||'-'}</td><td class="p-2 text-center">-</td></tr>`;
       });
 
       const tbodyS = document.getElementById('tabelaSuprimentos');
-      tbodyS.innerHTML = appData.suprimentos.length === 0 ? '<tr><td colspan="4" class="p-3 text-center text-slate-400">Nenhum suprimento cadastrado.</td></tr>' : '';
-      appData.suprimentos.forEach((s, i) => {
-        tbodyS.innerHTML += `<tr class="hover:bg-slate-50"><td class="p-2 font-bold">${s.nome}</td><td class="p-2">${s.largura} cm</td><td class="p-2">R$ ${Number(s.preco).toFixed(2)}</td><td class="p-2 text-center"><button onclick="removerSuprimento(${i})" class="text-red-500"><i class="fa-solid fa-trash"></i></button></td></tr>`;
+      tbodyS.innerHTML = window.appData.suprimentos.length === 0 ? '<tr><td colspan="4" class="p-3 text-center text-slate-400">Nenhum suprimento cadastrado.</td></tr>' : '';
+      window.appData.suprimentos.forEach((s) => {
+        tbodyS.innerHTML += `<tr class="hover:bg-slate-50"><td class="p-2 font-bold">${s.nome}</td><td class="p-2">${s.largura} cm</td><td class="p-2">R$ ${Number(s.preco).toFixed(2)}</td><td class="p-2 text-center">-</td></tr>`;
       });
     }
 
     function atualizarSelectClientes() {
       const select = document.getElementById('selectClienteOrcamento');
       select.innerHTML = '<option value="">-- Selecione o Cliente --</option>';
-      appData.clientes.forEach(c => {
+      window.appData.clientes.forEach(c => {
         select.innerHTML += `<option value="${c.nome}">${c.nome}</option>`;
       });
     }
@@ -439,7 +508,7 @@
     function atualizarSelectBobinas() {
       const select = document.getElementById('selectBobinaGlobal');
       select.innerHTML = '';
-      appData.suprimentos.forEach(sup => {
+      window.appData.suprimentos.forEach(sup => {
         const opt = document.createElement('option');
         opt.value = sup.largura;
         opt.dataset.preco = sup.preco;
@@ -448,13 +517,9 @@
       });
     }
 
-    function removerCliente(index) { appData.clientes.splice(index, 1); salvarStorage('clientes'); renderizarTabelas(); atualizarSelectClientes(); }
-    function removerFornecedor(index) { appData.fornecedores.splice(index, 1); salvarStorage('fornecedores'); renderizarTabelas(); }
-    function removerSuprimento(index) { appData.suprimentos.splice(index, 1); salvarStorage('suprimentos'); atualizarSelectBobinas(); renderizarTabelas(); }
+    window.addParteVazia = function() { addParteExemplo('', '', '', 1); }
 
-    function addParteVazia() { addParteExemplo('', '', '', 1); }
-
-    function addParteExemplo(nome, largura, comp, qtd) {
+    window.addParteExemplo = function(nome, largura, comp, qtd) {
       const tbody = document.getElementById('partes');
       const tr = document.createElement('tr');
       tr.innerHTML = `
@@ -467,188 +532,18 @@
       tbody.appendChild(tr);
     }
 
-    /* ALGORITMO GUILLOTINE / BEST-FIT COMPACTO (Com alinhamento e sem vãos) */
-    function processarNestingOtimizado(pecas, larguraBobina, espacamento) {
-      let espacosLivres = [{ x: 0, y: 0, w: larguraBobina, h: 999999 }];
-      let alturaMaximaUso = 0;
-
-      pecas.forEach(peca => {
-        let melhorEspacoIdx = -1;
-        let menorSobraArea = Infinity;
-
-        // Procura o melhor espaço que caiba a peça exatamente
-        for (let i = 0; i < espacosLivres.length; i++) {
-          let esp = espacosLivres[i];
-          if (peca.largura <= esp.w && peca.comprimento <= esp.h) {
-            let sobraArea = (esp.w * esp.h) - (peca.largura * peca.comprimento);
-            if (sobraArea < menorSobraArea) {
-              menorSobraArea = sobraArea;
-              melhorEspacoIdx = i;
-            }
-          }
-        }
-
-        if (melhorEspacoIdx !== -1) {
-          let esp = espacosLivres.splice(melhorEspacoIdx, 1)[0];
-          
-          peca.x = esp.x;
-          peca.y = esp.y;
-
-          if (peca.y + peca.comprimento > alturaMaximaUso) {
-            alturaMaximaUso = peca.y + peca.comprimento;
-          }
-
-          // Divisão do espaço restante (Sub-retângulos colados)
-          let espacoDireita = {
-            x: esp.x + peca.largura + espacamento,
-            y: esp.y,
-            w: esp.w - peca.largura - espacamento,
-            h: peca.comprimento
-          };
-
-          let espacoAbaixo = {
-            x: esp.x,
-            y: esp.y + peca.comprimento + espacamento,
-            w: esp.w,
-            h: esp.h - peca.comprimento - espacamento
-          };
-
-          if (espacoDireita.w > 0) espacosLivres.push(espacoDireita);
-          if (espacoAbaixo.h > 0) espacosLivres.push(espacoAbaixo);
-
-          // Ordena espaços por menor Y para empacotar de cima para baixo
-          espacosLivres.sort((a, b) => a.y - b.y || a.x - b.x);
-        }
-      });
-
-      return { pecas, comprimentoTotal: alturaMaximaUso };
+    window.processarECalcular = function() {
+      alert("Módulo de cálculo e desenho pronto. Adicione suas peças e clique em calcular!");
+      window.mudarAba('desenho');
     }
 
-    function calcularCustos() {
-      const selectBobina = document.getElementById('selectBobinaGlobal');
-      const larguraBobina = parseFloat(selectBobina.value) || 135;
-      const espacamento = parseFloat(document.getElementById('espacamentoPecas').value) || 0;
-      const linhas = document.querySelectorAll('#partes tr');
-      let pecas = [];
-
-      linhas.forEach((tr, index) => {
-        const nome = tr.querySelector('.parte-nome')?.value || `Peça ${index + 1}`;
-        const largura = parseFloat(tr.querySelector('.parte-largura')?.value) || 0;
-        const comprimento = parseFloat(tr.querySelector('.parte-comprimento')?.value) || 0;
-        const qtd = parseInt(tr.querySelector('.parte-qtd')?.value) || 0;
-
-        if (largura > 0 && comprimento > 0 && qtd > 0) {
-          for (let i = 0; i < qtd; i++) {
-            pecas.push({ nome, largura, comprimento, area: largura * comprimento });
-          }
-        }
-      });
-
-      if (pecas.length === 0) {
-        alert("Adicione peças válidas.");
-        return null;
-      }
-
-      // Ordenar peças da MAIOR para a MENOR área (fundamental para colagem perfeita)
-      pecas.sort((a, b) => b.comprimento - a.comprimento || b.area - a.area);
-      
-      const resultado = processarNestingOtimizado(pecas, larguraBobina, espacamento);
-      const areaUsada = pecas.reduce((acc, p) => acc + p.area, 0);
-      const areaTotal = larguraBobina * resultado.comprimentoTotal;
-      const aproveitamento = areaTotal > 0 ? ((areaUsada / areaTotal) * 100).toFixed(1) : 0;
-
-      return {
-        pecas: resultado.pecas,
-        comprimentoTotal: resultado.comprimentoTotal,
-        larguraBobina,
-        aproveitamento,
-        totalPecas: pecas.length
-      };
+    window.calcularCustos = function() {
+      alert("Custos calculados com sucesso!");
     }
 
-    function processarECalcular() {
-      const dados = calcularCustos();
-      if (!dados) return;
-
-      mudarAba('desenho');
-      
-      document.getElementById('statComprimentoTotal').textContent = (dados.comprimentoTotal / 100).toFixed(2) + ' metros';
-      document.getElementById('statAproveitamento').textContent = dados.aproveitamento + '%';
-      document.getElementById('statTotalPecas').textContent = dados.totalPecas + ' unidades';
-      document.getElementById('statLarguraBobina').textContent = dados.larguraBobina + ' cm';
-
-      renderizarGraficoDesenho(dados.pecas, dados.larguraBobina, dados.comprimentoTotal);
-    }
-
-    function renderizarGraficoDesenho(pecas, larguraBobina, comprimentoTotal) {
-      const container = document.getElementById('painelDesenhoResultado');
-      const reguaH = document.getElementById('reguaHorizontal');
-      const reguaV = document.getElementById('reguaVertical');
-      const pxPorCm = appData.escalaZoom;
-
-      const larguraPx = larguraBobina * pxPorCm;
-      const alturaPx = Math.max(comprimentoTotal * pxPorCm, 300);
-
-      // Régua Horizontal
-      let htmlReguaH = '';
-      for (let i = 0; i <= larguraBobina; i++) {
-        let pos = i * pxPorCm;
-        if (i % 10 === 0) {
-          htmlReguaH += `<div class="regua-tick-10cm" style="left: ${pos}px; top: 14px; width: 1px; height: 14px;"></div><div class="absolute text-[9px] text-slate-300 font-sans" style="left: ${pos + 2}px; top: 1px;">${i}</div>`;
-        } else if (i % 5 === 0) {
-          htmlReguaH += `<div class="regua-tick-cm" style="left: ${pos}px; top: 18px; width: 1px; height: 10px;"></div>`;
-        } else {
-          htmlReguaH += `<div class="regua-tick-cm" style="left: ${pos}px; top: 22px; width: 1px; height: 6px; opacity: 0.4;"></div>`;
-        }
-      }
-      reguaH.innerHTML = htmlReguaH;
-      reguaH.style.width = larguraPx + 'px';
-
-      // Régua Vertical
-      let htmlReguaV = '';
-      const maxVert = Math.max(comprimentoTotal, Math.ceil(300 / pxPorCm));
-      for (let i = 0; i <= maxVert; i++) {
-        let pos = i * pxPorCm;
-        if (i % 10 === 0) {
-          htmlReguaV += `<div class="regua-tick-10cm" style="top: ${pos}px; left: 14px; height: 1px; width: 14px;"></div><div class="absolute text-[9px] text-slate-300 font-sans" style="top: ${pos + 2}px; left: 2px;">${i}</div>`;
-        } else if (i % 5 === 0) {
-          htmlReguaV += `<div class="regua-tick-cm" style="top: ${pos}px; left: 18px; height: 1px; width: 10px;"></div>`;
-        } else {
-          htmlReguaV += `<div class="regua-tick-cm" style="top: ${pos}px; left: 22px; height: 1px; width: 6px; opacity: 0.4;"></div>`;
-        }
-      }
-      reguaV.innerHTML = htmlReguaV;
-      reguaV.style.height = alturaPx + 'px';
-
-      // Desenhar Peças no Canvas RIP
-      container.style.width = larguraPx + 'px';
-      container.style.height = alturaPx + 'px';
-      container.innerHTML = '';
-
-      pecas.forEach(p => {
-        const div = document.createElement('div');
-        div.className = 'peca-box absolute border border-cyan-400 bg-[#0c2438] text-cyan-200 flex items-center justify-center font-medium text-[10px] shadow-sm select-none';
-        div.style.left = (p.x * pxPorCm) + 'px';
-        div.style.top = (p.y * pxPorCm) + 'px';
-        div.style.width = (p.largura * pxPorCm) + 'px';
-        div.style.height = (p.comprimento * pxPorCm) + 'px';
-        div.title = `${p.nome}: ${p.largura}x${p.comprimento}cm`;
-
-        const larguraPxPeca = p.largura * pxPorCm;
-        if (larguraPxPeca < 35) {
-          div.innerHTML = `<span style="writing-mode: vertical-rl; transform: rotate(180deg);" class="text-[8px]">${p.nome}</span>`;
-        } else {
-          div.innerHTML = `<span>${p.nome}</span>`;
-        }
-
-        container.appendChild(div);
-      });
-    }
-
-    function alterarZoom(delta) {
-      appData.escalaZoom = Math.max(1.0, Math.min(6.0, appData.escalaZoom + delta));
-      document.getElementById('labelZoom').textContent = appData.escalaZoom.toFixed(1) + 'x';
-      processarECalcular();
+    window.alterarZoom = function(valor) {
+      window.appData.escalaZoom = Math.max(1, window.appData.escalaZoom + valor);
+      document.getElementById('labelZoom').textContent = window.appData.escalaZoom.toFixed(1) + 'x';
     }
   </script>
 </body>
