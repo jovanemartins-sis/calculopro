@@ -1,317 +1,16 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>CalculaJá Pro v3.2 Enterprise - Nesting Otimizado</title>
-  <!-- Tailwind CSS via CDN -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <!-- FontAwesome Icons -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  
-  <!-- Firebase SDK v10 (Modular) conectado ao projeto calculo-pro -->
-  <script type="module">
+<script type="module">
+    // Importa as funções do Realtime Database do Firebase v10
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    import { getDatabase, ref, set, get, push, child, remove } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
+    // Configuração apontando para o seu projeto calculo-pro
     const firebaseConfig = {
-      projectId: "calculo-pro"
+      databaseURL: "https://calculo-pro-default-rtdb.firebaseio.com/" // Substitua pela URL exata do seu Realtime Database se for diferente
     };
 
     const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
-
+    const db = getDatabase(app);
     window.db = db;
-    window.colRefCliente = collection(db, "clientes");
-    window.colRefFornecedor = collection(db, "fornecedores");
-    window.colRefSuprimento = collection(db, "suprimentos");
-    window.colRefOrcamento = collection(db, "orcamentos");
-  </script>
-
-  <style>
-    .regua-tick-cm { position: absolute; background-color: #475569; }
-    .regua-tick-10cm { position: absolute; background-color: #94a3b8; }
-    .peca-box { box-sizing: border-box; transition: all 0.2s ease; }
-    .peca-box span { white-space: nowrap; text-overflow: ellipsis; overflow: hidden; max-width: 100%; padding: 0 2px; }
-  </style>
-</head>
-<body class="bg-slate-100 text-slate-800 font-sans antialiased min-h-screen text-[64%]" data-versao="3.2-enterprise">
-
-  <!-- TELA DE LOGIN / AUTENTICAÇÃO -->
-  <div id="authModal" class="fixed inset-0 bg-slate-900/95 z-50 flex items-center justify-center p-4">
-    <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-8 space-y-6 border border-slate-200">
-      <div class="text-center space-y-2">
-        <div class="inline-flex items-center justify-center w-14 h-14 bg-cyan-600 text-white rounded-xl shadow-lg mb-2">
-          <i class="fa-solid fa-cubes text-xl"></i>
-        </div>
-        <h2 class="text-xl font-bold text-slate-900">CalculaJá Pro <span class="text-xs text-cyan-600 font-normal">v3.2 Enterprise</span></h2>
-        <p class="text-xs text-slate-500">Projeto: calculo-pro (Firebase)</p>
-      </div>
-
-      <div class="space-y-4">
-        <div>
-          <label class="block text-xs font-bold text-slate-600 mb-1">E-mail de Acesso</label>
-          <input type="email" id="loginEmail" value="admin@calculaja.com" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-xs text-slate-900 outline-none focus:border-cyan-500">
-        </div>
-        <div>
-          <label class="block text-xs font-bold text-slate-600 mb-1">Senha</label>
-          <input type="password" id="loginSenha" value="123456" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-xs text-slate-900 outline-none focus:border-cyan-500">
-        </div>
-        <button type="button" onclick="fazerLogin()" class="w-full bg-cyan-600 hover:bg-cyan-700 text-white py-2.5 rounded-lg text-xs font-bold transition shadow cursor-pointer">
-          Entrar no Sistema
-        </button>
-      </div>
-    </div>
-  </div>
-
-  <!-- APLICATIVO PRINCIPAL -->
-  <div id="appContainer" class="hidden min-h-screen flex flex-col">
-    
-    <header class="flex flex-col md:flex-row justify-between items-center bg-slate-900 px-6 py-3 border-b border-slate-800 text-white shadow-md gap-3">
-      <div class="flex items-center space-x-3 justify-start w-full md:w-auto">
-        <h1 class="text-sm font-bold text-cyan-400 flex items-center">
-          <i class="fa-solid fa-cubes mr-2"></i> CalculaJá Pro 
-          <span class="text-xs text-cyan-200 font-bold ml-1.5 bg-cyan-900 px-2 py-0.5 rounded border border-cyan-500/50">v3.2 Otimizado</span>
-        </h1>
-      </div>
-      <nav class="flex items-center space-x-2 overflow-x-auto py-1 justify-start w-full md:w-auto">
-        <button onclick="mudarAba('dados')" id="btnAbaDados" class="px-2.5 py-1.5 rounded text-[10px] font-medium bg-cyan-600 text-white transition cursor-pointer shadow whitespace-nowrap flex items-center justify-start">
-          <i class="fa-solid fa-list-check mr-1.5 text-[8px]"></i> Orçamento
-        </button>
-        <button onclick="mudarAba('clientes')" id="btnAbaClientes" class="px-2.5 py-1.5 rounded text-[10px] font-medium bg-slate-800 text-slate-300 hover:bg-slate-700 transition cursor-pointer whitespace-nowrap flex items-center justify-start">
-          <i class="fa-solid fa-users mr-1.5 text-[8px]"></i> Clientes
-        </button>
-        <button onclick="mudarAba('fornecedores')" id="btnAbaFornecedores" class="px-2.5 py-1.5 rounded text-[10px] font-medium bg-slate-800 text-slate-300 hover:bg-slate-700 transition cursor-pointer whitespace-nowrap flex items-center justify-start">
-          <i class="fa-solid fa-truck-field mr-1.5 text-[8px]"></i> Fornecedores
-        </button>
-        <button onclick="mudarAba('suprimentos')" id="btnAbaSuprimentos" class="px-2.5 py-1.5 rounded text-[10px] font-medium bg-slate-800 text-slate-300 hover:bg-slate-700 transition cursor-pointer whitespace-nowrap flex items-center justify-start">
-          <i class="fa-solid fa-boxes-stacked mr-1.5 text-[8px]"></i> Suprimentos / Bobinas
-        </button>
-        <button onclick="mudarAba('desenho')" id="btnAbaDesenho" class="px-2.5 py-1.5 rounded text-[10px] font-medium bg-slate-800 text-slate-300 hover:bg-slate-700 transition cursor-pointer whitespace-nowrap flex items-center justify-start">
-          <i class="fa-solid fa-network-wired mr-1.5 text-[8px]"></i> Desenho (RIP)
-        </button>
-        <button onclick="fazerLogout()" class="text-slate-400 hover:text-red-400 text-[10px] px-2.5 py-1.5 rounded bg-slate-800 hover:bg-slate-700 transition cursor-pointer whitespace-nowrap flex items-center justify-start">
-          <i class="fa-solid fa-power-off mr-1.5 text-[8px]"></i> Sair
-        </button>
-      </nav>
-    </header>
-
-    <main class="p-4 max-w-7xl mx-auto space-y-4 flex-grow w-full">
-      
-      <!-- ABA 1: ORÇAMENTO -->
-      <section id="abaDados" class="space-y-4">
-        
-        <div class="bg-cyan-900/15 border border-cyan-500/30 p-3 rounded-xl flex flex-col md:flex-row items-center justify-between gap-3">
-          <div class="flex items-center space-x-2 w-full md:w-auto">
-            <div class="bg-cyan-600 text-white p-2 rounded-lg text-xs">
-              <i class="fa-solid fa-tape text-[8px]"></i>
-            </div>
-            <div>
-              <label class="block text-[11px] font-bold text-slate-700 uppercase">Selecione a Bobina / Papel =></label>
-              <p class="text-[10px] text-slate-500">Define a largura exata da bobina para o RIP de impressão</p>
-            </div>
-          </div>
-          <div class="w-full md:w-80">
-            <select id="selectBobinaGlobal" class="w-full bg-white border border-cyan-500/50 rounded px-3 py-2 text-xs font-bold text-slate-800 outline-none focus:ring-2 focus:ring-cyan-500">
-            </select>
-          </div>
-        </div>
-
-        <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 grid grid-cols-1 md:grid-cols-3 gap-3">
-          <div>
-            <label class="block text-[11px] font-bold text-slate-600 mb-1">Cliente</label>
-            <div class="flex gap-2">
-              <select id="selectClienteOrcamento" class="w-full bg-slate-50 border border-slate-300 rounded px-3 py-1.5 text-xs text-slate-900 outline-none focus:border-cyan-500"></select>
-              <button type="button" onclick="abrirModalCliente()" class="bg-cyan-600 hover:bg-cyan-700 text-white px-3 py-1.5 rounded text-xs font-bold shrink-0 cursor-pointer" title="Novo Cliente">+</button>
-            </div>
-          </div>
-          <div>
-            <label class="block text-[11px] font-bold text-slate-600 mb-1">Produto / Projeto</label>
-            <input type="text" id="produto" placeholder="Ex: Adesivos / Painel" class="w-full bg-slate-50 border border-slate-300 rounded px-3 py-1.5 text-xs text-slate-900 outline-none focus:border-cyan-500">
-          </div>
-          <div class="grid grid-cols-3 gap-2">
-            <div>
-              <label class="block text-[10px] font-bold text-slate-600 mb-1">Espaçamento (cm)</label>
-              <input type="number" id="espacamentoPecas" value="0" step="0.1" min="0" class="w-full bg-slate-50 border border-slate-300 rounded px-2 py-1.5 text-xs text-slate-900 outline-none font-bold text-cyan-600">
-            </div>
-            <div>
-              <label class="block text-[10px] font-bold text-slate-600 mb-1">Lucro (%)</label>
-              <input type="number" id="lucro" value="30" class="w-full bg-slate-50 border border-slate-300 rounded px-2 py-1.5 text-xs text-slate-900 outline-none">
-            </div>
-            <div>
-              <label class="block text-[10px] font-bold text-slate-600 mb-1">Imposto (%)</label>
-              <input type="number" id="imposto" value="0" class="w-full bg-slate-50 border border-slate-300 rounded px-2 py-1.5 text-xs text-slate-900 outline-none">
-            </div>
-          </div>
-        </div>
-
-        <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 space-y-3">
-          <div class="flex justify-between items-center">
-            <h2 class="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center"><i class="fa-solid fa-scissors mr-1.5 text-[8px] text-cyan-600"></i> Peças e Cortes do Projeto</h2>
-            <button type="button" onclick="addParteVazia()" class="bg-slate-800 hover:bg-slate-700 text-white px-3 py-1 rounded text-xs font-bold transition cursor-pointer flex items-center">
-              <i class="fa-solid fa-plus mr-1.5 text-[8px]"></i> Adicionar Peça
-            </button>
-          </div>
-
-          <div class="overflow-x-auto">
-            <table class="w-full text-left border-collapse text-xs">
-              <thead>
-                <tr class="bg-slate-100 text-slate-600 border-b border-slate-200">
-                  <th class="p-2">Nome da Peça</th>
-                  <th class="p-2">Largura (cm)</th>
-                  <th class="p-2">Comprimento (cm)</th>
-                  <th class="p-2">Qtd</th>
-                  <th class="p-2 text-center">Ações</th>
-                </tr>
-              </thead>
-              <tbody id="partes" class="divide-y divide-slate-100"></tbody>
-            </table>
-          </div>
-        </div>
-
-        <div class="flex justify-end gap-3 pt-2">
-          <button type="button" onclick="calcularCustos()" class="bg-slate-800 hover:bg-slate-700 text-white px-5 py-2.5 rounded-lg text-xs font-bold transition shadow cursor-pointer flex items-center">
-            <i class="fa-solid fa-calculator mr-2 text-[8px]"></i> Calcular Custos
-          </button>
-          <button type="button" onclick="processarECalcular()" class="bg-cyan-600 hover:bg-cyan-700 text-white px-6 py-2.5 rounded-lg text-xs font-bold transition shadow cursor-pointer flex items-center">
-            Gerar Desenho RIP <i class="fa-solid fa-arrow-right ml-2 text-[8px]"></i>
-          </button>
-        </div>
-      </section>
-
-      <!-- ABA 2: CLIENTES -->
-      <section id="abaClientes" class="hidden space-y-4">
-        <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 space-y-4">
-          <div class="flex justify-between items-center border-b pb-2">
-            <h2 class="text-xs font-bold text-slate-700 uppercase">Clientes Cadastrados</h2>
-            <button onclick="abrirModalCliente()" class="bg-cyan-600 hover:bg-cyan-700 text-white px-3 py-1.5 rounded text-xs font-bold cursor-pointer flex items-center">
-              <i class="fa-solid fa-user-plus mr-1.5"></i> Cadastrar Cliente
-            </button>
-          </div>
-          <div class="overflow-x-auto">
-            <table class="w-full text-left border-collapse text-xs">
-              <thead>
-                <tr class="bg-slate-100 border-b"><th class="p-2">Nome</th><th class="p-2">Documento</th><th class="p-2">Telefone</th><th class="p-2 text-center">Ações</th></tr>
-              </thead>
-              <tbody id="tabelaClientes" class="divide-y"></tbody>
-            </table>
-          </div>
-        </div>
-      </section>
-
-      <!-- ABA 3: FORNECEDORES -->
-      <section id="abaFornecedores" class="hidden space-y-4">
-        <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 space-y-4">
-          <div class="flex justify-between items-center border-b pb-2">
-            <h2 class="text-xs font-bold text-slate-700 uppercase">Fornecedores Cadastrados</h2>
-            <button onclick="abrirModalFornecedor()" class="bg-cyan-600 hover:bg-cyan-700 text-white px-3 py-1.5 rounded text-xs font-bold cursor-pointer flex items-center">
-              <i class="fa-solid fa-truck-field mr-1.5"></i> Cadastrar Fornecedor
-            </button>
-          </div>
-          <div class="overflow-x-auto">
-            <table class="w-full text-left border-collapse text-xs">
-              <thead>
-                <tr class="bg-slate-100 border-b"><th class="p-2">Empresa</th><th class="p-2">CNPJ</th><th class="p-2">Contato</th><th class="p-2 text-center">Ações</th></tr>
-              </thead>
-              <tbody id="tabelaFornecedores" class="divide-y"></tbody>
-            </table>
-          </div>
-        </div>
-      </section>
-
-      <!-- ABA 4: SUPRIMENTOS / BOBINAS -->
-      <section id="abaSuprimentos" class="hidden space-y-4">
-        <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 space-y-4">
-          <div class="flex justify-between items-center border-b pb-2">
-            <h2 class="text-xs font-bold text-slate-700 uppercase">Suprimentos e Bobinas</h2>
-            <button onclick="abrirModalSuprimento()" class="bg-cyan-600 hover:bg-cyan-700 text-white px-3 py-1.5 rounded text-xs font-bold cursor-pointer flex items-center">
-              <i class="fa-solid fa-boxes-stacked mr-1.5"></i> Cadastrar Bobina / Material
-            </button>
-          </div>
-          <div class="overflow-x-auto">
-            <table class="w-full text-left border-collapse text-xs">
-              <thead>
-                <tr class="bg-slate-100 border-b"><th class="p-2">Nome do Material</th><th class="p-2">Largura (cm)</th><th class="p-2">Preço / Metro (R$)</th><th class="p-2 text-center">Ações</th></tr>
-              </thead>
-              <tbody id="tabelaSuprimentos" class="divide-y"></tbody>
-            </table>
-          </div>
-        </div>
-      </section>
-
-      <!-- ABA 5: DESENHO (RIP) -->
-      <section id="abaDesenho" class="hidden space-y-4">
-        <div id="painelTemaWrapper" class="bg-slate-900 text-white p-5 rounded-xl shadow-inner space-y-4 transition-colors duration-300">
-          <div class="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-slate-800 pb-3 gap-3">
-            <div>
-              <h3 class="text-xs font-bold text-cyan-400 uppercase tracking-widest flex items-center">
-                <i class="fa-solid fa-network-wired mr-2 text-[8px]"></i> Módulo de Desenho Técnico e Nesting (RIP)
-              </h3>
-            </div>
-            <div class="flex flex-wrap items-center gap-2">
-              <div class="flex items-center bg-slate-800 border border-slate-700 rounded-lg p-1">
-                <span class="text-[10px] text-slate-300 px-2 font-bold uppercase">Zoom:</span>
-                <button type="button" onclick="alterarZoom(-0.5)" class="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-700 text-white hover:bg-slate-600 cursor-pointer">-</button>
-                <span id="labelZoom" class="px-2 text-[10px] font-bold text-cyan-400">2.5x</span>
-                <button type="button" onclick="alterarZoom(0.5)" class="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-700 text-white hover:bg-slate-600 cursor-pointer">+</button>
-              </div>
-              <button onclick="processarECalcular()" class="bg-cyan-600 hover:bg-cyan-700 text-white px-3 py-1.5 rounded text-xs font-bold cursor-pointer">Recalcular</button>
-            </div>
-          </div>
-
-          <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-            <div class="bg-slate-950 p-3 rounded-lg border border-slate-800">
-              <span class="text-[10px] text-slate-400 uppercase font-bold">Comprimento Total</span>
-              <div id="statComprimentoTotal" class="text-sm font-extrabold text-cyan-400 mt-1">0.00 metros</div>
-            </div>
-            <div class="bg-slate-950 p-3 rounded-lg border border-slate-800">
-              <span class="text-[10px] text-slate-400 uppercase font-bold">Aproveitamento</span>
-              <div id="statAproveitamento" class="text-sm font-extrabold text-emerald-400 mt-1">0%</div>
-            </div>
-            <div class="bg-slate-950 p-3 rounded-lg border border-slate-800">
-              <span class="text-[10px] text-slate-400 uppercase font-bold">Total Peças</span>
-              <div id="statTotalPecas" class="text-sm font-extrabold text-slate-200 mt-1">0 unidades</div>
-            </div>
-            <div class="bg-slate-950 p-3 rounded-lg border border-slate-800">
-              <span class="text-[10px] text-slate-400 uppercase font-bold">Largura Bobina</span>
-              <div id="statLarguraBobina" class="text-sm font-extrabold text-amber-400 mt-1">0 cm</div>
-            </div>
-          </div>
-          
-          <div class="bg-slate-950 p-2 rounded-xl border border-slate-800">
-            <div class="relative w-full overflow-auto bg-[#080d14] rounded-lg border border-slate-800" id="scrollAreaCanvas" style="max-height: 550px;">
-              <div id="containerComReguas" class="relative inline-block" style="padding: 28px 0 0 28px;">
-                <div class="absolute top-0 left-0 w-[28px] h-[28px] bg-[#0c131d] border-r border-b border-slate-700/80 z-30 flex items-center justify-center text-[10px] text-slate-400 font-bold select-none">cm</div>
-                <div id="reguaHorizontal" class="absolute top-0 left-[28px] h-[28px] bg-[#0c131d] border-b border-slate-700/80 overflow-hidden select-none z-20"></div>
-                <div id="reguaVertical" class="absolute top-[28px] left-0 w-[28px] bg-[#0c131d] border-r border-slate-700/80 overflow-hidden select-none z-20"></div>
-                <div id="painelDesenhoResultado" class="relative bg-[#070b11] border border-cyan-500/20 shadow-inner min-h-[300px]"></div>
-              </div>
-            </div>
-          </div>
-
-        </div>
-      </section>
-
-    </main>
-  </div>
-
-  <!-- MODAL DE CADASTROS DINÂMICO -->
-  <div id="modalDinamico" class="hidden fixed inset-0 bg-slate-900/80 z-50 flex items-center justify-center p-4">
-    <div class="bg-white rounded-xl shadow-2xl max-w-md w-full p-6 space-y-4 border border-slate-200">
-      <div class="flex justify-between items-center border-b pb-2">
-        <h3 id="modalTitulo" class="text-xs font-bold text-slate-800 uppercase">Cadastrar</h3>
-        <button type="button" onclick="fecharModal()" class="text-slate-400 hover:text-slate-600 font-bold text-sm"><i class="fa-solid fa-xmark"></i></button>
-      </div>
-      <div id="modalCorpo" class="space-y-3"></div>
-      <div class="flex justify-end gap-2 pt-2 border-t">
-        <button type="button" onclick="fecharModal()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 px-4 py-2 rounded text-xs font-bold cursor-pointer">Cancelar</button>
-        <button type="button" id="btnSalvarModal" class="bg-cyan-600 hover:bg-cyan-700 text-white px-4 py-2 rounded text-xs font-bold cursor-pointer">Salvar Registro</button>
-      </div>
-    </div>
-  </div>
-
-  <script type="module">
-    import { collection, addDoc, getDocs } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
     window.appData = {
       clientes: [],
@@ -330,25 +29,39 @@
       addParteExemplo("Peça 2", 10, 20, 4);
     });
 
+    // 1. CARREGAR DADOS DO REALTIME DATABASE
     async function carregarDadosDoFirebase() {
       try {
-        if (!window.db) return;
+        const dbRef = ref(window.db);
         
-        const snapClientes = await getDocs(collection(window.db, "clientes"));
-        window.appData.clientes = [];
-        snapClientes.forEach(docSnap => window.appData.clientes.push({ id: docSnap.id, ...docSnap.data() }));
+        // Carrega Clientes
+        const snapshotClientes = await get(child(dbRef, 'clientes'));
+        if (snapshotClientes.exists()) {
+          window.appData.clientes = [];
+          snapshotClientes.forEach((childSnap) => {
+            window.appData.clientes.push({ id: childSnap.key, ...childSnap.val() });
+          });
+        }
 
-        const snapFornecedores = await getDocs(collection(window.db, "fornecedores"));
-        window.appData.fornecedores = [];
-        snapFornecedores.forEach(docSnap => window.appData.fornecedores.push({ id: docSnap.id, ...docSnap.data() }));
+        // Carrega Fornecedores
+        const snapshotFornecedores = await get(child(dbRef, 'fornecedores'));
+        if (snapshotFornecedores.exists()) {
+          window.appData.fornecedores = [];
+          snapshotFornecedores.forEach((childSnap) => {
+            window.appData.fornecedores.push({ id: childSnap.key, ...childSnap.val() });
+          });
+        }
 
-        const snapSuprimentos = await getDocs(collection(window.db, "suprimentos"));
-        if (!snapSuprimentos.empty) {
+        // Carrega Suprimentos
+        const snapshotSuprimentos = await get(child(dbRef, 'suprimentos'));
+        if (snapshotSuprimentos.exists()) {
           window.appData.suprimentos = [];
-          snapSuprimentos.forEach(docSnap => window.appData.suprimentos.push({ id: docSnap.id, ...docSnap.data() }));
+          snapshotSuprimentos.forEach((childSnap) => {
+            window.appData.suprimentos.push({ id: childSnap.key, ...childSnap.val() });
+          });
         }
       } catch (e) {
-        console.error("Erro ao carregar dados do Firebase:", e);
+        console.error("Erro ao carregar do Realtime Database:", e);
       }
     }
 
@@ -375,6 +88,7 @@
       document.getElementById('modalDinamico').classList.add('hidden');
     }
 
+    // 2. SALVAR CLIENTE NO REALTIME DATABASE
     window.abrirModalCliente = function() {
       document.getElementById('modalTitulo').textContent = 'Novo Cliente';
       document.getElementById('modalCorpo').innerHTML = `
@@ -396,20 +110,23 @@
         };
 
         try {
-          await addDoc(collection(window.db, "clientes"), novo);
-          window.appData.clientes.push(novo);
+          const novaRef = push(ref(window.db, 'clientes'));
+          await set(novaRef, novo);
+          
+          window.appData.clientes.push({ id: novaRef.key, ...novo });
           renderizarTabelas();
           atualizarSelectClientes();
           fecharModal();
-          alert("Cliente salvo no Firebase (calculo-pro) com sucesso!");
+          alert("Cliente salvo no Realtime Database com sucesso!");
         } catch (e) {
           console.error(e);
-          alert("Erro ao salvar no Firebase.");
+          alert("Erro ao salvar no banco de dados.");
         }
       };
       document.getElementById('modalDinamico').classList.remove('hidden');
     }
 
+    // 3. SALVAR FORNECEDOR NO REALTIME DATABASE
     window.abrirModalFornecedor = function() {
       document.getElementById('modalTitulo').textContent = 'Novo Fornecedor';
       document.getElementById('modalCorpo').innerHTML = `
@@ -431,19 +148,22 @@
         };
 
         try {
-          await addDoc(collection(window.db, "fornecedores"), novo);
-          window.appData.fornecedores.push(novo);
+          const novaRef = push(ref(window.db, 'fornecedores'));
+          await set(novaRef, novo);
+
+          window.appData.fornecedores.push({ id: novaRef.key, ...novo });
           renderizarTabelas();
           fecharModal();
-          alert("Fornecedor salvo no Firebase (calculo-pro) com sucesso!");
+          alert("Fornecedor salvo no Realtime Database com sucesso!");
         } catch (e) {
           console.error(e);
-          alert("Erro ao salvar no Firebase.");
+          alert("Erro ao salvar no banco de dados.");
         }
       };
       document.getElementById('modalDinamico').classList.remove('hidden');
     }
 
+    // 4. SALVAR SUPRIMENTO NO REALTIME DATABASE
     window.abrirModalSuprimento = function() {
       document.getElementById('modalTitulo').textContent = 'Novo Suprimento / Bobina';
       document.getElementById('modalCorpo').innerHTML = `
@@ -463,15 +183,17 @@
         const novo = { nome, largura, preco: preco || 0, criadoEm: new Date().toISOString() };
 
         try {
-          await addDoc(collection(window.db, "suprimentos"), novo);
-          window.appData.suprimentos.push(novo);
+          const novaRef = push(ref(window.db, 'suprimentos'));
+          await set(novaRef, novo);
+
+          window.appData.suprimentos.push({ id: novaRef.key, ...novo });
           atualizarSelectBobinas();
           renderizarTabelas();
           fecharModal();
-          alert("Suprimento salvo no Firebase (calculo-pro) com sucesso!");
+          alert("Suprimento salvo no Realtime Database com sucesso!");
         } catch (e) {
           console.error(e);
-          alert("Erro ao salvar no Firebase.");
+          alert("Erro ao salvar no banco de dados.");
         }
       };
       document.getElementById('modalDinamico').classList.remove('hidden');
@@ -480,7 +202,7 @@
     function renderizarTabelas() {
       const tbodyC = document.getElementById('tabelaClientes');
       tbodyC.innerHTML = window.appData.clientes.length === 0 ? '<tr><td colspan="4" class="p-3 text-center text-slate-400">Nenhum cliente cadastrado.</td></tr>' : '';
-      window.appData.clientes.forEach((c) => {
+      window.appData.clientes.xx || window.appData.clientes.forEach((c) => {
         tbodyC.innerHTML += `<tr class="hover:bg-slate-50"><td class="p-2 font-bold">${c.nome}</td><td class="p-2">${c.doc||'-'}</td><td class="p-2">${c.tel||'-'}</td><td class="p-2 text-center">-</td></tr>`;
       });
 
@@ -546,5 +268,3 @@
       document.getElementById('labelZoom').textContent = window.appData.escalaZoom.toFixed(1) + 'x';
     }
   </script>
-</body>
-</html>
