@@ -1,11 +1,11 @@
 <script type="module">
     // Importa as funções do Realtime Database do Firebase v10
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getDatabase, ref, set, get, push, child, remove } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+    import { getDatabase, ref, set, get, child, remove } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
     // Configuração apontando para o seu projeto calculo-pro
     const firebaseConfig = {
-      databaseURL: "https://calculo-pro-default-rtdb.firebaseio.com/" // Substitua pela URL exata do seu Realtime Database se for diferente
+      databaseURL: "https://calculo-pro-default-rtdb.firebaseio.com"
     };
 
     const app = initializeApp(firebaseConfig);
@@ -29,45 +29,12 @@
       addParteExemplo("Peça 2", 10, 20, 4);
     });
 
-    // 1. CARREGAR DADOS DO REALTIME DATABASE
-    async function carregarDadosDoFirebase() {
-      try {
-        const dbRef = ref(window.db);
-        
-        // Carrega Clientes
-        const snapshotClientes = await get(child(dbRef, 'clientes'));
-        if (snapshotClientes.exists()) {
-          window.appData.clientes = [];
-          snapshotClientes.forEach((childSnap) => {
-            window.appData.clientes.push({ id: childSnap.key, ...childSnap.val() });
-          });
-        }
-
-        // Carrega Fornecedores
-        const snapshotFornecedores = await get(child(dbRef, 'fornecedores'));
-        if (snapshotFornecedores.exists()) {
-          window.appData.fornecedores = [];
-          snapshotFornecedores.forEach((childSnap) => {
-            window.appData.fornecedores.push({ id: childSnap.key, ...childSnap.val() });
-          });
-        }
-
-        // Carrega Suprimentos
-        const snapshotSuprimentos = await get(child(dbRef, 'suprimentos'));
-        if (snapshotSuprimentos.exists()) {
-          window.appData.suprimentos = [];
-          snapshotSuprimentos.forEach((childSnap) => {
-            window.appData.suprimentos.push({ id: childSnap.key, ...childSnap.val() });
-          });
-        }
-      } catch (e) {
-        console.error("Erro ao carregar do Realtime Database:", e);
-      }
-    }
-
+    // Função blindada para evitar erros de tela branca
     function verificarSessao() {
-      document.getElementById('authModal').classList.add('hidden');
-      document.getElementById('appContainer').classList.remove('hidden');
+      const auth = document.getElementById('authModal');
+      const app = document.getElementById('appContainer');
+      if (auth) auth.classList.add('hidden');
+      if (app) app.classList.remove('hidden');
     }
 
     window.fazerLogin = function() { verificarSessao(); }
@@ -86,6 +53,39 @@
 
     window.fecharModal = function() {
       document.getElementById('modalDinamico').classList.add('hidden');
+    }
+
+    // 1. CARREGAR DADOS DO REALTIME DATABASE
+    async function carregarDadosDoFirebase() {
+      try {
+        const dbRef = ref(window.db);
+        
+        const snapshotClientes = await get(child(dbRef, 'clientes'));
+        if (snapshotClientes.exists()) {
+          window.appData.clientes = [];
+          snapshotClientes.forEach((childSnap) => {
+            window.appData.clientes.push({ id: childSnap.key, ...childSnap.val() });
+          });
+        }
+
+        const snapshotFornecedores = await get(child(dbRef, 'fornecedores'));
+        if (snapshotFornecedores.exists()) {
+          window.appData.fornecedores = [];
+          snapshotFornecedores.forEach((childSnap) => {
+            window.appData.fornecedores.push({ id: childSnap.key, ...childSnap.val() });
+          });
+        }
+
+        const snapshotSuprimentos = await get(child(dbRef, 'suprimentos'));
+        if (snapshotSuprimentos.exists()) {
+          window.appData.suprimentos = [];
+          snapshotSuprimentos.forEach((childSnap) => {
+            window.appData.suprimentos.push({ id: childSnap.key, ...childSnap.val() });
+          });
+        }
+      } catch (e) {
+        console.error("Erro ao carregar do Realtime Database:", e);
+      }
     }
 
     // 2. SALVAR CLIENTE NO REALTIME DATABASE
@@ -201,57 +201,69 @@
 
     function renderizarTabelas() {
       const tbodyC = document.getElementById('tabelaClientes');
-      tbodyC.innerHTML = window.appData.clientes.length === 0 ? '<tr><td colspan="4" class="p-3 text-center text-slate-400">Nenhum cliente cadastrado.</td></tr>' : '';
-      window.appData.clientes.xx || window.appData.clientes.forEach((c) => {
-        tbodyC.innerHTML += `<tr class="hover:bg-slate-50"><td class="p-2 font-bold">${c.nome}</td><td class="p-2">${c.doc||'-'}</td><td class="p-2">${c.tel||'-'}</td><td class="p-2 text-center">-</td></tr>`;
-      });
+      if(tbodyC) {
+        tbodyC.innerHTML = window.appData.clientes.length === 0 ? '<tr><td colspan="4" class="p-3 text-center text-slate-400">Nenhum cliente cadastrado.</td></tr>' : '';
+        window.appData.clientes.forEach((c) => {
+          tbodyC.innerHTML += `<tr class="hover:bg-slate-50"><td class="p-2 font-bold">${c.nome}</td><td class="p-2">${c.doc||'-'}</td><td class="p-2">${c.tel||'-'}</td><td class="p-2 text-center">-</td></tr>`;
+        });
+      }
 
       const tbodyF = document.getElementById('tabelaFornecedores');
-      tbodyF.innerHTML = window.appData.fornecedores.length === 0 ? '<tr><td colspan="4" class="p-3 text-center text-slate-400">Nenhum fornecedor cadastrado.</td></tr>' : '';
-      window.appData.fornecedores.forEach((f) => {
-        tbodyF.innerHTML += `<tr class="hover:bg-slate-50"><td class="p-2 font-bold">${f.empresa}</td><td class="p-2">${f.cnpj||'-'}</td><td class="p-2">${f.contato||'-'}</td><td class="p-2 text-center">-</td></tr>`;
-      });
+      if(tbodyF) {
+        tbodyF.innerHTML = window.appData.fornecedores.length === 0 ? '<tr><td colspan="4" class="p-3 text-center text-slate-400">Nenhum fornecedor cadastrado.</td></tr>' : '';
+        window.appData.fornecedores.forEach((f) => {
+          tbodyF.innerHTML += `<tr class="hover:bg-slate-50"><td class="p-2 font-bold">${f.empresa}</td><td class="p-2">${f.cnpj||'-'}</td><td class="p-2">${f.contato||'-'}</td><td class="p-2 text-center">-</td></tr>`;
+        });
+      }
 
       const tbodyS = document.getElementById('tabelaSuprimentos');
-      tbodyS.innerHTML = window.appData.suprimentos.length === 0 ? '<tr><td colspan="4" class="p-3 text-center text-slate-400">Nenhum suprimento cadastrado.</td></tr>' : '';
-      window.appData.suprimentos.forEach((s) => {
-        tbodyS.innerHTML += `<tr class="hover:bg-slate-50"><td class="p-2 font-bold">${s.nome}</td><td class="p-2">${s.largura} cm</td><td class="p-2">R$ ${Number(s.preco).toFixed(2)}</td><td class="p-2 text-center">-</td></tr>`;
-      });
+      if(tbodyS) {
+        tbodyS.innerHTML = window.appData.suprimentos.length === 0 ? '<tr><td colspan="4" class="p-3 text-center text-slate-400">Nenhum suprimento cadastrado.</td></tr>' : '';
+        window.appData.suprimentos.forEach((s) => {
+          tbodyS.innerHTML += `<tr class="hover:bg-slate-50"><td class="p-2 font-bold">${s.nome}</td><td class="p-2">${s.largura} cm</td><td class="p-2">R$ ${Number(s.preco).toFixed(2)}</td><td class="p-2 text-center">-</td></tr>`;
+        });
+      }
     }
 
     function atualizarSelectClientes() {
       const select = document.getElementById('selectClienteOrcamento');
-      select.innerHTML = '<option value="">-- Selecione o Cliente --</option>';
-      window.appData.clientes.forEach(c => {
-        select.innerHTML += `<option value="${c.nome}">${c.nome}</option>`;
-      });
+      if(select) {
+        select.innerHTML = '<option value="">-- Selecione o Cliente --</option>';
+        window.appData.clientes.forEach(c => {
+          select.innerHTML += `<option value="${c.nome}">${c.nome}</option>`;
+        });
+      }
     }
 
     function atualizarSelectBobinas() {
       const select = document.getElementById('selectBobinaGlobal');
-      select.innerHTML = '';
-      window.appData.suprimentos.forEach(sup => {
-        const opt = document.createElement('option');
-        opt.value = sup.largura;
-        opt.dataset.preco = sup.preco;
-        opt.textContent = `${sup.nome} - Largura: ${sup.largura}cm (R$ ${Number(sup.preco).toFixed(2)}/m)`;
-        select.appendChild(opt);
-      });
+      if(select) {
+        select.innerHTML = '';
+        window.appData.suprimentos.forEach(sup => {
+          const opt = document.createElement('option');
+          opt.value = sup.largura;
+          opt.dataset.preco = sup.preco;
+          opt.textContent = `${sup.nome} - Largura: ${sup.largura}cm (R$ ${Number(sup.preco).toFixed(2)}/m)`;
+          select.appendChild(opt);
+        });
+      }
     }
 
     window.addParteVazia = function() { addParteExemplo('', '', '', 1); }
 
     window.addParteExemplo = function(nome, largura, comp, qtd) {
       const tbody = document.getElementById('partes');
-      const tr = document.createElement('tr');
-      tr.innerHTML = `
-        <td class="p-2"><input type="text" value="${nome}" placeholder="Nome da peça" class="w-full bg-slate-50 border border-slate-300 rounded px-2 py-1 text-xs parte-nome"></td>
-        <td class="p-2"><input type="number" value="${largura}" placeholder="0" class="w-full bg-slate-50 border border-slate-300 rounded px-2 py-1 text-xs parte-largura"></td>
-        <td class="p-2"><input type="number" value="${comp}" placeholder="0" class="w-full bg-slate-50 border border-slate-300 rounded px-2 py-1 text-xs parte-comprimento"></td>
-        <td class="p-2"><input type="number" value="${qtd}" class="w-full bg-slate-50 border border-slate-300 rounded px-2 py-1 text-xs parte-qtd"></td>
-        <td class="p-2 text-center"><button type="button" onclick="this.closest('tr').remove()" class="text-red-500 font-bold"><i class="fa-solid fa-trash text-[8px]"></i></button></td>
-      `;
-      tbody.appendChild(tr);
+      if(tbody) {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td class="p-2"><input type="text" value="${nome}" placeholder="Nome da peça" class="w-full bg-slate-50 border border-slate-300 rounded px-2 py-1 text-xs parte-nome"></td>
+          <td class="p-2"><input type="number" value="${largura}" placeholder="0" class="w-full bg-slate-50 border border-slate-300 rounded px-2 py-1 text-xs parte-largura"></td>
+          <td class="p-2"><input type="number" value="${comp}" placeholder="0" class="w-full bg-slate-50 border border-slate-300 rounded px-2 py-1 text-xs parte-comprimento"></td>
+          <td class="p-2"><input type="number" value="${qtd}" class="w-full bg-slate-50 border border-slate-300 rounded px-2 py-1 text-xs parte-qtd"></td>
+          <td class="p-2 text-center"><button type="button" onclick="this.closest('tr').remove()" class="text-red-500 font-bold"><i class="fa-solid fa-trash text-[8px]"></i></button></td>
+        `;
+        tbody.appendChild(tr);
+      }
     }
 
     window.processarECalcular = function() {
@@ -265,6 +277,7 @@
 
     window.alterarZoom = function(valor) {
       window.appData.escalaZoom = Math.max(1, window.appData.escalaZoom + valor);
-      document.getElementById('labelZoom').textContent = window.appData.escalaZoom.toFixed(1) + 'x';
+      const lbl = document.getElementById('labelZoom');
+      if(lbl) lbl.textContent = window.appData.escalaZoom.toFixed(1) + 'x';
     }
   </script>
