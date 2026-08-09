@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>CalculaJá Pro v6.5 - Industrial Cut & Cloud ERP</title>
+  <title>CalculaJá Pro v6.6 - Industrial Cut & Cloud ERP</title>
   
   <!-- Tailwind CSS & FontAwesome -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -153,32 +153,65 @@
       
       <!-- ABA 1: ORÇAMENTO & ENTRADA DE DADOS -->
       <section id="abaDados" class="space-y-4">
-        <div class="bg-white border border-slate-200 p-4 rounded-xl shadow-sm grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div>
-            <label class="block text-[10px] font-bold text-cyan-700 uppercase tracking-wider mb-1"><i class="fa-solid fa-user mr-1"></i> Cliente / Projeto</label>
-            <select id="selectClienteOrcamento" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-xs font-bold text-slate-800 outline-none focus:border-cyan-600 focus:bg-white transition"></select>
-          </div>
-
-          <div>
-            <label class="block text-[10px] font-bold text-cyan-700 uppercase tracking-wider mb-1"><i class="fa-solid fa-scroll mr-1"></i> Material / Bobina / Tecido</label>
-            <select id="selectBobinaGlobal" onchange="calcularTudo()" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-xs font-bold text-slate-800 outline-none focus:border-cyan-600 focus:bg-white transition"></select>
-          </div>
-
-          <div class="bg-slate-50 p-2.5 rounded-lg border border-slate-200 grid grid-cols-2 gap-2">
+        
+        <!-- CARD DE CONFIGURAÇÕES DE ENTRADA (CLIENTE E DIMENSÕES DA BOBINA) -->
+        <div class="bg-white border border-slate-200 p-4 rounded-xl shadow-sm space-y-3">
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+            
+            <!-- CLIENTE -->
             <div>
-              <label class="block text-[9px] font-bold text-slate-500 uppercase">Margem Corte (cm)</label>
-              <input type="number" id="espacamentoPecas" value="0.5" step="0.1" min="0" oninput="calcularTudo()" class="w-full bg-white border border-slate-300 rounded px-2 py-1 text-xs font-bold text-cyan-700 outline-none focus:border-cyan-600">
+              <label class="block text-[10px] font-bold text-cyan-700 uppercase tracking-wider mb-1">
+                <i class="fa-solid fa-user mr-1"></i> Cliente / Projeto
+              </label>
+              <select id="selectClienteOrcamento" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-xs font-bold text-slate-800 outline-none focus:border-cyan-600 focus:bg-white transition"></select>
             </div>
+
+            <!-- MATERIAL PREDEFINIDO -->
             <div>
-              <label class="block text-[9px] font-bold text-slate-500 uppercase">Girar Peças?</label>
-              <select id="permitirRotacao" onchange="calcularTudo()" class="w-full bg-white border border-slate-300 rounded px-2 py-1 text-xs font-bold text-slate-800 outline-none focus:border-cyan-600">
-                <option value="sim">Sim (Aproveitamento)</option>
-                <option value="nao">Não (Manter Fio Tecido)</option>
+              <label class="block text-[10px] font-bold text-cyan-700 uppercase tracking-wider mb-1">
+                <i class="fa-solid fa-scroll mr-1"></i> Preset de Material
+              </label>
+              <select id="selectBobinaGlobal" onchange="selecionarPresetMaterial()" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-xs font-bold text-slate-800 outline-none focus:border-cyan-600 focus:bg-white transition"></select>
+            </div>
+
+            <!-- LARGURA DA BOBINA (CM) -->
+            <div>
+              <label class="block text-[10px] font-bold text-amber-600 uppercase tracking-wider mb-1">
+                <i class="fa-solid fa-arrows-left-right mr-1"></i> Largura Bobina (cm)
+              </label>
+              <input type="number" id="larguraBobinaInput" value="140" step="1" min="1" oninput="calcularTudo()" class="w-full bg-amber-50/50 border border-amber-300 rounded-lg px-3 py-1.5 text-xs font-black text-amber-800 outline-none focus:border-amber-600 focus:bg-white transition">
+            </div>
+
+            <!-- COMPRIMENTO DO ROLO/BOBINA (M) -->
+            <div>
+              <label class="block text-[10px] font-bold text-amber-600 uppercase tracking-wider mb-1">
+                <i class="fa-solid fa-ruler-combined mr-1"></i> Comp. Rolo/Estoque (m)
+              </label>
+              <input type="number" id="comprimentoBobinaInput" value="50" step="1" min="1" oninput="calcularTudo()" class="w-full bg-amber-50/50 border border-amber-300 rounded-lg px-3 py-1.5 text-xs font-black text-amber-800 outline-none focus:border-amber-600 focus:bg-white transition">
+            </div>
+
+          </div>
+
+          <!-- REGRAS DE CORTE DA BOBINA -->
+          <div class="bg-slate-50 p-3 rounded-lg border border-slate-200 grid grid-cols-1 md:grid-cols-2 gap-3 items-center">
+            <div class="flex items-center gap-3">
+              <div class="w-full">
+                <label class="block text-[9px] font-bold text-slate-500 uppercase mb-0.5">Espaçamento / Margem entre Peças (cm)</label>
+                <input type="number" id="espacamentoPecas" value="0.5" step="0.1" min="0" oninput="calcularTudo()" class="w-full bg-white border border-slate-300 rounded px-2.5 py-1 text-xs font-bold text-cyan-700 outline-none focus:border-cyan-600">
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-[9px] font-bold text-slate-500 uppercase mb-0.5">Permitir Rotação das Peças?</label>
+              <select id="permitirRotacao" onchange="calcularTudo()" class="w-full bg-white border border-slate-300 rounded px-2.5 py-1 text-xs font-bold text-slate-800 outline-none focus:border-cyan-600">
+                <option value="sim">Sim (Melhor Aproveitamento / Rotação Auto)</option>
+                <option value="nao">Não (Manter Fio do Tecido / Orientação Fixa)</option>
               </select>
             </div>
           </div>
         </div>
 
+        <!-- TABELA DE PEÇAS -->
         <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 space-y-3">
           <div class="flex justify-between items-center border-b border-slate-100 pb-2">
             <h2 class="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-2">
@@ -588,7 +621,7 @@
           addParteVazia();
           addParteVazia();
         }
-        calcularTudo();
+        selecionarPresetMaterial();
       } catch (e) {
         console.error("Erro ao sincronizar dados:", e);
       }
@@ -648,6 +681,15 @@
       selMat.innerHTML = appData.suprimentos.map(s => `<option value="${s.id}">${s.descricao} - ${s.largura}cm (R$ ${parseFloat(s.custoMetro).toFixed(2)}/m)</option>`).join('');
     }
 
+    function selecionarPresetMaterial() {
+      const matId = document.getElementById('selectBobinaGlobal').value;
+      const mat = appData.suprimentos.find(s => s.id === matId);
+      if (mat) {
+        document.getElementById('larguraBobinaInput').value = mat.largura || 140;
+      }
+      calcularTudo();
+    }
+
     function renderizarTabelas() {
       const tbCli = document.getElementById('tabelaClientes');
       tbCli.innerHTML = appData.clientes.map(c => `
@@ -673,7 +715,12 @@
     /* 4. ALGORITMO DE PLANO DE CORTE INDUSTRIAL (2D BIN-PACKING / SHELF ALGORITHM) */
     function calcularTudo() {
       const matId = document.getElementById('selectBobinaGlobal').value;
-      const mat = appData.suprimentos.find(s => s.id === matId) || { largura: 140, custoMetro: 25 };
+      const mat = appData.suprimentos.find(s => s.id === matId) || { custoMetro: 25 };
+      
+      // Obtém dimensões customizáveis da bobina diretamente dos inputs de início
+      const larguraBobina = parseFloat(document.getElementById('larguraBobinaInput').value) || 140;
+      const comprimentoBobinaMax = parseFloat(document.getElementById('comprimentoBobinaInput').value) || 50;
+      
       const margemCorte = parseFloat(document.getElementById('espacamentoPecas').value) || 0;
       const permitirRotacao = document.getElementById('permitirRotacao').value === 'sim';
 
@@ -706,7 +753,6 @@
       listaPecasOriginal.sort((a, b) => Math.max(b.w, b.h) - Math.max(a.w, a.h));
 
       // Executa o empacotamento em prateleiras (Shelf Packing)
-      const larguraBobina = mat.largura;
       let prateleiraAtual = { x: 0, y: 0, altura: 0 };
       let pecasPosicionadas = [];
       let maiorY = 0;
@@ -732,11 +778,6 @@
           prateleiraAtual.y += prateleiraAtual.altura + margemCorte;
           prateleiraAtual.x = 0;
           prateleiraAtual.altura = 0;
-        }
-
-        // Se a peça for maior que a largura total do material isoladamente
-        if (pw > larguraBobina) {
-          console.warn(`Peça ${peca.nome} excede a largura da bobina!`);
         }
 
         pecasPosicionadas.push({
@@ -773,6 +814,7 @@
       // Atualiza Estado Global
       appData.calculoResultado = {
         larguraBobina: larguraBobina,
+        comprimentoBobinaMax: comprimentoBobinaMax,
         metrosUsados: metrosUsados,
         comprimentoCm: maiorY,
         aproveitamento: aproveitamento,
@@ -963,7 +1005,7 @@
           cliente: cli.nome,
           resultado: appData.calculoResultado
         });
-        alert(" Orçamento e plano de corte salvos com sucesso na nuvem!");
+        alert("Orçamento e plano de corte salvos com sucesso na nuvem!");
       } catch (err) {
         alert("Erro ao salvar: " + err.message);
       }
@@ -975,6 +1017,7 @@
       const res = appData.calculoResultado;
       if (!res) return;
       const texto = `*ORÇAMENTO & CORTE - CALCULAJA PRO*\n` +
+                    `Largura Bobina: ${res.larguraBobina} cm\n` +
                     `Metragem Necessária: ${res.metrosUsados.toFixed(2)} m\n` +
                     `Total de Peças: ${res.totalPecas} un\n` +
                     `Aproveitamento: ${res.aproveitamento}%\n` +
