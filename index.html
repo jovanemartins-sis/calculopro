@@ -1,390 +1,1030 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Painel de Controle - E-commerce</title>
-    <style>
-        :root {
-            --bg-color: #0f172a;
-            --card-bg: #1e293b;
-            --text-color: #f8fafc;
-            --text-secondary: #94a3b8;
-            --accent-color: #3b82f6;
-            --accent-hover: #2563eb;
-            --danger-color: #ef4444;
-            --success-color: #10b981;
-            --border-color: #334155;
-        }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CalculaJá Pro v6.6 - Industrial Cut & Cloud ERP</title>
+  
+  <!-- Tailwind CSS & FontAwesome -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- Firebase SDKs (Compat v10) -->
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
+  <style>
+    .bg-grid-pattern {
+      background-size: 20px 20px;
+      background-image: 
+        linear-gradient(to right, rgba(0, 0, 0, 0.06) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(0, 0, 0, 0.06) 1px, transparent 1px);
+    }
+    .regua-tick { position: absolute; background-color: #94a3b8; }
+    .regua-num { position: absolute; font-size: 8px; color: #64748b; font-weight: bold; }
+    
+    .peca-box {
+      box-sizing: border-box;
+      transition: all 0.15s ease;
+      position: absolute;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid #0284c7;
+      background: rgba(186, 230, 253, 0.85);
+      color: #0369a1;
+      font-weight: 700;
+      overflow: hidden;
+      cursor: pointer;
+      border-radius: 3px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+      font-size: 10px;
+      line-height: 1.1;
+    }
+    
+    .peca-box:hover {
+      border-color: #0369a1;
+      background: rgba(125, 211, 252, 0.95);
+      box-shadow: 0 0 10px rgba(2, 132, 199, 0.4);
+      z-index: 20;
+    }
 
-        body {
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            padding: 20px;
-            min-height: 100vh;
-        }
+    ::-webkit-scrollbar { width: 8px; height: 8px; }
+    ::-webkit-scrollbar-track { background: #f1f5f9; }
+    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #0284c7; }
 
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-
-        header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 24px;
-            padding-bottom: 16px;
-            border-bottom: 1px solid var(--border-color);
-        }
-
-        h1 {
-            font-size: 1.5rem;
-            color: var(--text-color);
-        }
-
-        .btn {
-            background-color: var(--accent-color);
-            color: white;
-            border: none;
-            padding: 10px 16px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: 600;
-            transition: background 0.2s;
-        }
-
-        .btn:hover {
-            background-color: var(--accent-hover);
-        }
-
-        .btn-danger {
-            background-color: var(--danger-color);
-        }
-
-        .btn-danger:hover {
-            background-color: #dc2626;
-        }
-
-        /* Metrics Cards */
-        .metrics-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-            gap: 16px;
-            margin-bottom: 24px;
-        }
-
-        .card {
-            background-color: var(--card-bg);
-            padding: 20px;
-            border-radius: 8px;
-            border: 1px solid var(--border-color);
-        }
-
-        .card h3 {
-            font-size: 0.875rem;
-            color: var(--text-secondary);
-            margin-bottom: 8px;
-            text-transform: uppercase;
-        }
-
-        .card .value {
-            font-size: 1.75rem;
-            font-weight: bold;
-        }
-
-        /* Controls & Form Section */
-        .controls-panel {
-            background-color: var(--card-bg);
-            padding: 20px;
-            border-radius: 8px;
-            border: 1px solid var(--border-color);
-            margin-bottom: 24px;
-        }
-
-        .form-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-            gap: 12px;
-            margin-top: 12px;
-        }
-
-        input, select {
-            background-color: #0f172a;
-            border: 1px solid var(--border-color);
-            color: var(--text-color);
-            padding: 10px;
-            border-radius: 6px;
-            outline: none;
-        }
-
-        input:focus, select:focus {
-            border-color: var(--accent-color);
-        }
-
-        /* Data Table */
-        .table-container {
-            background-color: var(--card-bg);
-            border-radius: 8px;
-            border: 1px solid var(--border-color);
-            overflow-x: auto;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            text-align: left;
-        }
-
-        th, td {
-            padding: 14px 16px;
-            border-bottom: 1px solid var(--border-color);
-        }
-
-        th {
-            background-color: #0f172a;
-            color: var(--text-secondary);
-            font-size: 0.85rem;
-            text-transform: uppercase;
-        }
-
-        tr:last-child td {
-            border-bottom: none;
-        }
-
-        .badge {
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-size: 0.75rem;
-            font-weight: bold;
-        }
-
-        .badge-success { background-color: rgba(16, 185, 129, 0.2); color: var(--success-color); }
-        .badge-warning { background-color: rgba(245, 158, 11, 0.2); color: #f59e0b; }
-
-        .actions-cell {
-            display: flex;
-            gap: 8px;
-        }
-
-        .btn-sm {
-            padding: 6px 10px;
-            font-size: 0.8rem;
-        }
-    </style>
+    @media print {
+      body * { visibility: hidden; }
+      #areaImpressao, #areaImpressao * { visibility: visible; }
+      #areaImpressao { position: absolute; left: 0; top: 0; width: 100%; color: #000; background: #fff; padding: 20px; }
+      .no-print { display: none !important; }
+    }
+  </style>
 </head>
-<body>
+<body class="bg-slate-100 text-slate-800 font-sans antialiased min-h-screen text-xs select-none">
 
-    <div class="container">
-        <header>
-            <h1>Painel de Gestão e Estoque</h1>
-            <div>
-                <button class="btn" onclick="exportData()">Exportar Backup</button>
-                <button class="btn btn-danger" onclick="resetSystem()">Restaurar Padrão</button>
-            </div>
-        </header>
+  <!-- TELA DE LOGIN -->
+  <div id="authScreen" class="fixed inset-0 bg-slate-900/50 backdrop-blur-md z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-sm w-full p-6 space-y-5 border border-slate-200">
+      <div class="text-center space-y-2">
+        <div class="w-12 h-12 bg-gradient-to-tr from-cyan-600 to-blue-600 rounded-xl flex items-center justify-center text-white text-xl mx-auto shadow-md shadow-cyan-600/30">
+          <i class="fa-solid fa-user-lock"></i>
+        </div>
+        <h2 class="text-base font-black text-slate-900 uppercase tracking-wide">CalculaJá Pro Cloud</h2>
+        <p class="text-[10px] text-slate-500">Acesso Restrito • 1 Dispositivo por Vez</p>
+      </div>
 
-        <!-- KPI Cards -->
-        <section class="metrics-grid">
-            <div class="card">
-                <h3>Total de Produtos</h3>
-                <div class="value" id="kpi-total-items">0</div>
-            </div>
-            <div class="card">
-                <h3>Valor em Estoque</h3>
-                <div class="value" id="kpi-total-value">R$ 0,00</div>
-            </div>
-            <div class="card">
-                <h3>Alertas de Estoque Baixo</h3>
-                <div class="value" style="color: #f59e0b;" id="kpi-low-stock">0</div>
-            </div>
-        </section>
+      <form id="formAuth" onsubmit="executarAuth(event)" class="space-y-3">
+        <div>
+          <label class="block text-[9px] font-bold text-slate-600 uppercase mb-1">E-mail de Acesso</label>
+          <input type="email" id="authEmail" required placeholder="seu@email.com" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 font-bold text-slate-800 outline-none focus:border-cyan-600 focus:bg-white transition">
+        </div>
+        <div>
+          <div class="flex justify-between items-center mb-1">
+            <label class="block text-[9px] font-bold text-slate-600 uppercase">Senha</label>
+            <button type="button" onclick="enviarEmailRecuperacao()" class="text-[9px] text-cyan-700 hover:text-cyan-800 font-bold hover:underline">Esqueceu?</button>
+          </div>
+          <input type="password" id="authSenha" required placeholder="••••••••" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 font-bold text-slate-800 outline-none focus:border-cyan-600 focus:bg-white transition">
+        </div>
 
-        <!-- Product Input Form -->
-        <section class="controls-panel">
-            <h2>Cadastrar Novo Item</h2>
-            <form id="product-form" class="form-grid" onsubmit="handleAddProduct(event)">
-                <input type="text" id="p-name" placeholder="Nome do Produto" required>
-                <input type="text" id="p-sku" placeholder="SKU / Código" required>
-                <input type="number" id="p-qty" placeholder="Quantidade" min="0" required>
-                <input type="number" id="p-price" placeholder="Preço (R$)" step="0.01" min="0" required>
-                <button type="submit" class="btn">Adicionar Item</button>
-            </form>
-        </section>
+        <button type="submit" id="btnSubmitAuth" class="w-full bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700 text-white font-bold py-2.5 rounded-lg transition shadow-md shadow-cyan-600/20 active:scale-95 flex items-center justify-center gap-2">
+          <i class="fa-solid fa-right-to-bracket"></i> Entrar no Sistema
+        </button>
+      </form>
 
-        <!-- Inventory Table -->
-        <section class="table-container">
-            <table>
-                <thead>
-                    <tr>
-                        <th>SKU</th>
-                        <th>Produto</th>
-                        <th>Qtd. Estoque</th>
-                        <th>Preço Unitário</th>
-                        <th>Status</th>
-                        <th>Ações</th>
-                    </tr>
-                </thead>
-                <tbody id="inventory-tbody">
-                    <!-- Dynamic rendering -->
-                </tbody>
-            </table>
-        </section>
+      <p id="msgAuthErro" class="text-[10px] text-rose-600 font-bold text-center bg-rose-50 p-2 rounded-lg border border-rose-200 hidden"></p>
+      <p id="msgAuthSucesso" class="text-[10px] text-emerald-600 font-bold text-center bg-emerald-50 p-2 rounded-lg border border-emerald-200 hidden"></p>
     </div>
+  </div>
 
-    <script>
-        // Default seed data to prevent complete blank states
-        const defaultProducts = [
-            { id: '1', sku: 'PRD-001', name: 'Produto Exemplo A', qty: 15, price: 49.90 },
-            { id: '2', sku: 'PRD-002', name: 'Produto Exemplo B', qty: 2, price: 129.00 }
-        ];
+  <!-- APLICAÇÃO PRINCIPAL -->
+  <div id="appContainer" class="min-h-screen flex flex-col hidden">
+    
+    <!-- HEADER NAVBAR -->
+    <header class="bg-white px-5 py-3 border-b border-slate-200 flex flex-col md:flex-row justify-between items-center gap-3 shadow-sm">
+      <div class="flex items-center space-x-3 w-full md:w-auto justify-between md:justify-start">
+        <div class="flex items-center space-x-2.5">
+          <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-cyan-600 to-blue-600 flex items-center justify-center text-white shadow-md shadow-cyan-600/20">
+            <i class="fa-solid fa-scissors text-base"></i>
+          </div>
+          <div>
+            <h1 class="text-sm font-black tracking-wide text-slate-900 uppercase flex items-center gap-2">
+              CalculaJá Pro <span class="text-[9px] bg-emerald-50 text-emerald-700 border border-emerald-200 px-1.5 py-0.5 rounded font-bold"><i class="fa-solid fa-cloud text-[8px] mr-1"></i>ONLINE</span>
+            </h1>
+            <p id="userEmailNav" class="text-[9px] text-slate-500">Usuário Conectado</p>
+          </div>
+        </div>
+      </div>
 
-        let products = [];
+      <div class="flex items-center space-x-3 w-full md:w-auto justify-between">
+        <nav class="flex items-center space-x-1.5 overflow-x-auto py-1">
+          <button onclick="mudarAba('dados')" id="btnAbaDados" class="px-3.5 py-1.5 rounded-lg font-bold bg-cyan-600 text-white transition flex items-center gap-2 shadow-sm active:scale-95">
+            <i class="fa-solid fa-calculator text-[10px]"></i> Orçamento & Corte
+          </button>
+          <button onclick="mudarAba('desenho')" id="btnAbaDesenho" class="px-3.5 py-1.5 rounded-lg font-bold bg-slate-100 hover:bg-slate-200 text-slate-600 border border-slate-200 transition flex items-center gap-2 active:scale-95">
+            <i class="fa-solid fa-draw-polygon text-[10px] text-cyan-600"></i> Desenho CAD/RIP
+          </button>
+          <button onclick="mudarAba('clientes')" id="btnAbaClientes" class="px-3.5 py-1.5 rounded-lg font-bold bg-slate-100 hover:bg-slate-200 text-slate-600 border border-slate-200 transition flex items-center gap-2 active:scale-95">
+            <i class="fa-solid fa-users text-[10px]"></i> Clientes
+          </button>
+          <button onclick="mudarAba('suprimentos')" id="btnAbaSuprimentos" class="px-3.5 py-1.5 rounded-lg font-bold bg-slate-100 hover:bg-slate-200 text-slate-600 border border-slate-200 transition flex items-center gap-2 active:scale-95">
+            <i class="fa-solid fa-boxes-stacked text-[10px]"></i> Matérias-Primas
+          </button>
+          <button onclick="mudarAba('historico')" id="btnAbaHistorico" class="px-3.5 py-1.5 rounded-lg font-bold bg-slate-100 hover:bg-slate-200 text-slate-600 border border-slate-200 transition flex items-center gap-2 active:scale-95">
+            <i class="fa-solid fa-folder-open text-[10px]"></i> Histórico
+          </button>
+        </nav>
 
-        // Safe Initialization Procedure
-        function initApp() {
-            try {
-                const storedData = localStorage.getItem('dashboard_products');
-                if (storedData) {
-                    products = JSON.parse(storedData);
-                } else {
-                    products = [...defaultProducts];
-                    saveData();
-                }
-            } catch (error) {
-                console.error("Erro ao carregar dados do localStorage:", error);
-                products = [...defaultProducts];
+        <div class="flex items-center gap-1.5">
+          <button onclick="abrirModalTrocarSenha()" title="Alterar Senha" class="bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 px-2.5 py-1.5 rounded-lg font-bold transition flex items-center gap-1 active:scale-95">
+            <i class="fa-solid fa-key text-amber-600"></i>
+          </button>
+          <button onclick="fazerLogout()" title="Sair do Sistema" class="bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 px-3 py-1.5 rounded-lg font-bold transition flex items-center gap-1.5 active:scale-95">
+            <i class="fa-solid fa-power-off"></i> <span class="hidden md:inline">Sair</span>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <main class="p-4 max-w-7xl mx-auto space-y-4 flex-grow w-full">
+      
+      <!-- ABA 1: ORÇAMENTO & ENTRADA DE DADOS -->
+      <section id="abaDados" class="space-y-4">
+        
+        <!-- CARD DE CONFIGURAÇÕES DE ENTRADA (CLIENTE E DIMENSÕES DA BOBINA) -->
+        <div class="bg-white border border-slate-200 p-4 rounded-xl shadow-sm space-y-3">
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+            
+            <!-- CLIENTE -->
+            <div>
+              <label class="block text-[10px] font-bold text-cyan-700 uppercase tracking-wider mb-1">
+                <i class="fa-solid fa-user mr-1"></i> Cliente / Projeto
+              </label>
+              <select id="selectClienteOrcamento" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-xs font-bold text-slate-800 outline-none focus:border-cyan-600 focus:bg-white transition"></select>
+            </div>
+
+            <!-- MATERIAL PREDEFINIDO -->
+            <div>
+              <label class="block text-[10px] font-bold text-cyan-700 uppercase tracking-wider mb-1">
+                <i class="fa-solid fa-scroll mr-1"></i> Preset de Material
+              </label>
+              <select id="selectBobinaGlobal" onchange="selecionarPresetMaterial()" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-xs font-bold text-slate-800 outline-none focus:border-cyan-600 focus:bg-white transition"></select>
+            </div>
+
+            <!-- LARGURA DA BOBINA (CM) -->
+            <div>
+              <label class="block text-[10px] font-bold text-amber-600 uppercase tracking-wider mb-1">
+                <i class="fa-solid fa-arrows-left-right mr-1"></i> Largura Bobina (cm)
+              </label>
+              <input type="number" id="larguraBobinaInput" value="140" step="1" min="1" oninput="calcularTudo()" class="w-full bg-amber-50/50 border border-amber-300 rounded-lg px-3 py-1.5 text-xs font-black text-amber-800 outline-none focus:border-amber-600 focus:bg-white transition">
+            </div>
+
+            <!-- COMPRIMENTO DO ROLO/BOBINA (M) -->
+            <div>
+              <label class="block text-[10px] font-bold text-amber-600 uppercase tracking-wider mb-1">
+                <i class="fa-solid fa-ruler-combined mr-1"></i> Comp. Rolo/Estoque (m)
+              </label>
+              <input type="number" id="comprimentoBobinaInput" value="50" step="1" min="1" oninput="calcularTudo()" class="w-full bg-amber-50/50 border border-amber-300 rounded-lg px-3 py-1.5 text-xs font-black text-amber-800 outline-none focus:border-amber-600 focus:bg-white transition">
+            </div>
+
+          </div>
+
+          <!-- REGRAS DE CORTE DA BOBINA -->
+          <div class="bg-slate-50 p-3 rounded-lg border border-slate-200 grid grid-cols-1 md:grid-cols-2 gap-3 items-center">
+            <div class="flex items-center gap-3">
+              <div class="w-full">
+                <label class="block text-[9px] font-bold text-slate-500 uppercase mb-0.5">Espaçamento / Margem entre Peças (cm)</label>
+                <input type="number" id="espacamentoPecas" value="0.5" step="0.1" min="0" oninput="calcularTudo()" class="w-full bg-white border border-slate-300 rounded px-2.5 py-1 text-xs font-bold text-cyan-700 outline-none focus:border-cyan-600">
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-[9px] font-bold text-slate-500 uppercase mb-0.5">Permitir Rotação das Peças?</label>
+              <select id="permitirRotacao" onchange="calcularTudo()" class="w-full bg-white border border-slate-300 rounded px-2.5 py-1 text-xs font-bold text-slate-800 outline-none focus:border-cyan-600">
+                <option value="sim">Sim (Melhor Aproveitamento / Rotação Auto)</option>
+                <option value="nao">Não (Manter Fio do Tecido / Orientação Fixa)</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- TABELA DE PEÇAS -->
+        <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 space-y-3">
+          <div class="flex justify-between items-center border-b border-slate-100 pb-2">
+            <h2 class="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-2">
+              <i class="fa-solid fa-shapes text-cyan-600"></i> Peças para Plano de Corte
+            </h2>
+            <button type="button" onclick="addParteVazia()" class="bg-slate-100 hover:bg-slate-200 text-cyan-700 border border-slate-200 hover:border-slate-300 px-3 py-1.5 rounded-lg font-bold transition flex items-center gap-1.5 shadow-sm active:scale-95">
+              <i class="fa-solid fa-plus text-[9px]"></i> Adicionar Peça
+            </button>
+          </div>
+
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+              <thead>
+                <tr class="bg-slate-50 text-slate-500 text-[10px] uppercase tracking-wider border-b border-slate-200">
+                  <th class="p-2.5">Identificação / Peça</th>
+                  <th class="p-2.5">Largura (cm)</th>
+                  <th class="p-2.5">Comprimento (cm)</th>
+                  <th class="p-2.5">Quantidade</th>
+                  <th class="p-2.5 text-center">Ação</th>
+                </tr>
+              </thead>
+              <tbody id="partes" class="divide-y divide-slate-100"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm space-y-3">
+            <h3 class="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-2">
+              <i class="fa-solid fa-industry text-amber-500"></i> Custos Operacionais
+            </h3>
+            <div class="space-y-2">
+              <div>
+                <label class="block text-[9px] font-bold text-slate-500 uppercase">Custo Serviços / Costura (R$)</label>
+                <input type="number" id="custoServicos" value="0.00" step="1.00" oninput="calcularTudo()" class="w-full bg-slate-50 border border-slate-300 rounded px-2.5 py-1.5 text-xs font-bold text-amber-600 outline-none focus:bg-white focus:border-amber-500">
+              </div>
+              <div>
+                <label class="block text-[9px] font-bold text-slate-500 uppercase">Margem Lucro / Markup (%)</label>
+                <input type="number" id="margemLucro" value="80" step="5" oninput="calcularTudo()" class="w-full bg-slate-50 border border-slate-300 rounded px-2.5 py-1.5 text-xs font-bold text-emerald-600 outline-none focus:bg-white focus:border-emerald-500">
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm space-y-2 col-span-1 md:col-span-2 flex flex-col justify-between">
+            <h3 class="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-2 border-b border-slate-100 pb-2">
+              <i class="fa-solid fa-calculator text-emerald-600"></i> Métricas Industriais & Preço
+            </h3>
+
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-2 py-1">
+              <div class="bg-slate-50 p-2 rounded-lg border border-slate-200">
+                <span class="text-[9px] text-slate-500 uppercase font-bold block">Uso Linear</span>
+                <span id="resumoMetroLinear" class="text-xs font-bold text-cyan-700">0.00 m</span>
+              </div>
+              <div class="bg-slate-50 p-2 rounded-lg border border-slate-200">
+                <span class="text-[9px] text-slate-500 uppercase font-bold block">Custo Matéria-Prima</span>
+                <span id="resumoCustoMaterial" class="text-xs font-bold text-slate-700">R$ 0,00</span>
+              </div>
+              <div class="bg-slate-50 p-2 rounded-lg border border-slate-200">
+                <span class="text-[9px] text-slate-500 uppercase font-bold block">Custo Fabril Total</span>
+                <span id="resumoCustoTotal" class="text-xs font-bold text-amber-600">R$ 0,00</span>
+              </div>
+              <div class="bg-emerald-50 p-2 rounded-lg border border-emerald-200">
+                <span class="text-[9px] text-emerald-700 uppercase font-bold block">Preço Venda Sugerido</span>
+                <span id="resumoPrecoVenda" class="text-sm font-black text-emerald-700">R$ 0,00</span>
+              </div>
+            </div>
+
+            <div class="flex flex-wrap items-center justify-end gap-2 border-t border-slate-100 pt-3">
+              <button type="button" onclick="salvarOrcamentoNuvem()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 px-3.5 py-2 rounded-lg font-bold transition flex items-center gap-1.5 shadow-sm active:scale-95">
+                <i class="fa-solid fa-cloud-arrow-up text-cyan-600"></i> Salvar na Nuvem
+              </button>
+              <button type="button" onclick="imprimirFichaCorte()" class="bg-amber-500 hover:bg-amber-600 text-white px-3.5 py-2 rounded-lg font-bold transition flex items-center gap-1.5 shadow-md shadow-amber-500/20 active:scale-95">
+                <i class="fa-solid fa-print"></i> Ficha Produção
+              </button>
+              <button type="button" onclick="copiarParaWhatsApp()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-3.5 py-2 rounded-lg font-bold transition flex items-center gap-1.5 shadow-md shadow-emerald-600/20 active:scale-95">
+                <i class="fa-brands fa-whatsapp"></i> WhatsApp
+              </button>
+              <button type="button" onclick="irParaDesenho()" class="bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700 text-white px-4 py-2 rounded-lg font-bold transition flex items-center gap-2 shadow-md shadow-cyan-600/20 active:scale-95">
+                <i class="fa-solid fa-draw-polygon"></i> Desenho CAD
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ABA 2: DESENHO CAD/RIP COM RÉGUAS E ALGORITMO -->
+      <section id="abaDesenho" class="hidden space-y-4">
+        <div class="grid grid-cols-2 md:grid-cols-5 gap-3">
+          <div class="bg-white p-3 rounded-xl border border-slate-200 shadow-sm">
+            <span class="text-[9px] text-slate-500 uppercase font-bold block">Comprimento Usado</span>
+            <div id="statComprimentoTotal" class="text-base font-black text-cyan-700 mt-0.5">0.00 m</div>
+          </div>
+          <div class="bg-white p-3 rounded-xl border border-slate-200 shadow-sm">
+            <span class="text-[9px] text-slate-500 uppercase font-bold block">Eficiência / Encaixe</span>
+            <div id="statAproveitamento" class="text-base font-black text-emerald-600 mt-0.5">0%</div>
+          </div>
+          <div class="bg-white p-3 rounded-xl border border-slate-200 shadow-sm">
+            <span class="text-[9px] text-slate-500 uppercase font-bold block">Retalho / Desperdício</span>
+            <div id="statDesperdicio" class="text-base font-black text-rose-500 mt-0.5">0 m²</div>
+          </div>
+          <div class="bg-white p-3 rounded-xl border border-slate-200 shadow-sm">
+            <span class="text-[9px] text-slate-500 uppercase font-bold block">Quantidade de Peças</span>
+            <div id="statTotalPecas" class="text-base font-black text-slate-800 mt-0.5">0 un</div>
+          </div>
+          <div class="bg-white p-3 rounded-xl border border-slate-200 shadow-sm">
+            <span class="text-[9px] text-slate-500 uppercase font-bold block">Largura Útil Roll/Sheet</span>
+            <div id="statLarguraBobina" class="text-base font-black text-amber-600 mt-0.5">0 cm</div>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-4 space-y-3">
+          <div class="flex flex-wrap items-center justify-between gap-3 bg-slate-50 p-2.5 rounded-lg border border-slate-200">
+            <div class="flex items-center space-x-3">
+              <span class="text-[10px] font-bold text-slate-600 uppercase"><i class="fa-solid fa-sliders text-cyan-600 mr-1"></i> Controles CAD:</span>
+              <label class="flex items-center gap-1.5 cursor-pointer text-[10px] text-slate-700 font-bold">
+                <input type="checkbox" id="chkGrade" checked onchange="atualizarEstilosDesenho()" class="accent-cyan-600"> Grade Guia
+              </label>
+              <label class="flex items-center gap-1.5 cursor-pointer text-[10px] text-slate-700 font-bold">
+                <input type="checkbox" id="chkMedidas" checked onchange="atualizarEstilosDesenho()" class="accent-cyan-600"> Cotas & Rótulos
+              </label>
+            </div>
+
+            <div class="flex items-center space-x-2 bg-white px-3 py-1 rounded-lg border border-slate-200 shadow-sm">
+              <span class="text-[10px] text-slate-500 font-bold uppercase">Zoom Visual:</span>
+              <button onclick="alterarZoom(-0.5)" class="text-slate-600 hover:text-slate-900 px-2 py-0.5 font-bold hover:bg-slate-100 rounded">-</button>
+              <span id="labelZoom" class="text-xs font-black text-cyan-700 w-12 text-center">2.5x</span>
+              <button onclick="alterarZoom(0.5)" class="text-slate-600 hover:text-slate-900 px-2 py-0.5 font-bold hover:bg-slate-100 rounded">+</button>
+            </div>
+          </div>
+
+          <!-- ÁREA DO DESENHO E RÉGUAS -->
+          <div class="relative w-full overflow-auto bg-slate-100 rounded-lg border border-slate-300 shadow-inner" style="max-height: 600px;">
+            <div id="containerComReguas" class="relative inline-block" style="padding: 28px 0 0 28px;">
+              <div class="absolute top-0 left-0 w-[28px] h-[28px] bg-slate-200 border-r border-b border-slate-300 z-30 flex items-center justify-center text-[9px] text-slate-600 font-bold">cm</div>
+              <div id="reguaHorizontal" class="absolute top-0 left-[28px] h-[28px] bg-slate-100 border-b border-slate-300 overflow-hidden select-none z-20"></div>
+              <div id="reguaVertical" class="absolute top-[28px] left-0 w-[28px] bg-slate-100 border-r border-slate-300 overflow-hidden select-none z-20"></div>
+              <div id="painelDesenhoResultado" class="relative bg-white transition-all shadow-md"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ABA 3: CLIENTES -->
+      <section id="abaClientes" class="hidden space-y-4">
+        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm space-y-3">
+          <div class="flex justify-between items-center">
+            <h2 class="text-xs font-bold text-slate-800 uppercase">Cadastro de Clientes / Marcas (Cloud)</h2>
+            <button onclick="abrirModalCliente()" class="bg-cyan-600 hover:bg-cyan-700 text-white px-3 py-1.5 rounded-lg font-bold shadow-sm transition active:scale-95">+ Novo Cliente</button>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left">
+              <thead>
+                <tr class="bg-slate-50 text-slate-500 text-[10px] border-b border-slate-200 uppercase">
+                  <th class="p-2.5">Nome / Empresa</th>
+                  <th class="p-2.5">Telefone / WhatsApp</th>
+                  <th class="p-2.5">Cidade / Unidade</th>
+                  <th class="p-2.5 text-center">Ações</th>
+                </tr>
+              </thead>
+              <tbody id="tabelaClientes" class="divide-y divide-slate-100"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ABA 4: MATÉRIAS-PRIMAS -->
+      <section id="abaSuprimentos" class="hidden space-y-4">
+        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm space-y-3">
+          <div class="flex justify-between items-center">
+            <h2 class="text-xs font-bold text-slate-800 uppercase">Estoque de Tecidos, Plásticos e Bobinas (Cloud)</h2>
+            <button onclick="abrirModalSuprimento()" class="bg-cyan-600 hover:bg-cyan-700 text-white px-3 py-1.5 rounded-lg font-bold shadow-sm transition active:scale-95">+ Novo Material</button>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left">
+              <thead>
+                <tr class="bg-slate-50 text-slate-500 text-[10px] border-b border-slate-200 uppercase">
+                  <th class="p-2.5">Descrição do Material</th>
+                  <th class="p-2.5">Largura Útil (cm)</th>
+                  <th class="p-2.5">Custo/m Linear (R$)</th>
+                  <th class="p-2.5 text-center">Ações</th>
+                </tr>
+              </thead>
+              <tbody id="tabelaSuprimentos" class="divide-y divide-slate-100"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ABA 5: HISTÓRICO -->
+      <section id="abaHistorico" class="hidden space-y-4">
+        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm space-y-3">
+          <h2 class="text-xs font-bold text-slate-800 uppercase">Histórico de Ordens Salvas na Nuvem</h2>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left">
+              <thead>
+                <tr class="bg-slate-50 text-slate-500 text-[10px] border-b border-slate-200 uppercase">
+                  <th class="p-2.5">Data</th>
+                  <th class="p-2.5">Cliente</th>
+                  <th class="p-2.5">Material Utilizado</th>
+                  <th class="p-2.5">Valor Venda</th>
+                  <th class="p-2.5 text-center">Ações</th>
+                </tr>
+              </thead>
+              <tbody id="tabelaHistorico" class="divide-y divide-slate-100"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <div id="areaImpressao" class="hidden"></div>
+
+  <!-- MODAL DINÂMICO -->
+  <div id="modalDinamico" class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-xl shadow-2xl max-w-md w-full p-5 space-y-4 border border-slate-200">
+      <div class="flex justify-between items-center border-b border-slate-100 pb-2">
+        <h3 id="modalTitulo" class="text-xs font-bold text-slate-800 uppercase">Formulário</h3>
+        <button onclick="fecharModal()" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div id="modalCorpo" class="space-y-3"></div>
+      <div class="flex justify-end gap-2 border-t border-slate-100 pt-3">
+        <button onclick="fecharModal()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-1.5 rounded-lg font-bold transition">Cancelar</button>
+        <button id="btnSalvarModal" class="bg-cyan-600 hover:bg-cyan-700 text-white px-4 py-1.5 rounded-lg font-bold transition shadow-sm">Salvar</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    /* 1. CONFIGURAÇÃO REAL DO SEU PROJETO FIREBASE (calculo-pro) */
+    const firebaseConfig = {
+      apiKey: "AIzaSyBK2M_6YeHCV_mNOrh2v8FO8g6BcOFBlFw",
+      authDomain: "calculo-pro.firebaseapp.com",
+      databaseURL: "https://calculo-pro-default-rtdb.firebaseio.com",
+      projectId: "calculo-pro",
+      storageBucket: "calculo-pro.firebasestorage.app",
+      messagingSenderId: "986889549980",
+      appId: "1:986889549980:web:3f2e25a049cfbc6dced559"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+
+    let currentUser = null;
+    let sessionUnsubscribe = null;
+    let currentSessionId = localStorage.getItem('calculaja_session_id') || null;
+
+    let appData = {
+      suprimentos: [],
+      clientes: [],
+      orcamentos: [],
+      escalaZoom: 2.5,
+      calculoResultado: null
+    };
+
+    /* 2. AUTENTICAÇÃO E SESSÃO */
+    auth.onAuthStateChanged(async (user) => {
+      if (user) {
+        currentUser = user;
+        document.getElementById('userEmailNav').textContent = user.email;
+        document.getElementById('authScreen').classList.add('hidden');
+        document.getElementById('appContainer').classList.remove('hidden');
+
+        if (!currentSessionId) {
+          currentSessionId = 'sess_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6);
+          localStorage.setItem('calculaja_session_id', currentSessionId);
+          await db.collection('users').doc(user.uid).set({ activeSessionId: currentSessionId }, { merge: true });
+        }
+
+        if (sessionUnsubscribe) sessionUnsubscribe();
+        sessionUnsubscribe = db.collection('users').doc(user.uid).onSnapshot(doc => {
+          if (doc && doc.exists) {
+            const data = doc.data();
+            if (data.activeSessionId && data.activeSessionId !== currentSessionId) {
+              alert("⚠️ AVISO DE SEGURANÇA: Sua conta foi iniciada em outro dispositivo. Você foi desconectado deste aparelho.");
+              fazerLogout();
             }
-            renderUI();
+          }
+        });
+
+        sincronizarDadosFirestore();
+      } else {
+        currentUser = null;
+        if (sessionUnsubscribe) sessionUnsubscribe();
+        document.getElementById('authScreen').classList.remove('hidden');
+        document.getElementById('appContainer').classList.add('hidden');
+      }
+    });
+
+    async function executarAuth(e) {
+      e.preventDefault();
+      const email = document.getElementById('authEmail').value;
+      const senha = document.getElementById('authSenha').value;
+      const msgErro = document.getElementById('msgAuthErro');
+      const msgSucesso = document.getElementById('msgAuthSucesso');
+      
+      msgErro.classList.add('hidden');
+      msgSucesso.classList.add('hidden');
+
+      try {
+        const userCred = await auth.signInWithEmailAndPassword(email, senha);
+        currentSessionId = 'sess_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6);
+        localStorage.setItem('calculaja_session_id', currentSessionId);
+        
+        await db.collection('users').doc(userCred.user.uid).set({
+          activeSessionId: currentSessionId,
+          lastLogin: new Date()
+        }, { merge: true });
+
+      } catch (err) {
+        let msg = "Erro no acesso. Verifique os dados.";
+        if (err.code === 'auth/user-not-found') msg = "Usuário não cadastrado.";
+        else if (err.code === 'auth/wrong-password') msg = "Senha incorreta.";
+        else if (err.code === 'auth/invalid-email') msg = "Formato de e-mail inválido.";
+        
+        msgErro.textContent = msg;
+        msgErro.classList.remove('hidden');
+      }
+    }
+
+    async function enviarEmailRecuperacao() {
+      const email = document.getElementById('authEmail').value;
+      const msgErro = document.getElementById('msgAuthErro');
+      const msgSucesso = document.getElementById('msgAuthSucesso');
+
+      msgErro.classList.add('hidden');
+      msgSucesso.classList.add('hidden');
+
+      if (!email) {
+        msgErro.textContent = "Digite seu e-mail no campo acima para recuperar a senha.";
+        msgErro.classList.remove('hidden');
+        return;
+      }
+
+      try {
+        await auth.sendPasswordResetEmail(email);
+        msgSucesso.textContent = "E-mail de redefinição enviado! Verifique sua caixa de entrada.";
+        msgSucesso.classList.remove('hidden');
+      } catch (err) {
+        msgErro.textContent = "Erro ao enviar e-mail: " + err.message;
+        msgErro.classList.remove('hidden');
+      }
+    }
+
+    function abrirModalTrocarSenha() {
+      document.getElementById('modalTitulo').textContent = 'Alterar Senha de Acesso';
+      document.getElementById('modalCorpo').innerHTML = `
+        <div>
+          <label class="block text-[9px] font-bold text-slate-500 mb-1 uppercase">Nova Senha</label>
+          <input type="password" id="mNovaSenha" placeholder="No mínimo 6 caracteres" class="w-full bg-slate-50 border border-slate-300 p-2 text-xs rounded-lg font-bold text-slate-800 outline-none">
+        </div>
+      `;
+      document.getElementById('btnSalvarModal').onclick = async () => {
+        const novaSenha = document.getElementById('mNovaSenha').value;
+        if (novaSenha.length < 6) {
+          alert("A senha precisa ter pelo menos 6 caracteres.");
+          return;
+        }
+        try {
+          await auth.currentUser.updatePassword(novaSenha);
+          alert("Senha alterada com sucesso!");
+          fecharModal();
+        } catch (err) {
+          if (err.code === 'auth/requires-recent-login') {
+            alert("Sua sessão é antiga. Por segurança, faça logout e entre novamente para alterar a senha.");
+          } else {
+            alert("Erro ao alterar senha: " + err.message);
+          }
+        }
+      };
+      document.getElementById('modalDinamico').classList.remove('hidden');
+    }
+
+    async function fazerLogout() {
+      localStorage.removeItem('calculaja_session_id');
+      currentSessionId = null;
+      await auth.signOut();
+    }
+
+    /* 3. FIRESTORE E NAVEGAÇÃO */
+    async function sincronizarDadosFirestore() {
+      if (!currentUser) return;
+
+      try {
+        const snapSup = await db.collection('users').doc(currentUser.uid).collection('suprimentos').get();
+        appData.suprimentos = snapSup.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        if (appData.suprimentos.length === 0) {
+          appData.suprimentos = [
+            { id: '1', descricao: 'Tecido Lona 1.40m', largura: 140, custoMetro: 25.00 },
+            { id: '2', descricao: 'Plástico Cristal 1.50m', largura: 150, custoMetro: 18.00 }
+          ];
         }
 
-        function saveData() {
-            try {
-                localStorage.setItem('dashboard_products', JSON.stringify(products));
-            } catch (error) {
-                console.error("Erro ao salvar dados:", error);
+        const snapCli = await db.collection('users').doc(currentUser.uid).collection('clientes').get();
+        appData.clientes = snapCli.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        if (appData.clientes.length === 0) {
+          appData.clientes = [
+            { id: '1', nome: 'Cliente Consumidor Final', telefone: '(00) 00000-0000', cidade: 'Ibitinga / SP' }
+          ];
+        }
+
+        renderizarSelects();
+        renderizarTabelas();
+        if (document.querySelectorAll('#partes tr').length === 0) {
+          addParteVazia();
+          addParteVazia();
+        }
+        selecionarPresetMaterial();
+      } catch (e) {
+        console.error("Erro ao sincronizar dados:", e);
+      }
+    }
+
+    function mudarAba(aba) {
+      ['Dados', 'Desenho', 'Clientes', 'Suprimentos', 'Historico'].forEach(a => {
+        const el = document.getElementById('aba' + a);
+        const btn = document.getElementById('btnAba' + a);
+        if (a.toLowerCase() === aba.toLowerCase()) {
+          el.classList.remove('hidden');
+          btn.classList.add('bg-cyan-600', 'text-white');
+          btn.classList.remove('bg-slate-100', 'text-slate-600');
+        } else {
+          el.classList.add('hidden');
+          btn.classList.remove('bg-cyan-600', 'text-white');
+          btn.classList.add('bg-slate-100', 'text-slate-600');
+        }
+      });
+      if (aba === 'desenho') {
+        desenharPlanoCorte();
+      }
+    }
+
+    function fecharModal() {
+      document.getElementById('modalDinamico').classList.add('hidden');
+    }
+
+    function addParteVazia() {
+      const tbody = document.getElementById('partes');
+      const idx = tbody.children.length + 1;
+      const tr = document.createElement('tr');
+      tr.className = "hover:bg-slate-50 border-b border-slate-100";
+      tr.innerHTML = `
+        <td class="p-2"><input type="text" value="Peça ${idx}" class="p-1.5 border border-slate-300 rounded w-full text-xs font-bold bg-slate-50 outline-none focus:bg-white focus:border-cyan-600"></td>
+        <td class="p-2"><input type="number" value="${idx % 2 === 0 ? '40' : '50'}" min="1" oninput="calcularTudo()" class="p-1.5 border border-slate-300 rounded w-full text-xs font-bold text-cyan-700 bg-slate-50 outline-none focus:bg-white focus:border-cyan-600"></td>
+        <td class="p-2"><input type="number" value="${idx % 2 === 0 ? '60' : '70'}" min="1" oninput="calcularTudo()" class="p-1.5 border border-slate-300 rounded w-full text-xs font-bold text-cyan-700 bg-slate-50 outline-none focus:bg-white focus:border-cyan-600"></td>
+        <td class="p-2"><input type="number" value="2" min="1" oninput="calcularTudo()" class="p-1.5 border border-slate-300 rounded w-full text-xs font-bold bg-slate-50 outline-none focus:bg-white focus:border-cyan-600"></td>
+        <td class="p-2 text-center">
+          <button onclick="removerParte(this)" class="text-rose-500 hover:text-rose-700 p-1 font-bold"><i class="fa-solid fa-trash-can"></i></button>
+        </td>
+      `;
+      tbody.appendChild(tr);
+      calcularTudo();
+    }
+
+    function removerParte(btn) {
+      btn.closest('tr').remove();
+      calcularTudo();
+    }
+
+    function renderizarSelects() {
+      const selCli = document.getElementById('selectClienteOrcamento');
+      selCli.innerHTML = appData.clientes.map(c => `<option value="${c.id}">${c.nome} (${c.cidade || 'SP'})</option>`).join('');
+
+      const selMat = document.getElementById('selectBobinaGlobal');
+      selMat.innerHTML = appData.suprimentos.map(s => `<option value="${s.id}">${s.descricao} - ${s.largura}cm (R$ ${parseFloat(s.custoMetro).toFixed(2)}/m)</option>`).join('');
+    }
+
+    function selecionarPresetMaterial() {
+      const matId = document.getElementById('selectBobinaGlobal').value;
+      const mat = appData.suprimentos.find(s => s.id === matId);
+      if (mat) {
+        document.getElementById('larguraBobinaInput').value = mat.largura || 140;
+      }
+      calcularTudo();
+    }
+
+    function renderizarTabelas() {
+      const tbCli = document.getElementById('tabelaClientes');
+      tbCli.innerHTML = appData.clientes.map(c => `
+        <tr class="border-b border-slate-100 text-xs font-semibold">
+          <td class="p-2.5">${c.nome}</td>
+          <td class="p-2.5">${c.telefone || '-'}</td>
+          <td class="p-2.5">${c.cidade || '-'}</td>
+          <td class="p-2.5 text-center"><button class="text-slate-400 hover:text-rose-600"><i class="fa-solid fa-trash"></i></button></td>
+        </tr>
+      `).join('');
+
+      const tbSup = document.getElementById('tabelaSuprimentos');
+      tbSup.innerHTML = appData.suprimentos.map(s => `
+        <tr class="border-b border-slate-100 text-xs font-semibold">
+          <td class="p-2.5">${s.descricao}</td>
+          <td class="p-2.5">${s.largura} cm</td>
+          <td class="p-2.5">R$ ${parseFloat(s.custoMetro).toFixed(2)}</td>
+          <td class="p-2.5 text-center"><button class="text-slate-400 hover:text-rose-600"><i class="fa-solid fa-trash"></i></button></td>
+        </tr>
+      `).join('');
+    }
+
+    /* 4. ALGORITMO DE PLANO DE CORTE INDUSTRIAL (2D BIN-PACKING / SHELF ALGORITHM) */
+    function calcularTudo() {
+      const matId = document.getElementById('selectBobinaGlobal').value;
+      const mat = appData.suprimentos.find(s => s.id === matId) || { custoMetro: 25 };
+      
+      // Obtém dimensões customizáveis da bobina diretamente dos inputs de início
+      const larguraBobina = parseFloat(document.getElementById('larguraBobinaInput').value) || 140;
+      const comprimentoBobinaMax = parseFloat(document.getElementById('comprimentoBobinaInput').value) || 50;
+      
+      const margemCorte = parseFloat(document.getElementById('espacamentoPecas').value) || 0;
+      const permitirRotacao = document.getElementById('permitirRotacao').value === 'sim';
+
+      // Coleta todas as peças da tabela
+      const rows = document.querySelectorAll('#partes tr');
+      let listaPecasOriginal = [];
+
+      rows.forEach((row, i) => {
+        const inputs = row.querySelectorAll('input');
+        if (inputs.length >= 4) {
+          const nome = inputs[0].value.trim() || `P${i+1}`;
+          const larg = parseFloat(inputs[1].value) || 0;
+          const comp = parseFloat(inputs[2].value) || 0;
+          const qtd = parseInt(inputs[3].value) || 0;
+
+          if (larg > 0 && comp > 0 && qtd > 0) {
+            for (let q = 0; q < qtd; q++) {
+              listaPecasOriginal.push({
+                id: `${i+1}_${q+1}`,
+                nome: nome,
+                w: larg,
+                h: comp
+              });
             }
+          }
+        }
+      });
+
+      // Ordena peças pela maior dimensão (Heurística de Encaixe Eficiente)
+      listaPecasOriginal.sort((a, b) => Math.max(b.w, b.h) - Math.max(a.w, a.h));
+
+      // Executa o empacotamento em prateleiras (Shelf Packing)
+      let prateleiraAtual = { x: 0, y: 0, altura: 0 };
+      let pecasPosicionadas = [];
+      let maiorY = 0;
+      let areaPecasTotal = 0;
+
+      listaPecasOriginal.forEach(peca => {
+        let pw = peca.w;
+        let ph = peca.h;
+        let rotacionada = false;
+
+        // Tenta rotação se permitida
+        if (permitirRotacao) {
+          if (pw > larguraBobina || (ph <= larguraBobina && ph > pw && (prateleiraAtual.x + ph + margemCorte <= larguraBobina))) {
+            pw = peca.h;
+            ph = peca.w;
+            rotacionada = true;
+          }
         }
 
-        function renderUI() {
-            renderTable();
-            renderMetrics();
+        // Verifica se a peça cabe na linha/prateleira atual
+        if (prateleiraAtual.x + pw + margemCorte > larguraBobina && prateleiraAtual.x > 0) {
+          // Muda para a próxima prateleira (linha abaixo)
+          prateleiraAtual.y += prateleiraAtual.altura + margemCorte;
+          prateleiraAtual.x = 0;
+          prateleiraAtual.altura = 0;
         }
 
-        function renderTable() {
-            const tbody = document.getElementById('inventory-tbody');
-            tbody.innerHTML = '';
+        pecasPosicionadas.push({
+          ...peca,
+          x: prateleiraAtual.x,
+          y: prateleiraAtual.y,
+          renderW: pw,
+          renderH: ph,
+          rotacionada: rotacionada
+        });
 
-            if (products.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--text-secondary);">Nenhum produto cadastrado.</td></tr>`;
-                return;
-            }
-
-            products.forEach((prod, index) => {
-                const isLowStock = prod.qty <= 5;
-                const statusBadge = isLowStock 
-                    ? `<span class="badge badge-warning">Estoque Baixo</span>`
-                    : `<span class="badge badge-success">OK</span>`;
-
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td>${escapeHtml(prod.sku)}</td>
-                    <td><strong>${escapeHtml(prod.name)}</strong></td>
-                    <td>${prod.qty}</td>
-                    <td>R$ ${parseFloat(prod.price).toFixed(2)}</td>
-                    <td>${statusBadge}</td>
-                    <td class="actions-cell">
-                        <button class="btn btn-sm" onclick="adjustStock(${index}, 1)">+1</button>
-                        <button class="btn btn-sm" onclick="adjustStock(${index}, -1)">-1</button>
-                        <button class="btn btn-sm btn-danger" onclick="deleteProduct(${index})">Excluir</button>
-                    </td>
-                `;
-                tbody.appendChild(tr);
-            });
+        areaPecasTotal += (peca.w * peca.h);
+        prateleiraAtual.x += pw + margemCorte;
+        if (ph > prateleiraAtual.altura) {
+          prateleiraAtual.altura = ph;
         }
 
-        function renderMetrics() {
-            const totalItems = products.reduce((acc, p) => acc + Number(p.qty), 0);
-            const totalValue = products.reduce((acc, p) => acc + (Number(p.qty) * Number(p.price)), 0);
-            const lowStockCount = products.filter(p => p.qty <= 5).length;
+        maiorY = Math.max(maiorY, prateleiraAtual.y + prateleiraAtual.altura);
+      });
 
-            document.getElementById('kpi-total-items').textContent = totalItems;
-            document.getElementById('kpi-total-value').textContent = `R$ ${totalValue.toFixed(2)}`;
-            document.getElementById('kpi-low-stock').textContent = lowStockCount;
-        }
+      // Métricas de Consumo
+      const metrosUsados = (maiorY / 100) || 0;
+      const areaMaterialTotal = (larguraBobina * maiorY); // em cm²
+      const aproveitamento = areaMaterialTotal > 0 ? Math.min(100, Math.round((areaPecasTotal / areaMaterialTotal) * 100)) : 0;
+      const areaDesperdicioM2 = areaMaterialTotal > 0 ? ((areaMaterialTotal - areaPecasTotal) / 10000) : 0;
 
-        function handleAddProduct(e) {
-            e.preventDefault();
-            const name = document.getElementById('p-name').value.trim();
-            const sku = document.getElementById('p-sku').value.trim();
-            const qty = parseInt(document.getElementById('p-qty').value, 10);
-            const price = parseFloat(document.getElementById('p-price').value);
+      const custoServicos = parseFloat(document.getElementById('custoServicos').value) || 0;
+      const margemLucro = parseFloat(document.getElementById('margemLucro').value) || 0;
 
-            if (!name || !sku || isNaN(qty) || isNaN(price)) return;
+      const custoMaterial = metrosUsados * mat.custoMetro;
+      const custoTotal = custoMaterial + custoServicos;
+      const precoVenda = custoTotal * (1 + (margemLucro / 100));
 
-            products.push({
-                id: Date.now().toString(),
-                sku,
-                name,
-                qty,
-                price
-            });
+      // Atualiza Estado Global
+      appData.calculoResultado = {
+        larguraBobina: larguraBobina,
+        comprimentoBobinaMax: comprimentoBobinaMax,
+        metrosUsados: metrosUsados,
+        comprimentoCm: maiorY,
+        aproveitamento: aproveitamento,
+        desperdicioM2: areaDesperdicioM2,
+        totalPecas: listaPecasOriginal.length,
+        pecasPosicionadas: pecasPosicionadas,
+        custoMaterial: custoMaterial,
+        custoTotal: custoTotal,
+        precoVenda: precoVenda
+      };
 
-            saveData();
-            renderUI();
+      // Atualiza a Tela (Resumos e Indicadores)
+      document.getElementById('resumoMetroLinear').textContent = metrosUsados.toFixed(2) + ' m';
+      document.getElementById('resumoCustoMaterial').textContent = 'R$ ' + custoMaterial.toFixed(2).replace('.', ',');
+      document.getElementById('resumoCustoTotal').textContent = 'R$ ' + custoTotal.toFixed(2).replace('.', ',');
+      document.getElementById('resumoPrecoVenda').textContent = 'R$ ' + precoVenda.toFixed(2).replace('.', ',');
 
-            document.getElementById('product-form').reset();
-        }
+      document.getElementById('statComprimentoTotal').textContent = metrosUsados.toFixed(2) + ' m';
+      document.getElementById('statAproveitamento').textContent = aproveitamento + '%';
+      document.getElementById('statDesperdicio').textContent = areaDesperdicioM2.toFixed(2) + ' m²';
+      document.getElementById('statTotalPecas').textContent = listaPecasOriginal.length + ' un';
+      document.getElementById('statLarguraBobina').textContent = larguraBobina + ' cm';
 
-        function adjustStock(index, delta) {
-            if (products[index]) {
-                products[index].qty = Math.max(0, products[index].qty + delta);
-                saveData();
-                renderUI();
-            }
-        }
+      // Atualiza o Desenho caso esteja na aba CAD
+      if (!document.getElementById('abaDesenho').classList.contains('hidden')) {
+        desenharPlanoCorte();
+      }
+    }
 
-        function deleteProduct(index) {
-            if (confirm("Deseja realmente remover este item?")) {
-                products.splice(index, 1);
-                saveData();
-                renderUI();
-            }
-        }
+    /* 5. MÓDULO DE DESENHO CAD/RIP (RÉGUAS E PAINEL VISUAL) */
+    function desenharPlanoCorte() {
+      const res = appData.calculoResultado;
+      const painel = document.getElementById('painelDesenhoResultado');
+      const reguaH = document.getElementById('reguaHorizontal');
+      const reguaV = document.getElementById('reguaVertical');
 
-        function resetSystem() {
-            if (confirm("Isso redefinirá todos os dados para a configuração inicial. Continuar?")) {
-                products = [...defaultProducts];
-                saveData();
-                renderUI();
-            }
-        }
+      if (!res || res.comprimentoCm === 0) {
+        painel.style.width = '300px';
+        painel.style.height = '200px';
+        painel.innerHTML = '<div class="p-8 text-center text-slate-400 font-bold">Adicione peças para gerar o plano de corte.</div>';
+        reguaH.innerHTML = '';
+        reguaV.innerHTML = '';
+        return;
+      }
 
-        function exportData() {
-            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(products, null, 2));
-            const downloadAnchor = document.createElement('a');
-            downloadAnchor.setAttribute("href", dataStr);
-            downloadAnchor.setAttribute("download", `backup_estoque_${new Date().toISOString().slice(0,10)}.json`);
-            document.body.appendChild(downloadAnchor);
-            downloadAnchor.click();
-            downloadAnchor.remove();
-        }
+      const zoom = appData.escalaZoom; // PX por CM
+      const larguraPx = res.larguraBobina * zoom;
+      const alturaPx = Math.max(150, res.comprimentoCm * zoom);
 
-        function escapeHtml(str) {
-            return str.replace(/[&<>"']/g, function(m) {
-                return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[m];
-            });
-        }
+      // Define dimensões da área de trabalho
+      painel.style.width = `${larguraPx}px`;
+      painel.style.height = `${alturaPx}px`;
 
-        // Start App
-        document.addEventListener('DOMContentLoaded', initApp);
-    </script>
+      const mostrarGrade = document.getElementById('chkGrade').checked;
+      const mostrarMedidas = document.getElementById('chkMedidas').checked;
+
+      if (mostrarGrade) {
+        painel.classList.add('bg-grid-pattern');
+      } else {
+        painel.classList.remove('bg-grid-pattern');
+      }
+
+      // Renderiza as Peças no Canvas
+      let htmlPecas = '';
+      res.pecasPosicionadas.forEach(p => {
+        const left = p.x * zoom;
+        const top = p.y * zoom;
+        const width = p.renderW * zoom;
+        const height = p.renderH * zoom;
+
+        const labelMedida = mostrarMedidas 
+          ? `<span class="text-[8px] opacity-80">${p.renderW}x${p.renderH}cm ${p.rotacionada ? '(⚙️)' : ''}</span>`
+          : '';
+
+        htmlPecas += `
+          <div class="peca-box" style="left: ${left}px; top: ${top}px; width: ${width}px; height: ${height}px;" title="${p.nome} (${p.renderW}x${p.renderH} cm)">
+            <span class="truncate px-0.5">${p.nome}</span>
+            ${labelMedida}
+          </div>
+        `;
+      });
+
+      painel.innerHTML = htmlPecas;
+
+      // Renderiza Réguas em Centímetros (CM)
+      renderizarReguaHorizontal(reguaH, res.larguraBobina, zoom);
+      renderizarReguaVertical(reguaV, res.comprimentoCm, zoom);
+    }
+
+    function renderizarReguaHorizontal(el, maxCm, zoom) {
+      el.style.width = `${maxCm * zoom}px`;
+      let html = '';
+      const passo = maxCm > 200 ? 20 : 10;
+
+      for (let i = 0; i <= maxCm; i += passo) {
+        const posX = i * zoom;
+        html += `
+          <div class="regua-tick" style="left: ${posX}px; bottom: 0; width: 1px; height: 10px;"></div>
+          <div class="regua-num" style="left: ${posX + 2}px; bottom: 10px;">${i}</div>
+        `;
+      }
+      el.innerHTML = html;
+    }
+
+    function renderizarReguaVertical(el, maxCm, zoom) {
+      const altura = Math.max(150, maxCm * zoom);
+      el.style.height = `${altura}px`;
+      let html = '';
+      const passo = maxCm > 200 ? 20 : 10;
+
+      for (let i = 0; i <= maxCm; i += passo) {
+        const posY = i * zoom;
+        html += `
+          <div class="regua-tick" style="top: ${posY}px; right: 0; height: 1px; width: 10px;"></div>
+          <div class="regua-num" style="top: ${posY + 2}px; right: 12px;">${i}</div>
+        `;
+      }
+      el.innerHTML = html;
+    }
+
+    function atualizarEstilosDesenho() {
+      desenharPlanoCorte();
+    }
+
+    function alterarZoom(delta) {
+      appData.escalaZoom = Math.max(1, Math.min(8, appData.escalaZoom + delta));
+      document.getElementById('labelZoom').textContent = appData.escalaZoom.toFixed(1) + 'x';
+      desenharPlanoCorte();
+    }
+
+    function irParaDesenho() {
+      mudarAba('desenho');
+    }
+
+    /* 6. MODAIS E AÇÕES AUXILIARES */
+    function abrirModalCliente() {
+      document.getElementById('modalTitulo').textContent = 'Novo Cliente';
+      document.getElementById('modalCorpo').innerHTML = `
+        <input type="text" id="mNomeCli" placeholder="Nome do Cliente / Empresa" class="w-full border border-slate-300 p-2 rounded text-xs font-bold">
+        <input type="text" id="mTelCli" placeholder="Telefone / WhatsApp" class="w-full border border-slate-300 p-2 rounded text-xs">
+        <input type="text" id="mCidCli" placeholder="Cidade / SP" class="w-full border border-slate-300 p-2 rounded text-xs">
+      `;
+      document.getElementById('btnSalvarModal').onclick = async () => {
+        const nome = document.getElementById('mNomeCli').value;
+        if (!nome) return alert("Digite o nome do cliente.");
+        await db.collection('users').doc(currentUser.uid).collection('clientes').add({
+          nome: nome,
+          telefone: document.getElementById('mTelCli').value,
+          cidade: document.getElementById('mCidCli').value
+        });
+        fecharModal();
+        sincronizarDadosFirestore();
+      };
+      document.getElementById('modalDinamico').classList.remove('hidden');
+    }
+
+    function abrirModalSuprimento() {
+      document.getElementById('modalTitulo').textContent = 'Novo Material';
+      document.getElementById('modalCorpo').innerHTML = `
+        <input type="text" id="mDescMat" placeholder="Descrição (Ex: Tecido Lona 1.40m)" class="w-full border border-slate-300 p-2 rounded text-xs font-bold">
+        <input type="number" id="mLargMat" placeholder="Largura Útil (cm)" class="w-full border border-slate-300 p-2 rounded text-xs font-bold">
+        <input type="number" id="mCustoMat" placeholder="Custo/m Linear (R$)" class="w-full border border-slate-300 p-2 rounded text-xs font-bold">
+      `;
+      document.getElementById('btnSalvarModal').onclick = async () => {
+        const desc = document.getElementById('mDescMat').value;
+        const larg = parseFloat(document.getElementById('mLargMat').value);
+        const custo = parseFloat(document.getElementById('mCustoMat').value);
+        if (!desc || !larg || !custo) return alert("Preencha todos os campos.");
+        await db.collection('users').doc(currentUser.uid).collection('suprimentos').add({
+          descricao: desc,
+          largura: larg,
+          custoMetro: custo
+        });
+        fecharModal();
+        sincronizarDadosFirestore();
+      };
+      document.getElementById('modalDinamico').classList.remove('hidden');
+    }
+
+    async function salvarOrcamentoNuvem() {
+      if (!appData.calculoResultado) return;
+      try {
+        const cliId = document.getElementById('selectClienteOrcamento').value;
+        const cli = appData.clientes.find(c => c.id === cliId) || { nome: 'Geral' };
+        
+        await db.collection('users').doc(currentUser.uid).collection('orcamentos').add({
+          data: new Date().toLocaleDateString('pt-BR'),
+          cliente: cli.nome,
+          resultado: appData.calculoResultado
+        });
+        alert("Orçamento e plano de corte salvos com sucesso na nuvem!");
+      } catch (err) {
+        alert("Erro ao salvar: " + err.message);
+      }
+    }
+
+    function imprimirFichaCorte() { window.print(); }
+
+    function copiarParaWhatsApp() {
+      const res = appData.calculoResultado;
+      if (!res) return;
+      const texto = `*ORÇAMENTO & CORTE - CALCULAJA PRO*\n` +
+                    `Largura Bobina: ${res.larguraBobina} cm\n` +
+                    `Metragem Necessária: ${res.metrosUsados.toFixed(2)} m\n` +
+                    `Total de Peças: ${res.totalPecas} un\n` +
+                    `Aproveitamento: ${res.aproveitamento}%\n` +
+                    `*VALOR TOTAL: R$ ${res.precoVenda.toFixed(2).replace('.', ',')}*`;
+      navigator.clipboard.writeText(texto);
+      alert("Resumo formatado copiado! Basta colar no WhatsApp.");
+    }
+  </script>
 </body>
 </html>
