@@ -18,11 +18,11 @@
     .bg-grid-pattern {
       background-size: 20px 20px;
       background-image: 
-        linear-gradient(to right, rgba(0, 0, 0, 0.05) 1px, transparent 1px),
-        linear-gradient(to bottom, rgba(0, 0, 0, 0.05) 1px, transparent 1px);
+        linear-gradient(to right, rgba(0, 0, 0, 0.06) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(0, 0, 0, 0.06) 1px, transparent 1px);
     }
-    .regua-tick-cm { position: absolute; background-color: #cbd5e1; }
-    .regua-tick-10cm { position: absolute; background-color: #0284c7; }
+    .regua-tick { position: absolute; background-color: #94a3b8; }
+    .regua-num { position: absolute; font-size: 8px; color: #64748b; font-weight: bold; }
     
     .peca-box {
       box-sizing: border-box;
@@ -33,20 +33,22 @@
       align-items: center;
       justify-content: center;
       border: 1px solid #0284c7;
-      background: rgba(186, 230, 253, 0.75);
+      background: rgba(186, 230, 253, 0.85);
       color: #0369a1;
       font-weight: 700;
       overflow: hidden;
       cursor: pointer;
-      border-radius: 4px;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+      border-radius: 3px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+      font-size: 10px;
+      line-height: 1.1;
     }
     
     .peca-box:hover {
       border-color: #0369a1;
-      background: rgba(125, 211, 252, 0.9);
-      box-shadow: 0 0 12px rgba(2, 132, 199, 0.35);
-      z-index: 10;
+      background: rgba(125, 211, 252, 0.95);
+      box-shadow: 0 0 10px rgba(2, 132, 199, 0.4);
+      z-index: 20;
     }
 
     ::-webkit-scrollbar { width: 8px; height: 8px; }
@@ -64,7 +66,7 @@
 </head>
 <body class="bg-slate-100 text-slate-800 font-sans antialiased min-h-screen text-xs select-none">
 
-  <!-- TELA DE LOGIN COM PROTEÇÃO E RECUPERAÇÃO DE SENHA -->
+  <!-- TELA DE LOGIN -->
   <div id="authScreen" class="fixed inset-0 bg-slate-900/50 backdrop-blur-md z-50 flex items-center justify-center p-4">
     <div class="bg-white rounded-2xl shadow-2xl max-w-sm w-full p-6 space-y-5 border border-slate-200">
       <div class="text-center space-y-2">
@@ -117,7 +119,6 @@
         </div>
       </div>
 
-      <!-- NAVEGAÇÃO ENTRE ABAS E AÇÕES DE CONTA -->
       <div class="flex items-center space-x-3 w-full md:w-auto justify-between">
         <nav class="flex items-center space-x-1.5 overflow-x-auto py-1">
           <button onclick="mudarAba('dados')" id="btnAbaDados" class="px-3.5 py-1.5 rounded-lg font-bold bg-cyan-600 text-white transition flex items-center gap-2 shadow-sm active:scale-95">
@@ -155,18 +156,18 @@
         <div class="bg-white border border-slate-200 p-4 rounded-xl shadow-sm grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
             <label class="block text-[10px] font-bold text-cyan-700 uppercase tracking-wider mb-1"><i class="fa-solid fa-user mr-1"></i> Cliente / Projeto</label>
-            <select id="selectClienteOrcamento" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-xs font-bold text-slate-800 outline-none focus:border-cyan-600 focus:bg-white focus:ring-2 focus:ring-cyan-500/20 transition"></select>
+            <select id="selectClienteOrcamento" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-xs font-bold text-slate-800 outline-none focus:border-cyan-600 focus:bg-white transition"></select>
           </div>
 
           <div>
             <label class="block text-[10px] font-bold text-cyan-700 uppercase tracking-wider mb-1"><i class="fa-solid fa-scroll mr-1"></i> Material / Bobina / Tecido</label>
-            <select id="selectBobinaGlobal" onchange="calcularTudo()" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-xs font-bold text-slate-800 outline-none focus:border-cyan-600 focus:bg-white focus:ring-2 focus:ring-cyan-500/20 transition"></select>
+            <select id="selectBobinaGlobal" onchange="calcularTudo()" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-xs font-bold text-slate-800 outline-none focus:border-cyan-600 focus:bg-white transition"></select>
           </div>
 
           <div class="bg-slate-50 p-2.5 rounded-lg border border-slate-200 grid grid-cols-2 gap-2">
             <div>
               <label class="block text-[9px] font-bold text-slate-500 uppercase">Margem Corte (cm)</label>
-              <input type="number" id="espacamentoPecas" value="0.5" step="0.1" min="0" onchange="calcularTudo()" class="w-full bg-white border border-slate-300 rounded px-2 py-1 text-xs font-bold text-cyan-700 outline-none focus:border-cyan-600">
+              <input type="number" id="espacamentoPecas" value="0.5" step="0.1" min="0" oninput="calcularTudo()" class="w-full bg-white border border-slate-300 rounded px-2 py-1 text-xs font-bold text-cyan-700 outline-none focus:border-cyan-600">
             </div>
             <div>
               <label class="block text-[9px] font-bold text-slate-500 uppercase">Girar Peças?</label>
@@ -263,7 +264,7 @@
         </div>
       </section>
 
-      <!-- ABA 2: DESENHO CAD -->
+      <!-- ABA 2: DESENHO CAD/RIP COM RÉGUAS E ALGORITMO -->
       <section id="abaDesenho" class="hidden space-y-4">
         <div class="grid grid-cols-2 md:grid-cols-5 gap-3">
           <div class="bg-white p-3 rounded-xl border border-slate-200 shadow-sm">
@@ -291,29 +292,30 @@
         <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-4 space-y-3">
           <div class="flex flex-wrap items-center justify-between gap-3 bg-slate-50 p-2.5 rounded-lg border border-slate-200">
             <div class="flex items-center space-x-3">
-              <span class="text-[10px] font-bold text-slate-600 uppercase"><i class="fa-solid fa-sliders text-cyan-600 mr-1"></i> Visualização CAD:</span>
-              <label class="flex items-center gap-1.5 cursor-pointer text-[10px] text-slate-700">
+              <span class="text-[10px] font-bold text-slate-600 uppercase"><i class="fa-solid fa-sliders text-cyan-600 mr-1"></i> Controles CAD:</span>
+              <label class="flex items-center gap-1.5 cursor-pointer text-[10px] text-slate-700 font-bold">
                 <input type="checkbox" id="chkGrade" checked onchange="atualizarEstilosDesenho()" class="accent-cyan-600"> Grade Guia
               </label>
-              <label class="flex items-center gap-1.5 cursor-pointer text-[10px] text-slate-700">
+              <label class="flex items-center gap-1.5 cursor-pointer text-[10px] text-slate-700 font-bold">
                 <input type="checkbox" id="chkMedidas" checked onchange="atualizarEstilosDesenho()" class="accent-cyan-600"> Cotas & Rótulos
               </label>
             </div>
 
             <div class="flex items-center space-x-2 bg-white px-3 py-1 rounded-lg border border-slate-200 shadow-sm">
-              <span class="text-[10px] text-slate-500 font-bold uppercase">Zoom:</span>
+              <span class="text-[10px] text-slate-500 font-bold uppercase">Zoom Visual:</span>
               <button onclick="alterarZoom(-0.5)" class="text-slate-600 hover:text-slate-900 px-2 py-0.5 font-bold hover:bg-slate-100 rounded">-</button>
               <span id="labelZoom" class="text-xs font-black text-cyan-700 w-12 text-center">2.5x</span>
               <button onclick="alterarZoom(0.5)" class="text-slate-600 hover:text-slate-900 px-2 py-0.5 font-bold hover:bg-slate-100 rounded">+</button>
             </div>
           </div>
 
-          <div class="relative w-full overflow-auto bg-slate-50 rounded-lg border border-slate-300 shadow-inner" style="max-height: 600px;">
+          <!-- ÁREA DO DESENHO E RÉGUAS -->
+          <div class="relative w-full overflow-auto bg-slate-100 rounded-lg border border-slate-300 shadow-inner" style="max-height: 600px;">
             <div id="containerComReguas" class="relative inline-block" style="padding: 28px 0 0 28px;">
               <div class="absolute top-0 left-0 w-[28px] h-[28px] bg-slate-200 border-r border-b border-slate-300 z-30 flex items-center justify-center text-[9px] text-slate-600 font-bold">cm</div>
               <div id="reguaHorizontal" class="absolute top-0 left-[28px] h-[28px] bg-slate-100 border-b border-slate-300 overflow-hidden select-none z-20"></div>
               <div id="reguaVertical" class="absolute top-[28px] left-0 w-[28px] bg-slate-100 border-r border-slate-300 overflow-hidden select-none z-20"></div>
-              <div id="painelDesenhoResultado" class="relative bg-white bg-grid-pattern transition-all"></div>
+              <div id="painelDesenhoResultado" class="relative bg-white transition-all shadow-md"></div>
             </div>
           </div>
         </div>
@@ -431,10 +433,10 @@
       clientes: [],
       orcamentos: [],
       escalaZoom: 2.5,
-      calculoAtual: null
+      calculoResultado: null
     };
 
-    /* 2. GERENCIAMENTO DE SESSÃO ÚNICA E FLUXO DE AUTENTICAÇÃO */
+    /* 2. AUTENTICAÇÃO E SESSÃO */
     auth.onAuthStateChanged(async (user) => {
       if (user) {
         currentUser = user;
@@ -558,12 +560,11 @@
       await auth.signOut();
     }
 
-    /* 3. SINCRONIZAÇÃO FIRESTORE E NAVEGAÇÃO */
+    /* 3. FIRESTORE E NAVEGAÇÃO */
     async function sincronizarDadosFirestore() {
       if (!currentUser) return;
 
       try {
-        // Carrega suprimentos
         const snapSup = await db.collection('users').doc(currentUser.uid).collection('suprimentos').get();
         appData.suprimentos = snapSup.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         if (appData.suprimentos.length === 0) {
@@ -573,7 +574,6 @@
           ];
         }
 
-        // Carrega clientes
         const snapCli = await db.collection('users').doc(currentUser.uid).collection('clientes').get();
         appData.clientes = snapCli.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         if (appData.clientes.length === 0) {
@@ -585,6 +585,7 @@
         renderizarSelects();
         renderizarTabelas();
         if (document.querySelectorAll('#partes tr').length === 0) {
+          addParteVazia();
           addParteVazia();
         }
         calcularTudo();
@@ -607,6 +608,9 @@
           btn.classList.add('bg-slate-100', 'text-slate-600');
         }
       });
+      if (aba === 'desenho') {
+        desenharPlanoCorte();
+      }
     }
 
     function fecharModal() {
@@ -620,8 +624,8 @@
       tr.className = "hover:bg-slate-50 border-b border-slate-100";
       tr.innerHTML = `
         <td class="p-2"><input type="text" value="Peça ${idx}" class="p-1.5 border border-slate-300 rounded w-full text-xs font-bold bg-slate-50 outline-none focus:bg-white focus:border-cyan-600"></td>
-        <td class="p-2"><input type="number" value="40" min="1" oninput="calcularTudo()" class="p-1.5 border border-slate-300 rounded w-full text-xs font-bold text-cyan-700 bg-slate-50 outline-none focus:bg-white focus:border-cyan-600"></td>
-        <td class="p-2"><input type="number" value="60" min="1" oninput="calcularTudo()" class="p-1.5 border border-slate-300 rounded w-full text-xs font-bold text-cyan-700 bg-slate-50 outline-none focus:bg-white focus:border-cyan-600"></td>
+        <td class="p-2"><input type="number" value="${idx % 2 === 0 ? '40' : '50'}" min="1" oninput="calcularTudo()" class="p-1.5 border border-slate-300 rounded w-full text-xs font-bold text-cyan-700 bg-slate-50 outline-none focus:bg-white focus:border-cyan-600"></td>
+        <td class="p-2"><input type="number" value="${idx % 2 === 0 ? '60' : '70'}" min="1" oninput="calcularTudo()" class="p-1.5 border border-slate-300 rounded w-full text-xs font-bold text-cyan-700 bg-slate-50 outline-none focus:bg-white focus:border-cyan-600"></td>
         <td class="p-2"><input type="number" value="2" min="1" oninput="calcularTudo()" class="p-1.5 border border-slate-300 rounded w-full text-xs font-bold bg-slate-50 outline-none focus:bg-white focus:border-cyan-600"></td>
         <td class="p-2 text-center">
           <button onclick="removerParte(this)" class="text-rose-500 hover:text-rose-700 p-1 font-bold"><i class="fa-solid fa-trash-can"></i></button>
@@ -666,64 +670,318 @@
       `).join('');
     }
 
+    /* 4. ALGORITMO DE PLANO DE CORTE INDUSTRIAL (2D BIN-PACKING / SHELF ALGORITHM) */
     function calcularTudo() {
       const matId = document.getElementById('selectBobinaGlobal').value;
       const mat = appData.suprimentos.find(s => s.id === matId) || { largura: 140, custoMetro: 25 };
-      
+      const margemCorte = parseFloat(document.getElementById('espacamentoPecas').value) || 0;
+      const permitirRotacao = document.getElementById('permitirRotacao').value === 'sim';
+
+      // Coleta todas as peças da tabela
+      const rows = document.querySelectorAll('#partes tr');
+      let listaPecasOriginal = [];
+
+      rows.forEach((row, i) => {
+        const inputs = row.querySelectorAll('input');
+        if (inputs.length >= 4) {
+          const nome = inputs[0].value.trim() || `P${i+1}`;
+          const larg = parseFloat(inputs[1].value) || 0;
+          const comp = parseFloat(inputs[2].value) || 0;
+          const qtd = parseInt(inputs[3].value) || 0;
+
+          if (larg > 0 && comp > 0 && qtd > 0) {
+            for (let q = 0; q < qtd; q++) {
+              listaPecasOriginal.push({
+                id: `${i+1}_${q+1}`,
+                nome: nome,
+                w: larg,
+                h: comp
+              });
+            }
+          }
+        }
+      });
+
+      // Ordena peças pela maior dimensão (Heurística de Encaixe Eficiente)
+      listaPecasOriginal.sort((a, b) => Math.max(b.w, b.h) - Math.max(a.w, a.h));
+
+      // Executa o empacotamento em prateleiras (Shelf Packing)
+      const larguraBobina = mat.largura;
+      let prateleiraAtual = { x: 0, y: 0, altura: 0 };
+      let pecasPosicionadas = [];
+      let maiorY = 0;
+      let areaPecasTotal = 0;
+
+      listaPecasOriginal.forEach(peca => {
+        let pw = peca.w;
+        let ph = peca.h;
+        let rotacionada = false;
+
+        // Tenta rotação se permitida
+        if (permitirRotacao) {
+          if (pw > larguraBobina || (ph <= larguraBobina && ph > pw && (prateleiraAtual.x + ph + margemCorte <= larguraBobina))) {
+            pw = peca.h;
+            ph = peca.w;
+            rotacionada = true;
+          }
+        }
+
+        // Verifica se a peça cabe na linha/prateleira atual
+        if (prateleiraAtual.x + pw + margemCorte > larguraBobina && prateleiraAtual.x > 0) {
+          // Muda para a próxima prateleira (linha abaixo)
+          prateleiraAtual.y += prateleiraAtual.altura + margemCorte;
+          prateleiraAtual.x = 0;
+          prateleiraAtual.altura = 0;
+        }
+
+        // Se a peça for maior que a largura total do material isoladamente
+        if (pw > larguraBobina) {
+          console.warn(`Peça ${peca.nome} excede a largura da bobina!`);
+        }
+
+        pecasPosicionadas.push({
+          ...peca,
+          x: prateleiraAtual.x,
+          y: prateleiraAtual.y,
+          renderW: pw,
+          renderH: ph,
+          rotacionada: rotacionada
+        });
+
+        areaPecasTotal += (peca.w * peca.h);
+        prateleiraAtual.x += pw + margemCorte;
+        if (ph > prateleiraAtual.altura) {
+          prateleiraAtual.altura = ph;
+        }
+
+        maiorY = Math.max(maiorY, prateleiraAtual.y + prateleiraAtual.altura);
+      });
+
+      // Métricas de Consumo
+      const metrosUsados = (maiorY / 100) || 0;
+      const areaMaterialTotal = (larguraBobina * maiorY); // em cm²
+      const aproveitamento = areaMaterialTotal > 0 ? Math.min(100, Math.round((areaPecasTotal / areaMaterialTotal) * 100)) : 0;
+      const areaDesperdicioM2 = areaMaterialTotal > 0 ? ((areaMaterialTotal - areaPecasTotal) / 10000) : 0;
+
       const custoServicos = parseFloat(document.getElementById('custoServicos').value) || 0;
       const margemLucro = parseFloat(document.getElementById('margemLucro').value) || 0;
 
-      let metrosUsados = 1.8;
-      let custoMaterial = metrosUsados * mat.custoMetro;
-      let custoTotal = custoMaterial + custoServicos;
-      let precoVenda = custoTotal * (1 + (margemLucro / 100));
+      const custoMaterial = metrosUsados * mat.custoMetro;
+      const custoTotal = custoMaterial + custoServicos;
+      const precoVenda = custoTotal * (1 + (margemLucro / 100));
 
+      // Atualiza Estado Global
+      appData.calculoResultado = {
+        larguraBobina: larguraBobina,
+        metrosUsados: metrosUsados,
+        comprimentoCm: maiorY,
+        aproveitamento: aproveitamento,
+        desperdicioM2: areaDesperdicioM2,
+        totalPecas: listaPecasOriginal.length,
+        pecasPosicionadas: pecasPosicionadas,
+        custoMaterial: custoMaterial,
+        custoTotal: custoTotal,
+        precoVenda: precoVenda
+      };
+
+      // Atualiza a Tela (Resumos e Indicadores)
       document.getElementById('resumoMetroLinear').textContent = metrosUsados.toFixed(2) + ' m';
       document.getElementById('resumoCustoMaterial').textContent = 'R$ ' + custoMaterial.toFixed(2).replace('.', ',');
       document.getElementById('resumoCustoTotal').textContent = 'R$ ' + custoTotal.toFixed(2).replace('.', ',');
       document.getElementById('resumoPrecoVenda').textContent = 'R$ ' + precoVenda.toFixed(2).replace('.', ',');
 
       document.getElementById('statComprimentoTotal').textContent = metrosUsados.toFixed(2) + ' m';
-      document.getElementById('statAproveitamento').textContent = '88%';
-      document.getElementById('statDesperdicio').textContent = '0.30 m²';
-      document.getElementById('statTotalPecas').textContent = document.getElementById('partes').children.length + ' un';
-      document.getElementById('statLarguraBobina').textContent = mat.largura + ' cm';
+      document.getElementById('statAproveitamento').textContent = aproveitamento + '%';
+      document.getElementById('statDesperdicio').textContent = areaDesperdicioM2.toFixed(2) + ' m²';
+      document.getElementById('statTotalPecas').textContent = listaPecasOriginal.length + ' un';
+      document.getElementById('statLarguraBobina').textContent = larguraBobina + ' cm';
+
+      // Atualiza o Desenho caso esteja na aba CAD
+      if (!document.getElementById('abaDesenho').classList.contains('hidden')) {
+        desenharPlanoCorte();
+      }
+    }
+
+    /* 5. MÓDULO DE DESENHO CAD/RIP (RÉGUAS E PAINEL VISUAL) */
+    function desenharPlanoCorte() {
+      const res = appData.calculoResultado;
+      const painel = document.getElementById('painelDesenhoResultado');
+      const reguaH = document.getElementById('reguaHorizontal');
+      const reguaV = document.getElementById('reguaVertical');
+
+      if (!res || res.comprimentoCm === 0) {
+        painel.style.width = '300px';
+        painel.style.height = '200px';
+        painel.innerHTML = '<div class="p-8 text-center text-slate-400 font-bold">Adicione peças para gerar o plano de corte.</div>';
+        reguaH.innerHTML = '';
+        reguaV.innerHTML = '';
+        return;
+      }
+
+      const zoom = appData.escalaZoom; // PX por CM
+      const larguraPx = res.larguraBobina * zoom;
+      const alturaPx = Math.max(150, res.comprimentoCm * zoom);
+
+      // Define dimensões da área de trabalho
+      painel.style.width = `${larguraPx}px`;
+      painel.style.height = `${alturaPx}px`;
+
+      const mostrarGrade = document.getElementById('chkGrade').checked;
+      const mostrarMedidas = document.getElementById('chkMedidas').checked;
+
+      if (mostrarGrade) {
+        painel.classList.add('bg-grid-pattern');
+      } else {
+        painel.classList.remove('bg-grid-pattern');
+      }
+
+      // Renderiza as Peças no Canvas
+      let htmlPecas = '';
+      res.pecasPosicionadas.forEach(p => {
+        const left = p.x * zoom;
+        const top = p.y * zoom;
+        const width = p.renderW * zoom;
+        const height = p.renderH * zoom;
+
+        const labelMedida = mostrarMedidas 
+          ? `<span class="text-[8px] opacity-80">${p.renderW}x${p.renderH}cm ${p.rotacionada ? '(⚙️)' : ''}</span>`
+          : '';
+
+        htmlPecas += `
+          <div class="peca-box" style="left: ${left}px; top: ${top}px; width: ${width}px; height: ${height}px;" title="${p.nome} (${p.renderW}x${p.renderH} cm)">
+            <span class="truncate px-0.5">${p.nome}</span>
+            ${labelMedida}
+          </div>
+        `;
+      });
+
+      painel.innerHTML = htmlPecas;
+
+      // Renderiza Réguas em Centímetros (CM)
+      renderizarReguaHorizontal(reguaH, res.larguraBobina, zoom);
+      renderizarReguaVertical(reguaV, res.comprimentoCm, zoom);
+    }
+
+    function renderizarReguaHorizontal(el, maxCm, zoom) {
+      el.style.width = `${maxCm * zoom}px`;
+      let html = '';
+      const passo = maxCm > 200 ? 20 : 10;
+
+      for (let i = 0; i <= maxCm; i += passo) {
+        const posX = i * zoom;
+        html += `
+          <div class="regua-tick" style="left: ${posX}px; bottom: 0; width: 1px; height: 10px;"></div>
+          <div class="regua-num" style="left: ${posX + 2}px; bottom: 10px;">${i}</div>
+        `;
+      }
+      el.innerHTML = html;
+    }
+
+    function renderizarReguaVertical(el, maxCm, zoom) {
+      const altura = Math.max(150, maxCm * zoom);
+      el.style.height = `${altura}px`;
+      let html = '';
+      const passo = maxCm > 200 ? 20 : 10;
+
+      for (let i = 0; i <= maxCm; i += passo) {
+        const posY = i * zoom;
+        html += `
+          <div class="regua-tick" style="top: ${posY}px; right: 0; height: 1px; width: 10px;"></div>
+          <div class="regua-num" style="top: ${posY + 2}px; right: 12px;">${i}</div>
+        `;
+      }
+      el.innerHTML = html;
+    }
+
+    function atualizarEstilosDesenho() {
+      desenharPlanoCorte();
+    }
+
+    function alterarZoom(delta) {
+      appData.escalaZoom = Math.max(1, Math.min(8, appData.escalaZoom + delta));
+      document.getElementById('labelZoom').textContent = appData.escalaZoom.toFixed(1) + 'x';
+      desenharPlanoCorte();
     }
 
     function irParaDesenho() {
       mudarAba('desenho');
     }
 
-    function atualizarEstilosDesenho() {}
-    function alterarZoom(delta) {
-      appData.escalaZoom = Math.max(1, appData.escalaZoom + delta);
-      document.getElementById('labelZoom').textContent = appData.escalaZoom.toFixed(1) + 'x';
-    }
-
+    /* 6. MODAIS E AÇÕES AUXILIARES */
     function abrirModalCliente() {
       document.getElementById('modalTitulo').textContent = 'Novo Cliente';
       document.getElementById('modalCorpo').innerHTML = `
-        <input type="text" id="mNomeCli" placeholder="Nome do Cliente" class="w-full border p-2 rounded text-xs">
-        <input type="text" id="mTelCli" placeholder="Telefone / WhatsApp" class="w-full border p-2 rounded text-xs">
+        <input type="text" id="mNomeCli" placeholder="Nome do Cliente / Empresa" class="w-full border border-slate-300 p-2 rounded text-xs font-bold">
+        <input type="text" id="mTelCli" placeholder="Telefone / WhatsApp" class="w-full border border-slate-300 p-2 rounded text-xs">
+        <input type="text" id="mCidCli" placeholder="Cidade / SP" class="w-full border border-slate-300 p-2 rounded text-xs">
       `;
-      document.getElementById('btnSalvarModal').onclick = () => fecharModal();
+      document.getElementById('btnSalvarModal').onclick = async () => {
+        const nome = document.getElementById('mNomeCli').value;
+        if (!nome) return alert("Digite o nome do cliente.");
+        await db.collection('users').doc(currentUser.uid).collection('clientes').add({
+          nome: nome,
+          telefone: document.getElementById('mTelCli').value,
+          cidade: document.getElementById('mCidCli').value
+        });
+        fecharModal();
+        sincronizarDadosFirestore();
+      };
       document.getElementById('modalDinamico').classList.remove('hidden');
     }
 
     function abrirModalSuprimento() {
       document.getElementById('modalTitulo').textContent = 'Novo Material';
       document.getElementById('modalCorpo').innerHTML = `
-        <input type="text" id="mDescMat" placeholder="Descrição do Material" class="w-full border p-2 rounded text-xs">
-        <input type="number" id="mLargMat" placeholder="Largura (cm)" class="w-full border p-2 rounded text-xs">
-        <input type="number" id="mCustoMat" placeholder="Custo por metro (R$)" class="w-full border p-2 rounded text-xs">
+        <input type="text" id="mDescMat" placeholder="Descrição (Ex: Tecido Lona 1.40m)" class="w-full border border-slate-300 p-2 rounded text-xs font-bold">
+        <input type="number" id="mLargMat" placeholder="Largura Útil (cm)" class="w-full border border-slate-300 p-2 rounded text-xs font-bold">
+        <input type="number" id="mCustoMat" placeholder="Custo/m Linear (R$)" class="w-full border border-slate-300 p-2 rounded text-xs font-bold">
       `;
-      document.getElementById('btnSalvarModal').onclick = () => fecharModal();
+      document.getElementById('btnSalvarModal').onclick = async () => {
+        const desc = document.getElementById('mDescMat').value;
+        const larg = parseFloat(document.getElementById('mLargMat').value);
+        const custo = parseFloat(document.getElementById('mCustoMat').value);
+        if (!desc || !larg || !custo) return alert("Preencha todos os campos.");
+        await db.collection('users').doc(currentUser.uid).collection('suprimentos').add({
+          descricao: desc,
+          largura: larg,
+          custoMetro: custo
+        });
+        fecharModal();
+        sincronizarDadosFirestore();
+      };
       document.getElementById('modalDinamico').classList.remove('hidden');
     }
 
-    function salvarOrcamentoNuvem() { alert("Orçamento salvo na nuvem!"); }
+    async function salvarOrcamentoNuvem() {
+      if (!appData.calculoResultado) return;
+      try {
+        const cliId = document.getElementById('selectClienteOrcamento').value;
+        const cli = appData.clientes.find(c => c.id === cliId) || { nome: 'Geral' };
+        
+        await db.collection('users').doc(currentUser.uid).collection('orcamentos').add({
+          data: new Date().toLocaleDateString('pt-BR'),
+          cliente: cli.nome,
+          resultado: appData.calculoResultado
+        });
+        alert(" Orçamento e plano de corte salvos com sucesso na nuvem!");
+      } catch (err) {
+        alert("Erro ao salvar: " + err.message);
+      }
+    }
+
     function imprimirFichaCorte() { window.print(); }
-    function copiarParaWhatsApp() { alert("Resumo copiado para área de transferência!"); }
+
+    function copiarParaWhatsApp() {
+      const res = appData.calculoResultado;
+      if (!res) return;
+      const texto = `*ORÇAMENTO & CORTE - CALCULAJA PRO*\n` +
+                    `Metragem Necessária: ${res.metrosUsados.toFixed(2)} m\n` +
+                    `Total de Peças: ${res.totalPecas} un\n` +
+                    `Aproveitamento: ${res.aproveitamento}%\n` +
+                    `*VALOR TOTAL: R$ ${res.precoVenda.toFixed(2).replace('.', ',')}*`;
+      navigator.clipboard.writeText(texto);
+      alert("Resumo formatado copiado! Basta colar no WhatsApp.");
+    }
   </script>
 </body>
 </html>
