@@ -154,7 +154,7 @@
       <!-- ABA 1: ORÇAMENTO & ENTRADA DE DADOS -->
       <section id="abaDados" class="space-y-4">
         
-        <!-- CARD DE CONFIGURAÇÕES DE ENTRADA (CLIENTE E DIMENSÕES DA BOBINA) -->
+        <!-- CARD DE CONFIGURAÇÕES DE ENTRADA -->
         <div class="bg-white border border-slate-200 p-4 rounded-xl shadow-sm space-y-3">
           <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
             
@@ -297,7 +297,7 @@
         </div>
       </section>
 
-      <!-- ABA 2: DESENHO CAD/RIP COM RÉGUAS E ALGORITMO -->
+      <!-- ABA 2: DESENHO CAD/RIP -->
       <section id="abaDesenho" class="hidden space-y-4">
         <div class="grid grid-cols-2 md:grid-cols-5 gap-3">
           <div class="bg-white p-3 rounded-xl border border-slate-200 shadow-sm">
@@ -442,7 +442,7 @@
   </div>
 
   <script>
-    /* 1. CONFIGURAÇÃO REAL DO SEU PROJETO FIREBASE (calculo-pro) */
+    /* 1. CONFIGURAÇÃO DO PROJETO FIREBASE */
     const firebaseConfig = {
       apiKey: "AIzaSyBK2M_6YeHCV_mNOrh2v8FO8g6BcOFBlFw",
       authDomain: "calculo-pro.firebaseapp.com",
@@ -553,38 +553,9 @@
         msgSucesso.textContent = "E-mail de redefinição enviado! Verifique sua caixa de entrada.";
         msgSucesso.classList.remove('hidden');
       } catch (err) {
-        msgErro.textContent = "Erro ao enviar e-mail: " + err.message;
+        msgErro.textContent = "Falha ao enviar e-mail de recuperação: " + err.message;
         msgErro.classList.remove('hidden');
       }
-    }
-
-    function abrirModalTrocarSenha() {
-      document.getElementById('modalTitulo').textContent = 'Alterar Senha de Acesso';
-      document.getElementById('modalCorpo').innerHTML = `
-        <div>
-          <label class="block text-[9px] font-bold text-slate-500 mb-1 uppercase">Nova Senha</label>
-          <input type="password" id="mNovaSenha" placeholder="No mínimo 6 caracteres" class="w-full bg-slate-50 border border-slate-300 p-2 text-xs rounded-lg font-bold text-slate-800 outline-none">
-        </div>
-      `;
-      document.getElementById('btnSalvarModal').onclick = async () => {
-        const novaSenha = document.getElementById('mNovaSenha').value;
-        if (novaSenha.length < 6) {
-          alert("A senha precisa ter pelo menos 6 caracteres.");
-          return;
-        }
-        try {
-          await auth.currentUser.updatePassword(novaSenha);
-          alert("Senha alterada com sucesso!");
-          fecharModal();
-        } catch (err) {
-          if (err.code === 'auth/requires-recent-login') {
-            alert("Sua sessão é antiga. Por segurança, faça logout e entre novamente para alterar a senha.");
-          } else {
-            alert("Erro ao alterar senha: " + err.message);
-          }
-        }
-      };
-      document.getElementById('modalDinamico').classList.remove('hidden');
     }
 
     async function fazerLogout() {
@@ -593,75 +564,141 @@
       await auth.signOut();
     }
 
-    /* 3. FIRESTORE E NAVEGAÇÃO */
-    async function sincronizarDadosFirestore() {
-      if (!currentUser) return;
-
-      try {
-        const snapSup = await db.collection('users').doc(currentUser.uid).collection('suprimentos').get();
-        appData.suprimentos = snapSup.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        if (appData.suprimentos.length === 0) {
-          appData.suprimentos = [
-            { id: '1', descricao: 'Tecido Lona 1.40m', largura: 140, custoMetro: 25.00 },
-            { id: '2', descricao: 'Plástico Cristal 1.50m', largura: 150, custoMetro: 18.00 }
-          ];
+    function abrirModalTrocarSenha() {
+      const corpo = `
+        <div class="space-y-3">
+          <div>
+            <label class="block text-[9px] font-bold text-slate-600 uppercase mb-1">Nova Senha</label>
+            <input type="password" id="novaSenhaInput" placeholder="Mínimo 6 caracteres" class="w-full border border-slate-300 rounded px-2.5 py-1.5 font-bold">
+          </div>
+        </div>
+      `;
+      abrirModal("Alterar Senha de Acesso", corpo, async () => {
+        const novaSenha = document.getElementById('novaSenhaInput').value;
+        if (!novaSenha || novaSenha.length < 6) {
+          alert("A senha deve ter no mínimo 6 caracteres.");
+          return;
         }
-
-        const snapCli = await db.collection('users').doc(currentUser.uid).collection('clientes').get();
-        appData.clientes = snapCli.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        if (appData.clientes.length === 0) {
-          appData.clientes = [
-            { id: '1', nome: 'Cliente Consumidor Final', telefone: '(00) 00000-0000', cidade: 'Ibitinga / SP' }
-          ];
-        }
-
-        renderizarSelects();
-        renderizarTabelas();
-        if (document.querySelectorAll('#partes tr').length === 0) {
-          addParteVazia();
-          addParteVazia();
-        }
-        selecionarPresetMaterial();
-      } catch (e) {
-        console.error("Erro ao sincronizar dados:", e);
-      }
-    }
-
-    function mudarAba(aba) {
-      ['Dados', 'Desenho', 'Clientes', 'Suprimentos', 'Historico'].forEach(a => {
-        const el = document.getElementById('aba' + a);
-        const btn = document.getElementById('btnAba' + a);
-        if (a.toLowerCase() === aba.toLowerCase()) {
-          el.classList.remove('hidden');
-          btn.classList.add('bg-cyan-600', 'text-white');
-          btn.classList.remove('bg-slate-100', 'text-slate-600');
-        } else {
-          el.classList.add('hidden');
-          btn.classList.remove('bg-cyan-600', 'text-white');
-          btn.classList.add('bg-slate-100', 'text-slate-600');
+        try {
+          await auth.currentUser.updatePassword(novaSenha);
+          alert("Senha alterada com sucesso!");
+          fecharModal();
+        } catch (err) {
+          alert("Erro ao alterar senha: " + err.message);
         }
       });
+    }
+
+    /* 3. NAVEGAÇÃO E TABS */
+    function mudarAba(aba) {
+      ['dados', 'desenho', 'clientes', 'suprimentos', 'historico'].forEach(a => {
+        const el = document.getElementById('aba' + a.charAt(0).toUpperCase() + a.slice(1));
+        const btn = document.getElementById('btnAba' + a.charAt(0).toUpperCase() + a.slice(1));
+        if (el) el.classList.add('hidden');
+        if (btn) {
+          btn.className = "px-3.5 py-1.5 rounded-lg font-bold bg-slate-100 hover:bg-slate-200 text-slate-600 border border-slate-200 transition flex items-center gap-2 active:scale-95";
+        }
+      });
+
+      const elAtiva = document.getElementById('aba' + aba.charAt(0).toUpperCase() + aba.slice(1));
+      const btnAtivo = document.getElementById('btnAba' + aba.charAt(0).toUpperCase() + aba.slice(1));
+      if (elAtiva) elAtiva.classList.remove('hidden');
+      if (btnAtivo) {
+        btnAtivo.className = "px-3.5 py-1.5 rounded-lg font-bold bg-cyan-600 text-white transition flex items-center gap-2 shadow-sm active:scale-95";
+      }
+
       if (aba === 'desenho') {
-        desenharPlanoCorte();
+        renderizarDesenhoCAD();
       }
     }
 
-    function fecharModal() {
-      document.getElementById('modalDinamico').classList.add('hidden');
+    function irParaDesenho() {
+      mudarAba('desenho');
     }
 
-    function addParteVazia() {
+    /* 4. FIRESTORE SYNC & DROPDOWNS */
+    function sincronizarDadosFirestore() {
+      if (!currentUser) return;
+
+      // Clientes
+      db.collection('users').doc(currentUser.uid).collection('clientes').onSnapshot(snap => {
+        appData.clientes = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        renderizarClientes();
+        atualizarSelectClientes();
+      });
+
+      // Suprimentos
+      db.collection('users').doc(currentUser.uid).collection('suprimentos').onSnapshot(snap => {
+        appData.suprimentos = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        renderizarSuprimentos();
+        atualizarSelectSuprimentos();
+      });
+
+      // Histórico
+      db.collection('users').doc(currentUser.uid).collection('orcamentos').orderBy('data', 'desc').onSnapshot(snap => {
+        appData.orcamentos = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        renderizarHistorico();
+      });
+
+      // Peças padrão na primeira inicialização
+      if (document.querySelectorAll('#partes tr').length === 0) {
+        addParteVazia('Lona Frontal Banner', 100, 50, 4);
+        addParteVazia('Faixa Promocional', 120, 30, 2);
+      }
+    }
+
+    function atualizarSelectClientes() {
+      const select = document.getElementById('selectClienteOrcamento');
+      select.innerHTML = '<option value="">-- Cliente Avulso / Não Especificado --</option>';
+      appData.clientes.forEach(c => {
+        const opt = document.createElement('option');
+        opt.value = c.id;
+        opt.textContent = `${c.nome} ${c.cidade ? ' (' + c.cidade + ')' : ''}`;
+        select.appendChild(opt);
+      });
+    }
+
+    function atualizarSelectSuprimentos() {
+      const select = document.getElementById('selectBobinaGlobal');
+      select.innerHTML = '<option value="">-- Seleção Manual de Bobina --</option>';
+      appData.suprimentos.forEach(s => {
+        const opt = document.createElement('option');
+        opt.value = s.id;
+        opt.textContent = `${s.descricao} (${s.largura}cm - R$${parseFloat(s.custoMetro || 0).toFixed(2)}/m)`;
+        select.appendChild(opt);
+      });
+    }
+
+    function selecionarPresetMaterial() {
+      const id = document.getElementById('selectBobinaGlobal').value;
+      if (!id) return;
+      const mat = appData.suprimentos.find(s => s.id === id);
+      if (mat) {
+        document.getElementById('larguraBobinaInput').value = mat.largura || 140;
+        calcularTudo();
+      }
+    }
+
+    /* 5. TABELA DINÂMICA DE PEÇAS DE CORTE */
+    function addParteVazia(nome = '', larg = 50, comp = 50, qtd = 1) {
       const tbody = document.getElementById('partes');
-      const idx = tbody.children.length + 1;
       const tr = document.createElement('tr');
-      tr.className = "hover:bg-slate-50 border-b border-slate-100";
+      tr.className = "hover:bg-slate-50 transition border-b border-slate-100";
       tr.innerHTML = `
-        <td class="p-2"><input type="text" value="Peça ${idx}" class="p-1.5 border border-slate-300 rounded w-full text-xs font-bold bg-slate-50 outline-none focus:bg-white focus:border-cyan-600"></td>
-        <td class="p-2"><input type="number" value="${idx % 2 === 0 ? '40' : '50'}" min="1" oninput="calcularTudo()" class="p-1.5 border border-slate-300 rounded w-full text-xs font-bold text-cyan-700 bg-slate-50 outline-none focus:bg-white focus:border-cyan-600"></td>
-        <td class="p-2"><input type="number" value="${idx % 2 === 0 ? '60' : '70'}" min="1" oninput="calcularTudo()" class="p-1.5 border border-slate-300 rounded w-full text-xs font-bold text-cyan-700 bg-slate-50 outline-none focus:bg-white focus:border-cyan-600"></td>
-        <td class="p-2"><input type="number" value="2" min="1" oninput="calcularTudo()" class="p-1.5 border border-slate-300 rounded w-full text-xs font-bold bg-slate-50 outline-none focus:bg-white focus:border-cyan-600"></td>
+        <td class="p-2">
+          <input type="text" value="${nome}" placeholder="Nome/Ref da Peça" oninput="calcularTudo()" class="nome-peca w-full bg-white border border-slate-300 rounded px-2 py-1 text-xs font-bold text-slate-800 outline-none focus:border-cyan-600">
+        </td>
+        <td class="p-2">
+          <input type="number" value="${larg}" min="1" step="0.5" oninput="calcularTudo()" class="larg-peca w-24 bg-white border border-slate-300 rounded px-2 py-1 text-xs font-bold text-slate-800 outline-none focus:border-cyan-600">
+        </td>
+        <td class="p-2">
+          <input type="number" value="${comp}" min="1" step="0.5" oninput="calcularTudo()" class="comp-peca w-24 bg-white border border-slate-300 rounded px-2 py-1 text-xs font-bold text-slate-800 outline-none focus:border-cyan-600">
+        </td>
+        <td class="p-2">
+          <input type="number" value="${qtd}" min="1" step="1" oninput="calcularTudo()" class="qtd-peca w-20 bg-white border border-slate-300 rounded px-2 py-1 text-xs font-bold text-cyan-700 outline-none focus:border-cyan-600">
+        </td>
         <td class="p-2 text-center">
-          <button onclick="removerParte(this)" class="text-rose-500 hover:text-rose-700 p-1 font-bold"><i class="fa-solid fa-trash-can"></i></button>
+          <button type="button" onclick="removerParte(this)" class="text-rose-500 hover:text-rose-700 font-bold p-1"><i class="fa-solid fa-trash-can"></i></button>
         </td>
       `;
       tbody.appendChild(tr);
@@ -669,361 +706,493 @@
     }
 
     function removerParte(btn) {
-      btn.closest('tr').remove();
+      const tr = btn.closest('tr');
+      tr.remove();
       calcularTudo();
     }
 
-    function renderizarSelects() {
-      const selCli = document.getElementById('selectClienteOrcamento');
-      selCli.innerHTML = appData.clientes.map(c => `<option value="${c.id}">${c.nome} (${c.cidade || 'SP'})</option>`).join('');
-
-      const selMat = document.getElementById('selectBobinaGlobal');
-      selMat.innerHTML = appData.suprimentos.map(s => `<option value="${s.id}">${s.descricao} - ${s.largura}cm (R$ ${parseFloat(s.custoMetro).toFixed(2)}/m)</option>`).join('');
-    }
-
-    function selecionarPresetMaterial() {
-      const matId = document.getElementById('selectBobinaGlobal').value;
-      const mat = appData.suprimentos.find(s => s.id === matId);
-      if (mat) {
-        document.getElementById('larguraBobinaInput').value = mat.largura || 140;
-      }
-      calcularTudo();
-    }
-
-    function renderizarTabelas() {
-      const tbCli = document.getElementById('tabelaClientes');
-      tbCli.innerHTML = appData.clientes.map(c => `
-        <tr class="border-b border-slate-100 text-xs font-semibold">
-          <td class="p-2.5">${c.nome}</td>
-          <td class="p-2.5">${c.telefone || '-'}</td>
-          <td class="p-2.5">${c.cidade || '-'}</td>
-          <td class="p-2.5 text-center"><button class="text-slate-400 hover:text-rose-600"><i class="fa-solid fa-trash"></i></button></td>
-        </tr>
-      `).join('');
-
-      const tbSup = document.getElementById('tabelaSuprimentos');
-      tbSup.innerHTML = appData.suprimentos.map(s => `
-        <tr class="border-b border-slate-100 text-xs font-semibold">
-          <td class="p-2.5">${s.descricao}</td>
-          <td class="p-2.5">${s.largura} cm</td>
-          <td class="p-2.5">R$ ${parseFloat(s.custoMetro).toFixed(2)}</td>
-          <td class="p-2.5 text-center"><button class="text-slate-400 hover:text-rose-600"><i class="fa-solid fa-trash"></i></button></td>
-        </tr>
-      `).join('');
-    }
-
-    /* 4. ALGORITMO DE PLANO DE CORTE INDUSTRIAL (2D BIN-PACKING / SHELF ALGORITHM) */
+    /* 6. ALGORITMO INDUSTRIAL DE CORTE E ENCAIXE (NESTING 2D EM ROLO) */
     function calcularTudo() {
-      const matId = document.getElementById('selectBobinaGlobal').value;
-      const mat = appData.suprimentos.find(s => s.id === matId) || { custoMetro: 25 };
-      
-      // Obtém dimensões customizáveis da bobina diretamente dos inputs de início
       const larguraBobina = parseFloat(document.getElementById('larguraBobinaInput').value) || 140;
-      const comprimentoBobinaMax = parseFloat(document.getElementById('comprimentoBobinaInput').value) || 50;
-      
-      const margemCorte = parseFloat(document.getElementById('espacamentoPecas').value) || 0;
+      const margem = parseFloat(document.getElementById('espacamentoPecas').value) || 0.5;
       const permitirRotacao = document.getElementById('permitirRotacao').value === 'sim';
 
-      // Coleta todas as peças da tabela
       const rows = document.querySelectorAll('#partes tr');
-      let listaPecasOriginal = [];
+      let listaPecas = [];
 
-      rows.forEach((row, i) => {
-        const inputs = row.querySelectorAll('input');
-        if (inputs.length >= 4) {
-          const nome = inputs[0].value.trim() || `P${i+1}`;
-          const larg = parseFloat(inputs[1].value) || 0;
-          const comp = parseFloat(inputs[2].value) || 0;
-          const qtd = parseInt(inputs[3].value) || 0;
+      rows.forEach((row, index) => {
+        const nome = row.querySelector('.nome-peca').value || `Peça ${index + 1}`;
+        const w = parseFloat(row.querySelector('.larg-peca').value) || 0;
+        const h = parseFloat(row.querySelector('.comp-peca').value) || 0;
+        const qtd = parseInt(row.querySelector('.qtd-peca').value) || 0;
 
-          if (larg > 0 && comp > 0 && qtd > 0) {
-            for (let q = 0; q < qtd; q++) {
-              listaPecasOriginal.push({
-                id: `${i+1}_${q+1}`,
-                nome: nome,
-                w: larg,
-                h: comp
-              });
-            }
+        if (w > 0 && h > 0 && qtd > 0) {
+          for (let i = 0; i < qtd; i++) {
+            listaPecas.push({
+              id: `${index}_${i}`,
+              rotulo: nome,
+              w: w,
+              h: h,
+              area: w * h
+            });
           }
         }
       });
 
-      // Ordena peças pela maior dimensão (Heurística de Encaixe Eficiente)
-      listaPecasOriginal.sort((a, b) => Math.max(b.w, b.h) - Math.max(a.w, a.h));
+      // Ordenar por maior área para melhor acomodação de encaixe (Shelf Packing Heuristic)
+      listaPecas.sort((a, b) => Math.max(b.w, b.h) - Math.max(a.w, a.h));
 
-      // Executa o empacotamento em prateleiras (Shelf Packing)
-      let prateleiraAtual = { x: 0, y: 0, altura: 0 };
+      let prateleiras = [];
       let pecasPosicionadas = [];
-      let maiorY = 0;
-      let areaPecasTotal = 0;
 
-      listaPecasOriginal.forEach(peca => {
-        let pw = peca.w;
-        let ph = peca.h;
+      listaPecas.forEach(peca => {
+        let encaixado = false;
+        let pW = peca.w;
+        let pH = peca.h;
         let rotacionada = false;
 
-        // Tenta rotação se permitida
-        if (permitirRotacao) {
-          if (pw > larguraBobina || (ph <= larguraBobina && ph > pw && (prateleiraAtual.x + ph + margemCorte <= larguraBobina))) {
-            pw = peca.h;
-            ph = peca.w;
-            rotacionada = true;
+        // Tentar verificar rotação se couber melhor
+        if (permitirRotacao && (pW > larguraBobina || (pH <= larguraBobina && pH > pW))) {
+          let temp = pW;
+          pW = pH;
+          pH = temp;
+          rotacionada = true;
+        }
+
+        // Tentar encaixar em prateleiras existentes
+        for (let p of prateleiras) {
+          if (p.xAtual + pW + margem <= larguraBobina) {
+            pecasPosicionadas.push({
+              ...peca,
+              x: p.xAtual,
+              y: p.y,
+              w: pW,
+              h: pH,
+              rotacionada: rotacionada
+            });
+            p.xAtual += pW + margem;
+            if (pH > p.alturaMax) p.alturaMax = pH;
+            encaixado = true;
+            break;
           }
         }
 
-        // Verifica se a peça cabe na linha/prateleira atual
-        if (prateleiraAtual.x + pw + margemCorte > larguraBobina && prateleiraAtual.x > 0) {
-          // Muda para a próxima prateleira (linha abaixo)
-          prateleiraAtual.y += prateleiraAtual.altura + margemCorte;
-          prateleiraAtual.x = 0;
-          prateleiraAtual.altura = 0;
+        // Se não coube em nenhuma, criar nova linha / prateleira no rolo
+        if (!encaixado) {
+          let yNovo = prateleiras.reduce((acc, curr) => acc + curr.alturaMax + margem, 0);
+          prateleiras.push({
+            y: yNovo,
+            alturaMax: pH,
+            xAtual: pW + margem
+          });
+
+          pecasPosicionadas.push({
+            ...peca,
+            x: 0,
+            y: yNovo,
+            w: pW,
+            h: pH,
+            rotacionada: rotacionada
+          });
         }
-
-        pecasPosicionadas.push({
-          ...peca,
-          x: prateleiraAtual.x,
-          y: prateleiraAtual.y,
-          renderW: pw,
-          renderH: ph,
-          rotacionada: rotacionada
-        });
-
-        areaPecasTotal += (peca.w * peca.h);
-        prateleiraAtual.x += pw + margemCorte;
-        if (ph > prateleiraAtual.altura) {
-          prateleiraAtual.altura = ph;
-        }
-
-        maiorY = Math.max(maiorY, prateleiraAtual.y + prateleiraAtual.altura);
       });
 
-      // Métricas de Consumo
-      const metrosUsados = (maiorY / 100) || 0;
-      const areaMaterialTotal = (larguraBobina * maiorY); // em cm²
-      const aproveitamento = areaMaterialTotal > 0 ? Math.min(100, Math.round((areaPecasTotal / areaMaterialTotal) * 100)) : 0;
-      const areaDesperdicioM2 = areaMaterialTotal > 0 ? ((areaMaterialTotal - areaPecasTotal) / 10000) : 0;
+      let comprimentoTotalCm = prateleiras.reduce((acc, curr) => acc + curr.alturaMax + margem, 0);
+      let metroLinear = comprimentoTotalCm / 100;
 
-      const custoServicos = parseFloat(document.getElementById('custoServicos').value) || 0;
-      const margemLucro = parseFloat(document.getElementById('margemLucro').value) || 0;
+      // Cálculos financeiros
+      let idMat = document.getElementById('selectBobinaGlobal').value;
+      let matSel = appData.suprimentos.find(s => s.id === idMat);
+      let custoMetroMat = matSel ? parseFloat(matSel.custoMetro || 0) : 15.00;
 
-      const custoMaterial = metrosUsados * mat.custoMetro;
-      const custoTotal = custoMaterial + custoServicos;
-      const precoVenda = custoTotal * (1 + (margemLucro / 100));
+      let custoMaterial = metroLinear * custoMetroMat;
+      let custoServicos = parseFloat(document.getElementById('custoServicos').value) || 0;
+      let margemLucro = parseFloat(document.getElementById('margemLucro').value) || 0;
 
-      // Atualiza Estado Global
+      let custoTotalFabril = custoMaterial + custoServicos;
+      let precoVenda = custoTotalFabril * (1 + (margemLucro / 100));
+
+      let areaTotalUsadaM2 = (larguraBobina / 100) * metroLinear;
+      let areaPecasM2 = listaPecas.reduce((acc, p) => acc + (p.w * p.h), 0) / 10000;
+      let aproveitamento = areaTotalUsadaM2 > 0 ? (areaPecasM2 / areaTotalUsadaM2) * 100 : 0;
+      let desperdicioM2 = Math.max(0, areaTotalUsadaM2 - areaPecasM2);
+
       appData.calculoResultado = {
-        larguraBobina: larguraBobina,
-        comprimentoBobinaMax: comprimentoBobinaMax,
-        metrosUsados: metrosUsados,
-        comprimentoCm: maiorY,
-        aproveitamento: aproveitamento,
-        desperdicioM2: areaDesperdicioM2,
-        totalPecas: listaPecasOriginal.length,
-        pecasPosicionadas: pecasPosicionadas,
-        custoMaterial: custoMaterial,
-        custoTotal: custoTotal,
-        precoVenda: precoVenda
+        larguraBobina,
+        comprimentoTotalCm,
+        metroLinear,
+        pecasPosicionadas,
+        totalPecas: listaPecas.length,
+        aproveitamento,
+        desperdicioM2,
+        custoMaterial,
+        custoServicos,
+        custoTotalFabril,
+        precoVenda
       };
 
-      // Atualiza a Tela (Resumos e Indicadores)
-      document.getElementById('resumoMetroLinear').textContent = metrosUsados.toFixed(2) + ' m';
-      document.getElementById('resumoCustoMaterial').textContent = 'R$ ' + custoMaterial.toFixed(2).replace('.', ',');
-      document.getElementById('resumoCustoTotal').textContent = 'R$ ' + custoTotal.toFixed(2).replace('.', ',');
-      document.getElementById('resumoPrecoVenda').textContent = 'R$ ' + precoVenda.toFixed(2).replace('.', ',');
+      // Atualizar UI Resumo
+      document.getElementById('resumoMetroLinear').textContent = `${metroLinear.toFixed(2)} m`;
+      document.getElementById('resumoCustoMaterial').textContent = `R$ ${custoMaterial.toFixed(2)}`;
+      document.getElementById('resumoCustoTotal').textContent = `R$ ${custoTotalFabril.toFixed(2)}`;
+      document.getElementById('resumoPrecoVenda').textContent = `R$ ${precoVenda.toFixed(2)}`;
 
-      document.getElementById('statComprimentoTotal').textContent = metrosUsados.toFixed(2) + ' m';
-      document.getElementById('statAproveitamento').textContent = aproveitamento + '%';
-      document.getElementById('statDesperdicio').textContent = areaDesperdicioM2.toFixed(2) + ' m²';
-      document.getElementById('statTotalPecas').textContent = listaPecasOriginal.length + ' un';
-      document.getElementById('statLarguraBobina').textContent = larguraBobina + ' cm';
+      document.getElementById('statComprimentoTotal').textContent = `${metroLinear.toFixed(2)} m`;
+      document.getElementById('statAproveitamento').textContent = `${aproveitamento.toFixed(1)}%`;
+      document.getElementById('statDesperdicio').textContent = `${desperdicioM2.toFixed(2)} m²`;
+      document.getElementById('statTotalPecas').textContent = `${listaPecas.length} un`;
+      document.getElementById('statLarguraBobina').textContent = `${larguraBobina} cm`;
 
-      // Atualiza o Desenho caso esteja na aba CAD
+      // Se a aba visual CAD estiver aberta, atualiza o desenho
       if (!document.getElementById('abaDesenho').classList.contains('hidden')) {
-        desenharPlanoCorte();
+        renderizarDesenhoCAD();
       }
     }
 
-    /* 5. MÓDULO DE DESENHO CAD/RIP (RÉGUAS E PAINEL VISUAL) */
-    function desenharPlanoCorte() {
-      const res = appData.calculoResultado;
-      const painel = document.getElementById('painelDesenhoResultado');
-      const reguaH = document.getElementById('reguaHorizontal');
-      const reguaV = document.getElementById('reguaVertical');
-
-      if (!res || res.comprimentoCm === 0) {
-        painel.style.width = '300px';
-        painel.style.height = '200px';
-        painel.innerHTML = '<div class="p-8 text-center text-slate-400 font-bold">Adicione peças para gerar o plano de corte.</div>';
-        reguaH.innerHTML = '';
-        reguaV.innerHTML = '';
-        return;
-      }
-
-      const zoom = appData.escalaZoom; // PX por CM
-      const larguraPx = res.larguraBobina * zoom;
-      const alturaPx = Math.max(150, res.comprimentoCm * zoom);
-
-      // Define dimensões da área de trabalho
-      painel.style.width = `${larguraPx}px`;
-      painel.style.height = `${alturaPx}px`;
-
-      const mostrarGrade = document.getElementById('chkGrade').checked;
-      const mostrarMedidas = document.getElementById('chkMedidas').checked;
-
-      if (mostrarGrade) {
-        painel.classList.add('bg-grid-pattern');
-      } else {
-        painel.classList.remove('bg-grid-pattern');
-      }
-
-      // Renderiza as Peças no Canvas
-      let htmlPecas = '';
-      res.pecasPosicionadas.forEach(p => {
-        const left = p.x * zoom;
-        const top = p.y * zoom;
-        const width = p.renderW * zoom;
-        const height = p.renderH * zoom;
-
-        const labelMedida = mostrarMedidas 
-          ? `<span class="text-[8px] opacity-80">${p.renderW}x${p.renderH}cm ${p.rotacionada ? '(⚙️)' : ''}</span>`
-          : '';
-
-        htmlPecas += `
-          <div class="peca-box" style="left: ${left}px; top: ${top}px; width: ${width}px; height: ${height}px;" title="${p.nome} (${p.renderW}x${p.renderH} cm)">
-            <span class="truncate px-0.5">${p.nome}</span>
-            ${labelMedida}
-          </div>
-        `;
-      });
-
-      painel.innerHTML = htmlPecas;
-
-      // Renderiza Réguas em Centímetros (CM)
-      renderizarReguaHorizontal(reguaH, res.larguraBobina, zoom);
-      renderizarReguaVertical(reguaV, res.comprimentoCm, zoom);
-    }
-
-    function renderizarReguaHorizontal(el, maxCm, zoom) {
-      el.style.width = `${maxCm * zoom}px`;
-      let html = '';
-      const passo = maxCm > 200 ? 20 : 10;
-
-      for (let i = 0; i <= maxCm; i += passo) {
-        const posX = i * zoom;
-        html += `
-          <div class="regua-tick" style="left: ${posX}px; bottom: 0; width: 1px; height: 10px;"></div>
-          <div class="regua-num" style="left: ${posX + 2}px; bottom: 10px;">${i}</div>
-        `;
-      }
-      el.innerHTML = html;
-    }
-
-    function renderizarReguaVertical(el, maxCm, zoom) {
-      const altura = Math.max(150, maxCm * zoom);
-      el.style.height = `${altura}px`;
-      let html = '';
-      const passo = maxCm > 200 ? 20 : 10;
-
-      for (let i = 0; i <= maxCm; i += passo) {
-        const posY = i * zoom;
-        html += `
-          <div class="regua-tick" style="top: ${posY}px; right: 0; height: 1px; width: 10px;"></div>
-          <div class="regua-num" style="top: ${posY + 2}px; right: 12px;">${i}</div>
-        `;
-      }
-      el.innerHTML = html;
+    /* 7. CAD CANVAS, RÉGUAS E VISUALIZAÇÃO */
+    function alterarZoom(delta) {
+      appData.escalaZoom = Math.max(0.5, Math.min(10.0, appData.escalaZoom + delta));
+      document.getElementById('labelZoom').textContent = `${appData.escalaZoom.toFixed(1)}x`;
+      renderizarDesenhoCAD();
     }
 
     function atualizarEstilosDesenho() {
-      desenharPlanoCorte();
+      renderizarDesenhoCAD();
     }
 
-    function alterarZoom(delta) {
-      appData.escalaZoom = Math.max(1, Math.min(8, appData.escalaZoom + delta));
-      document.getElementById('labelZoom').textContent = appData.escalaZoom.toFixed(1) + 'x';
-      desenharPlanoCorte();
-    }
-
-    function irParaDesenho() {
-      mudarAba('desenho');
-    }
-
-    /* 6. MODAIS E AÇÕES AUXILIARES */
-    function abrirModalCliente() {
-      document.getElementById('modalTitulo').textContent = 'Novo Cliente';
-      document.getElementById('modalCorpo').innerHTML = `
-        <input type="text" id="mNomeCli" placeholder="Nome do Cliente / Empresa" class="w-full border border-slate-300 p-2 rounded text-xs font-bold">
-        <input type="text" id="mTelCli" placeholder="Telefone / WhatsApp" class="w-full border border-slate-300 p-2 rounded text-xs">
-        <input type="text" id="mCidCli" placeholder="Cidade / SP" class="w-full border border-slate-300 p-2 rounded text-xs">
-      `;
-      document.getElementById('btnSalvarModal').onclick = async () => {
-        const nome = document.getElementById('mNomeCli').value;
-        if (!nome) return alert("Digite o nome do cliente.");
-        await db.collection('users').doc(currentUser.uid).collection('clientes').add({
-          nome: nome,
-          telefone: document.getElementById('mTelCli').value,
-          cidade: document.getElementById('mCidCli').value
-        });
-        fecharModal();
-        sincronizarDadosFirestore();
-      };
-      document.getElementById('modalDinamico').classList.remove('hidden');
-    }
-
-    function abrirModalSuprimento() {
-      document.getElementById('modalTitulo').textContent = 'Novo Material';
-      document.getElementById('modalCorpo').innerHTML = `
-        <input type="text" id="mDescMat" placeholder="Descrição (Ex: Tecido Lona 1.40m)" class="w-full border border-slate-300 p-2 rounded text-xs font-bold">
-        <input type="number" id="mLargMat" placeholder="Largura Útil (cm)" class="w-full border border-slate-300 p-2 rounded text-xs font-bold">
-        <input type="number" id="mCustoMat" placeholder="Custo/m Linear (R$)" class="w-full border border-slate-300 p-2 rounded text-xs font-bold">
-      `;
-      document.getElementById('btnSalvarModal').onclick = async () => {
-        const desc = document.getElementById('mDescMat').value;
-        const larg = parseFloat(document.getElementById('mLargMat').value);
-        const custo = parseFloat(document.getElementById('mCustoMat').value);
-        if (!desc || !larg || !custo) return alert("Preencha todos os campos.");
-        await db.collection('users').doc(currentUser.uid).collection('suprimentos').add({
-          descricao: desc,
-          largura: larg,
-          custoMetro: custo
-        });
-        fecharModal();
-        sincronizarDadosFirestore();
-      };
-      document.getElementById('modalDinamico').classList.remove('hidden');
-    }
-
-    async function salvarOrcamentoNuvem() {
+    function renderizarDesenhoCAD() {
       if (!appData.calculoResultado) return;
-      try {
-        const cliId = document.getElementById('selectClienteOrcamento').value;
-        const cli = appData.clientes.find(c => c.id === cliId) || { nome: 'Geral' };
-        
-        await db.collection('users').doc(currentUser.uid).collection('orcamentos').add({
-          data: new Date().toLocaleDateString('pt-BR'),
-          cliente: cli.nome,
-          resultado: appData.calculoResultado
-        });
-        alert("Orçamento e plano de corte salvos com sucesso na nuvem!");
-      } catch (err) {
-        alert("Erro ao salvar: " + err.message);
+
+      const { larguraBobina, comprimentoTotalCm, pecasPosicionadas } = appData.calculoResultado;
+      const scale = appData.escalaZoom; // pixels por cm
+
+      const larguraPx = larguraBobina * scale;
+      const alturaPx = (comprimentoTotalCm || 100) * scale;
+
+      const painel = document.getElementById('painelDesenhoResultado');
+      painel.style.width = `${larguraPx}px`;
+      painel.style.height = `${alturaPx}px`;
+      painel.className = `relative transition-all shadow-md ${document.getElementById('chkGrade').checked ? 'bg-grid-pattern' : 'bg-white'}`;
+      painel.innerHTML = '';
+
+      const mostrarMedidas = document.getElementById('chkMedidas').checked;
+
+      pecasPosicionadas.forEach(p => {
+        const box = document.createElement('div');
+        box.className = 'peca-box';
+        box.style.left = `${p.x * scale}px`;
+        box.style.top = `${p.y * scale}px`;
+        box.style.width = `${p.w * scale}px`;
+        box.style.height = `${p.h * scale}px`;
+
+        if (mostrarMedidas) {
+          box.innerHTML = `
+            <span class="truncate px-1">${p.rotulo}</span>
+            <span class="text-[8px] opacity-80">${p.w} x ${p.h} cm</span>
+          `;
+        } else {
+          box.innerHTML = `<span class="truncate px-1">${p.rotulo}</span>`;
+        }
+
+        painel.appendChild(box);
+      });
+
+      // Gerar Réguas Visual
+      renderizarReguas(larguraBobina, comprimentoTotalCm, scale);
+    }
+
+    function renderizarReguas(larguraCm, alturaCm, scale) {
+      const reguaH = document.getElementById('reguaHorizontal');
+      const reguaV = document.getElementById('reguaVertical');
+      
+      reguaH.style.width = `${larguraCm * scale}px`;
+      reguaV.style.height = `${alturaCm * scale}px`;
+
+      reguaH.innerHTML = '';
+      reguaV.innerHTML = '';
+
+      // Ticks Régua Horizontal (a cada 10 cm)
+      for (let x = 0; x <= larguraCm; x += 10) {
+        let posX = x * scale;
+        let tick = document.createElement('div');
+        tick.className = 'regua-tick';
+        tick.style.left = `${posX}px`;
+        tick.style.bottom = '0px';
+        tick.style.width = '1px';
+        tick.style.height = '10px';
+
+        let num = document.createElement('div');
+        num.className = 'regua-num';
+        num.style.left = `${posX + 2}px`;
+        num.style.top = '2px';
+        num.textContent = x;
+
+        reguaH.appendChild(tick);
+        reguaH.appendChild(num);
+      }
+
+      // Ticks Régua Vertical (a cada 10 cm)
+      for (let y = 0; y <= alturaCm; y += 10) {
+        let posY = y * scale;
+        let tick = document.createElement('div');
+        tick.className = 'regua-tick';
+        tick.style.top = `${posY}px`;
+        tick.style.right = '0px';
+        tick.style.height = '1px';
+        tick.style.width = '10px';
+
+        let num = document.createElement('div');
+        num.className = 'regua-num';
+        num.style.top = `${posY + 2}px`;
+        num.style.left = '2px';
+        num.textContent = y;
+
+        reguaV.appendChild(tick);
+        reguaV.appendChild(num);
       }
     }
 
-    function imprimirFichaCorte() { window.print(); }
+    /* 8. IMPRESSÃO, WHATSAPP E SALVAMENTO CLOUD */
+    async function salvarOrcamentoNuvem() {
+      if (!currentUser || !appData.calculoResultado) return;
+
+      const selectCliente = document.getElementById('selectClienteOrcamento');
+      const clienteNome = selectCliente.options[selectCliente.selectedIndex]?.text || 'Cliente Avulso';
+
+      const payload = {
+        data: firebase.firestore.FieldValue.serverTimestamp(),
+        cliente: clienteNome,
+        comprimentoTotalM: appData.calculoResultado.metroLinear,
+        valorVenda: appData.calculoResultado.precoVenda,
+        larguraBobina: appData.calculoResultado.larguraBobina,
+        totalPecas: appData.calculoResultado.totalPecas
+      };
+
+      try {
+        await db.collection('users').doc(currentUser.uid).collection('orcamentos').add(payload);
+        alert("Orçamento salvo com sucesso na nuvem!");
+      } catch (e) {
+        alert("Erro ao salvar no Firestore: " + e.message);
+      }
+    }
 
     function copiarParaWhatsApp() {
+      if (!appData.calculoResultado) return;
       const res = appData.calculoResultado;
-      if (!res) return;
-      const texto = `*ORÇAMENTO & CORTE - CALCULAJA PRO*\n` +
-                    `Largura Bobina: ${res.larguraBobina} cm\n` +
-                    `Metragem Necessária: ${res.metrosUsados.toFixed(2)} m\n` +
-                    `Total de Peças: ${res.totalPecas} un\n` +
-                    `Aproveitamento: ${res.aproveitamento}%\n` +
-                    `*VALOR TOTAL: R$ ${res.precoVenda.toFixed(2).replace('.', ',')}*`;
-      navigator.clipboard.writeText(texto);
-      alert("Resumo formatado copiado! Basta colar no WhatsApp.");
+      
+      let msg = `*ORÇAMENTO DE CORTE / PRODUÇÃO*\n`;
+      msg += `-----------------------------------\n`;
+      msg += `• Uso de Material: ${res.metroLinear.toFixed(2)} m\n`;
+      msg += `• Total de Peças: ${res.totalPecas} un\n`;
+      msg += `• Valor Total: R$ ${res.precoVenda.toFixed(2)}\n`;
+      msg += `-----------------------------------\n`;
+      msg += `Calculado via CalculaJá Pro Cloud.`;
+
+      navigator.clipboard.writeText(msg);
+      alert("Resumo formatado copiado para a área de transferência! Cole no WhatsApp.");
+    }
+
+    function imprimirFichaCorte() {
+      if (!appData.calculoResultado) return;
+      const res = appData.calculoResultado;
+      const divPrint = document.getElementById('areaImpressao');
+
+      divPrint.innerHTML = `
+        <div style="font-family: sans-serif; padding: 20px;">
+          <h2 style="text-transform: uppercase; border-bottom: 2px solid #000; padding-bottom: 5px;">FICHA DE PRODUÇÃO E CORTE INDUSTRIAL</h2>
+          <p><strong>Data:</strong> ${new Date().toLocaleDateString('pt-BR')} ${new Date().toLocaleTimeString('pt-BR')}</p>
+          <hr>
+          <h3>Resumo Operacional:</h3>
+          <ul>
+            <li><strong>Largura da Bobina:</strong> ${res.larguraBobina} cm</li>
+            <li><strong>Comprimento Necessário:</strong> ${res.metroLinear.toFixed(2)} metros</li>
+            <li><strong>Total de Peças:</strong> ${res.totalPecas} unidades</li>
+            <li><strong>Aproveitamento:</strong> ${res.aproveitamento.toFixed(1)}%</li>
+          </ul>
+          <h3>Detalhamento das Peças Encaixadas:</h3>
+          <table border="1" cellpadding="6" cellspacing="0" style="width: 100%; border-collapse: collapse;">
+            <thead>
+              <tr style="background: #f0f0f0;">
+                <th>Rótulo/Peça</th>
+                <th>Dimensões (cm)</th>
+                <th>Posição X, Y (cm)</th>
+                <th>Rotacionada?</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${res.pecasPosicionadas.map(p => `
+                <tr>
+                  <td>${p.rotulo}</td>
+                  <td>${p.w} x ${p.h}</td>
+                  <td>X: ${p.x.toFixed(1)}, Y: ${p.y.toFixed(1)}</td>
+                  <td>${p.rotacionada ? 'Sim' : 'Não'}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>
+      `;
+
+      window.print();
+    }
+
+    /* 9. GESTÃO DE CLIENTES (CRUD) */
+    function renderizarClientes() {
+      const tbody = document.getElementById('tabelaClientes');
+      tbody.innerHTML = '';
+      appData.clientes.forEach(c => {
+        const tr = document.createElement('tr');
+        tr.className = "hover:bg-slate-50 transition border-b border-slate-100";
+        tr.innerHTML = `
+          <td class="p-2.5 font-bold text-slate-800">${c.nome}</td>
+          <td class="p-2.5">${c.telefone || '-'}</td>
+          <td class="p-2.5">${c.cidade || '-'}</td>
+          <td class="p-2.5 text-center">
+            <button onclick="deletarCliente('${c.id}')" class="text-rose-500 hover:text-rose-700 font-bold p-1"><i class="fa-solid fa-trash"></i></button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function abrirModalCliente() {
+      const corpo = `
+        <div class="space-y-3">
+          <div>
+            <label class="block text-[9px] font-bold text-slate-600 uppercase mb-1">Nome do Cliente / Empresa</label>
+            <input type="text" id="cliNome" required class="w-full border border-slate-300 rounded px-2.5 py-1.5 font-bold">
+          </div>
+          <div>
+            <label class="block text-[9px] font-bold text-slate-600 uppercase mb-1">Telefone / WhatsApp</label>
+            <input type="text" id="cliTel" placeholder="(00) 00000-0000" class="w-full border border-slate-300 rounded px-2.5 py-1.5 font-bold">
+          </div>
+          <div>
+            <label class="block text-[9px] font-bold text-slate-600 uppercase mb-1">Cidade / Estado</label>
+            <input type="text" id="cliCidade" placeholder="Ex: São Paulo - SP" class="w-full border border-slate-300 rounded px-2.5 py-1.5 font-bold">
+          </div>
+        </div>
+      `;
+
+      abrirModal("Novo Cliente", corpo, async () => {
+        const nome = document.getElementById('cliNome').value;
+        const telefone = document.getElementById('cliTel').value;
+        const cidade = document.getElementById('cliCidade').value;
+
+        if (!nome) return alert("Digite o nome do cliente.");
+
+        await db.collection('users').doc(currentUser.uid).collection('clientes').add({
+          nome, telefone, cidade, criadoEm: new Date()
+        });
+        fecharModal();
+      });
+    }
+
+    async function deletarCliente(id) {
+      if (confirm("Deseja realmente excluir este cliente?")) {
+        await db.collection('users').doc(currentUser.uid).collection('clientes').doc(id).delete();
+      }
+    }
+
+    /* 10. GESTÃO DE SUPRIMENTOS (CRUD) */
+    function renderizarSuprimentos() {
+      const tbody = document.getElementById('tabelaSuprimentos');
+      tbody.innerHTML = '';
+      appData.suprimentos.forEach(s => {
+        const tr = document.createElement('tr');
+        tr.className = "hover:bg-slate-50 transition border-b border-slate-100";
+        tr.innerHTML = `
+          <td class="p-2.5 font-bold text-slate-800">${s.descricao}</td>
+          <td class="p-2.5">${s.largura} cm</td>
+          <td class="p-2.5 font-bold text-amber-600">R$ ${parseFloat(s.custoMetro || 0).toFixed(2)}</td>
+          <td class="p-2.5 text-center">
+            <button onclick="deletarSuprimento('${s.id}')" class="text-rose-500 hover:text-rose-700 font-bold p-1"><i class="fa-solid fa-trash"></i></button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function abrirModalSuprimento() {
+      const corpo = `
+        <div class="space-y-3">
+          <div>
+            <label class="block text-[9px] font-bold text-slate-600 uppercase mb-1">Descrição da Matéria-Prima</label>
+            <input type="text" id="supDesc" placeholder="Ex: Lona Banner 440g" class="w-full border border-slate-300 rounded px-2.5 py-1.5 font-bold">
+          </div>
+          <div>
+            <label class="block text-[9px] font-bold text-slate-600 uppercase mb-1">Largura Útil (cm)</label>
+            <input type="number" id="supLarg" value="140" class="w-full border border-slate-300 rounded px-2.5 py-1.5 font-bold">
+          </div>
+          <div>
+            <label class="block text-[9px] font-bold text-slate-600 uppercase mb-1">Custo por Metro Linear (R$)</label>
+            <input type="number" id="supCusto" value="15.00" step="0.5" class="w-full border border-slate-300 rounded px-2.5 py-1.5 font-bold">
+          </div>
+        </div>
+      `;
+
+      abrirModal("Novo Suprimento", corpo, async () => {
+        const descricao = document.getElementById('supDesc').value;
+        const largura = parseFloat(document.getElementById('supLarg').value) || 0;
+        const custoMetro = parseFloat(document.getElementById('supCusto').value) || 0;
+
+        if (!descricao) return alert("Digite a descrição do material.");
+
+        await db.collection('users').doc(currentUser.uid).collection('suprimentos').add({
+          descricao, largura, custoMetro, criadoEm: new Date()
+        });
+        fecharModal();
+      });
+    }
+
+    async function deletarSuprimento(id) {
+      if (confirm("Deseja realmente excluir este suprimento?")) {
+        await db.collection('users').doc(currentUser.uid).collection('suprimentos').doc(id).delete();
+      }
+    }
+
+    /* 11. HISTÓRICO DE ORÇAMENTOS */
+    function renderizarHistorico() {
+      const tbody = document.getElementById('tabelaHistorico');
+      tbody.innerHTML = '';
+      appData.orcamentos.forEach(o => {
+        const dt = o.data ? new Date(o.data.seconds * 1000).toLocaleDateString('pt-BR') : '-';
+        const tr = document.createElement('tr');
+        tr.className = "hover:bg-slate-50 transition border-b border-slate-100";
+        tr.innerHTML = `
+          <td class="p-2.5 text-slate-500">${dt}</td>
+          <td class="p-2.5 font-bold text-slate-800">${o.cliente || 'Avulso'}</td>
+          <td class="p-2.5">${o.comprimentoTotalM ? o.comprimentoTotalM.toFixed(2) + ' m' : '-'}</td>
+          <td class="p-2.5 font-bold text-emerald-600">R$ ${parseFloat(o.valorVenda || 0).toFixed(2)}</td>
+          <td class="p-2.5 text-center">
+            <button onclick="deletarHistorico('${o.id}')" class="text-rose-500 hover:text-rose-700 font-bold p-1"><i class="fa-solid fa-trash"></i></button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    async function deletarHistorico(id) {
+      if (confirm("Deseja excluir este registro do histórico?")) {
+        await db.collection('users').doc(currentUser.uid).collection('orcamentos').doc(id).delete();
+      }
+    }
+
+    /* 12. HELPER DE MODAL DINÂMICO */
+    function abrirModal(titulo, conteudoHtml, acaoSalvar) {
+      document.getElementById('modalTitulo').textContent = titulo;
+      document.getElementById('modalCorpo').innerHTML = conteudoHtml;
+      const btnSalvar = document.getElementById('btnSalvarModal');
+
+      // Remover listeners antigos
+      const newBtn = btnSalvar.cloneNode(true);
+      btnSalvar.parentNode.replaceChild(newBtn, btnSalvar);
+
+      newBtn.addEventListener('click', acaoSalvar);
+      document.getElementById('modalDinamico').classList.remove('hidden');
+    }
+
+    function fecharModal() {
+      document.getElementById('modalDinamico').classList.add('hidden');
     }
   </script>
 </body>
