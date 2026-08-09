@@ -3,316 +3,1197 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sistema de Orçamentos e Corte</title>
+  <title>CalculaJá Pro v6.6 - Industrial Cut & Cloud ERP</title>
   
-  <!-- Bootstrap 5 CSS para Interface -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Tailwind CSS & FontAwesome -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   
-  <!-- jsPDF e AutoTable para Geração de PDFs -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+  <!-- Firebase SDKs (Compat v10) -->
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 
   <style>
-    body {
-      background-color: #f8f9fa;
-      padding-bottom: 40px;
+    .bg-grid-pattern {
+      background-size: 20px 20px;
+      background-image: 
+        linear-gradient(to right, rgba(0, 0, 0, 0.06) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(0, 0, 0, 0.06) 1px, transparent 1px);
     }
-    .card {
-      box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    .regua-tick { position: absolute; background-color: #94a3b8; }
+    .regua-num { position: absolute; font-size: 8px; color: #64748b; font-weight: bold; }
+    
+    .peca-box {
+      box-sizing: border-box;
+      transition: all 0.15s ease;
+      position: absolute;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid #0284c7;
+      background: rgba(186, 230, 253, 0.85);
+      color: #0369a1;
+      font-weight: 700;
+      overflow: hidden;
+      cursor: pointer;
+      border-radius: 3px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+      font-size: 10px;
+      line-height: 1.1;
+    }
+    
+    .peca-box:hover {
+      border-color: #0369a1;
+      background: rgba(125, 211, 252, 0.95);
+      box-shadow: 0 0 10px rgba(2, 132, 199, 0.4);
+      z-index: 20;
+    }
+
+    ::-webkit-scrollbar { width: 8px; height: 8px; }
+    ::-webkit-scrollbar-track { background: #f1f5f9; }
+    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #0284c7; }
+
+    @media print {
+      body * { visibility: hidden; }
+      #areaImpressao, #areaImpressao * { visibility: visible; }
+      #areaImpressao { position: absolute; left: 0; top: 0; width: 100%; color: #000; background: #fff; padding: 20px; }
+      .no-print { display: none !important; }
     }
   </style>
 </head>
-<body>
+<body class="bg-slate-100 text-slate-800 font-sans antialiased min-h-screen text-xs select-none">
 
-<div class="container mt-4">
-  <h2 class="mb-4 text-center">Painel de Gestão e Plano de Corte</h2>
-
-  <!-- SEÇÃO DE ORÇAMENTO E PEÇAS -->
-  <div class="card mb-4">
-    <div class="card-header bg-primary text-white">
-      <h5 class="card-title mb-0">Novo Orçamento / Ficha de Produção</h5>
-    </div>
-    <div class="card-body">
-      <form id="formOrcamento" onsubmit="adicionarPeca(event)">
-        <div class="row g-3 mb-3">
-          <div class="col-md-4">
-            <label for="clienteNome" class="form-label">Nome do Cliente</label>
-            <input type="text" class="form-control" id="clienteNome" placeholder="Ex: João da Silva" required>
-          </div>
-          <div class="col-md-3">
-            <label for="pecaDesc" class="form-label">Descrição da Peça</label>
-            <input type="text" class="form-control" id="pecaDesc" placeholder="Ex: Painel Frontal">
-          </div>
-          <div class="col-md-2">
-            <label for="pecaLargura" class="form-label">Largura (cm)</label>
-            <input type="number" class="form-control" id="pecaLargura" step="0.1" required>
-          </div>
-          <div class="col-md-2">
-            <label for="pecaAltura" class="form-label">Altura (cm)</label>
-            <input type="number" class="form-control" id="pecaAltura" step="0.1" required>
-          </div>
-          <div class="col-md-1">
-            <label for="pecaQtd" class="form-label">Qtd</label>
-            <input type="number" class="form-control" id="pecaQtd" value="1" min="1" required>
-          </div>
+  <!-- TELA DE LOGIN -->
+  <div id="authScreen" class="fixed inset-0 bg-slate-900/50 backdrop-blur-md z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-sm w-full p-6 space-y-5 border border-slate-200">
+      <div class="text-center space-y-2">
+        <div class="w-12 h-12 bg-gradient-to-tr from-cyan-600 to-blue-600 rounded-xl flex items-center justify-center text-white text-xl mx-auto shadow-md shadow-cyan-600/30">
+          <i class="fa-solid fa-user-lock"></i>
         </div>
-        <button type="submit" class="btn btn-success">+ Adicionar Peça</button>
+        <h2 class="text-base font-black text-slate-900 uppercase tracking-wide">CalculaJá Pro Cloud</h2>
+        <p class="text-[10px] text-slate-500">Acesso Restrito • 1 Dispositivo por Vez</p>
+      </div>
+
+      <form id="formAuth" onsubmit="executarAuth(event)" class="space-y-3">
+        <div>
+          <label class="block text-[9px] font-bold text-slate-600 uppercase mb-1">E-mail de Acesso</label>
+          <input type="email" id="authEmail" required placeholder="seu@email.com" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 font-bold text-slate-800 outline-none focus:border-cyan-600 focus:bg-white transition">
+        </div>
+        <div>
+          <div class="flex justify-between items-center mb-1">
+            <label class="block text-[9px] font-bold text-slate-600 uppercase">Senha</label>
+            <button type="button" onclick="enviarEmailRecuperacao()" class="text-[9px] text-cyan-700 hover:text-cyan-800 font-bold hover:underline">Esqueceu?</button>
+          </div>
+          <input type="password" id="authSenha" required placeholder="••••••••" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 font-bold text-slate-800 outline-none focus:border-cyan-600 focus:bg-white transition">
+        </div>
+
+        <button type="submit" id="btnSubmitAuth" class="w-full bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700 text-white font-bold py-2.5 rounded-lg transition shadow-md shadow-cyan-600/20 active:scale-95 flex items-center justify-center gap-2">
+          <i class="fa-solid fa-right-to-bracket"></i> Entrar no Sistema
+        </button>
       </form>
 
-      <hr class="my-4">
-
-      <h6 class="fw-bold">Peças do Orçamento</h6>
-      <div class="table-responsive">
-        <table class="table table-striped align-middle" id="tabelaPecas">
-          <thead>
-            <tr>
-              <th>#</th>
-              <th>Descrição</th>
-              <th>Largura (cm)</th>
-              <th>Altura (cm)</th>
-              <th>Qtd</th>
-              <th>Área Total (m²)</th>
-              <th>Ações</th>
-            </tr>
-          </thead>
-          <tbody id="corpoTabelaPecas">
-            <!-- Linhas inseridas dinamicamente -->
-          </tbody>
-        </table>
-      </div>
-
-      <div class="d-flex justify-content-end gap-2 mt-3">
-        <button class="btn btn-outline-danger" onclick="limparOrcamento()">Limpar Tudo</button>
-        <button class="btn btn-secondary" onclick="dispararGerarEtiquetas()">🏷️ Gerar Etiquetas (PDF)</button>
-        <button class="btn btn-primary" onclick="dispararExportarPDF()">📄 Exportar Orçamento (PDF)</button>
-      </div>
+      <p id="msgAuthErro" class="text-[10px] text-rose-600 font-bold text-center bg-rose-50 p-2 rounded-lg border border-rose-200 hidden"></p>
+      <p id="msgAuthSucesso" class="text-[10px] text-emerald-600 font-bold text-center bg-emerald-50 p-2 rounded-lg border border-emerald-200 hidden"></p>
     </div>
   </div>
 
-  <!-- SEÇÃO DE CLIENTES E BUSCA -->
-  <div class="card mb-4">
-    <div class="card-header bg-dark text-white">
-      <h5 class="card-title mb-0">Base de Clientes e Histórico</h5>
-    </div>
-    <div class="card-body">
-      <!-- Busca e Filtro em Tempo Real -->
-      <div class="mb-3">
-        <input 
-          type="text" 
-          class="form-control" 
-          id="filtroClientes" 
-          placeholder="🔍 Buscar por nome, e-mail ou documento..." 
-          onkeyup="filtrarTabela('filtroClientes', 'tabelaClientes')"
-        >
+  <!-- APLICAÇÃO PRINCIPAL -->
+  <div id="appContainer" class="min-h-screen flex flex-col hidden">
+    
+    <!-- HEADER NAVBAR -->
+    <header class="bg-white px-5 py-3 border-b border-slate-200 flex flex-col md:flex-row justify-between items-center gap-3 shadow-sm">
+      <div class="flex items-center space-x-3 w-full md:w-auto justify-between md:justify-start">
+        <div class="flex items-center space-x-2.5">
+          <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-cyan-600 to-blue-600 flex items-center justify-center text-white shadow-md shadow-cyan-600/20">
+            <i class="fa-solid fa-scissors text-base"></i>
+          </div>
+          <div>
+            <h1 class="text-sm font-black tracking-wide text-slate-900 uppercase flex items-center gap-2">
+              CalculaJá Pro <span class="text-[9px] bg-emerald-50 text-emerald-700 border border-emerald-200 px-1.5 py-0.5 rounded font-bold"><i class="fa-solid fa-cloud text-[8px] mr-1"></i>ONLINE</span>
+            </h1>
+            <p id="userEmailNav" class="text-[9px] text-slate-500">Usuário Conectado</p>
+          </div>
+        </div>
       </div>
 
-      <div class="table-responsive">
-        <table class="table table-bordered align-middle" id="tabelaClientes">
-          <thead>
-            <tr>
-              <th>Nome</th>
-              <th>E-mail</th>
-              <th>Telefone</th>
-              <th>Cidade</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>João da Silva</td>
-              <td>joao@email.com</td>
-              <td>(16) 99999-0001</td>
-              <td>Ibitinga/SP</td>
-            </tr>
-            <tr>
-              <td>Maria Souza</td>
-              <td>maria@email.com</td>
-              <td>(16) 99999-0002</td>
-              <td>Araraquara/SP</td>
-            </tr>
-            <tr>
-              <td>Serralheria Central</td>
-              <td>contato@central.com</td>
-              <td>(16) 3342-0000</td>
-              <td>Ibitinga/SP</td>
-            </tr>
-          </tbody>
-        </table>
+      <div class="flex items-center space-x-3 w-full md:w-auto justify-between">
+        <nav class="flex items-center space-x-1.5 overflow-x-auto py-1">
+          <button onclick="mudarAba('dados')" id="btnAbaDados" class="px-3.5 py-1.5 rounded-lg font-bold bg-cyan-600 text-white transition flex items-center gap-2 shadow-sm active:scale-95">
+            <i class="fa-solid fa-calculator text-[10px]"></i> Orçamento & Corte
+          </button>
+          <button onclick="mudarAba('desenho')" id="btnAbaDesenho" class="px-3.5 py-1.5 rounded-lg font-bold bg-slate-100 hover:bg-slate-200 text-slate-600 border border-slate-200 transition flex items-center gap-2 active:scale-95">
+            <i class="fa-solid fa-draw-polygon text-[10px] text-cyan-600"></i> Desenho CAD/RIP
+          </button>
+          <button onclick="mudarAba('clientes')" id="btnAbaClientes" class="px-3.5 py-1.5 rounded-lg font-bold bg-slate-100 hover:bg-slate-200 text-slate-600 border border-slate-200 transition flex items-center gap-2 active:scale-95">
+            <i class="fa-solid fa-users text-[10px]"></i> Clientes
+          </button>
+          <button onclick="mudarAba('suprimentos')" id="btnAbaSuprimentos" class="px-3.5 py-1.5 rounded-lg font-bold bg-slate-100 hover:bg-slate-200 text-slate-600 border border-slate-200 transition flex items-center gap-2 active:scale-95">
+            <i class="fa-solid fa-boxes-stacked text-[10px]"></i> Matérias-Primas
+          </button>
+          <button onclick="mudarAba('historico')" id="btnAbaHistorico" class="px-3.5 py-1.5 rounded-lg font-bold bg-slate-100 hover:bg-slate-200 text-slate-600 border border-slate-200 transition flex items-center gap-2 active:scale-95">
+            <i class="fa-solid fa-folder-open text-[10px]"></i> Histórico
+          </button>
+        </nav>
+
+        <div class="flex items-center gap-1.5">
+          <button onclick="abrirModalTrocarSenha()" title="Alterar Senha" class="bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 px-2.5 py-1.5 rounded-lg font-bold transition flex items-center gap-1 active:scale-95">
+            <i class="fa-solid fa-key text-amber-600"></i>
+          </button>
+          <button onclick="fazerLogout()" title="Sair do Sistema" class="bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 px-3 py-1.5 rounded-lg font-bold transition flex items-center gap-1.5 active:scale-95">
+            <i class="fa-solid fa-power-off"></i> <span class="hidden md:inline">Sair</span>
+          </button>
+        </div>
       </div>
-    </div>
-  </div>
-</div>
+    </header>
 
-<!-- LÓGICA JAVASCRIPT -->
-<script>
-  let listaPecas = [];
-
-  // 1. ADICIONAR PEÇA À TABELA
-  function adicionarPeca(event) {
-    event.preventDefault();
-    
-    const desc = document.getElementById('pecaDesc').value || `Peça ${listaPecas.length + 1}`;
-    const largura = parseFloat(document.getElementById('pecaLargura').value);
-    const altura = parseFloat(document.getElementById('pecaAltura').value);
-    const quantidade = parseInt(document.getElementById('pecaQtd').value);
-
-    listaPecas.push({ descricao: desc, largura, altura, quantidade });
-    
-    // Limpar campos de entrada da peça
-    document.getElementById('pecaDesc').value = '';
-    document.getElementById('pecaLargura').value = '';
-    document.getElementById('pecaAltura').value = '';
-    document.getElementById('pecaQtd').value = '1';
-
-    atualizarTabelaPecas();
-  }
-
-  // 2. ATUALIZAR INTERFACE DA TABELA
-  function atualizarTabelaPecas() {
-    const tbody = document.getElementById('corpoTabelaPecas');
-    tbody.innerHTML = '';
-
-    listaPecas.forEach((peca, idx) => {
-      const area = ((peca.largura * peca.altura * peca.quantidade) / 10000).toFixed(2);
-      const tr = document.createElement('tr');
-      tr.innerHTML = `
-        <td>${idx + 1}</td>
-        <td>${peca.descricao}</td>
-        <td>${peca.largura}</td>
-        <td>${peca.altura}</td>
-        <td>${peca.quantidade}</td>
-        <td>${area} m²</td>
-        <td>
-          <button class="btn btn-sm btn-outline-danger" onclick="removerPeca(${idx})">Remover</button>
-        </td>
-      `;
-      tbody.appendChild(tr);
-    });
-  }
-
-  function removerPeca(index) {
-    listaPecas.splice(index, 1);
-    atualizarTabelaPecas();
-  }
-
-  function limparOrcamento() {
-    listaPecas = [];
-    document.getElementById('clienteNome').value = '';
-    atualizarTabelaPecas();
-  }
-
-  // 3. BUSCA E FILTRO RÁPIDO NAS TABELAS
-  function filtrarTabela(inputId, tabelaId) {
-    const termo = document.getElementById(inputId).value.toLowerCase();
-    const linhas = document.querySelectorAll(`#${tabelaId} tbody tr`);
-
-    linhas.forEach(linha => {
-      const textoLinha = linha.textContent.toLowerCase();
-      linha.style.display = textoLinha.includes(termo) ? "" : "none";
-    });
-  }
-
-  // 4. EXPORTAÇÃO EM PDF NATIVO (ORÇAMENTO)
-  function dispararExportarPDF() {
-    const cliente = document.getElementById('clienteNome').value || 'Cliente Não Identificado';
-    if (listaPecas.length === 0) {
-      alert("Adicione pelo menos uma peça antes de gerar o PDF!");
-      return;
-    }
-
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF();
-
-    doc.setFontSize(16);
-    doc.text("ORÇAMENTO / FICHA DE PRODUÇÃO", 14, 20);
-    
-    doc.setFontSize(10);
-    doc.text(`Cliente: ${cliente}`, 14, 28);
-    doc.text(`Data: ${new Date().toLocaleDateString('pt-BR')}`, 14, 34);
-
-    const colunas = ["#", "Descrição", "Largura (cm)", "Altura (cm)", "Qtd", "Total (m²)"];
-    let areaTotalGeral = 0;
-
-    const linhas = listaPecas.map((p, index) => {
-      const area = (p.largura * p.altura * p.quantidade) / 10000;
-      areaTotalGeral += area;
-      return [
-        index + 1,
-        p.descricao,
-        p.largura,
-        p.altura,
-        p.quantidade,
-        area.toFixed(2)
-      ];
-    });
-
-    doc.autoTable({
-      startY: 40,
-      head: [colunas],
-      body: linhas,
-      theme: 'grid',
-      headStyles: { fillColor: [41, 128, 185] }
-    });
-
-    const finalY = doc.lastAutoTable.finalY + 10;
-    doc.setFontSize(11);
-    doc.setFont("helvetica", "bold");
-    doc.text(`Área Total das Peças: ${areaTotalGeral.toFixed(2)} m²`, 14, finalY);
-
-    doc.save(`Orcamento_${cliente.replace(/\s+/g, '_')}.pdf`);
-  }
-
-  // 5. ETIQUETAS DE IDENTIFICAÇÃO POR PEÇA (PDF)
-  function dispararGerarEtiquetas() {
-    const cliente = document.getElementById('clienteNome').value || 'Cliente Não Identificado';
-    if (listaPecas.length === 0) {
-      alert("Adicione pelo menos uma peça antes de gerar as etiquetas!");
-      return;
-    }
-
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF({ unit: 'mm', format: 'a4' });
-
-    let x = 10;
-    let y = 10;
-    const larguraEtiqueta = 60;
-    const alturaEtiqueta = 30;
-    const margem = 5;
-
-    doc.setFontSize(8);
-
-    listaPecas.forEach((peca, idx) => {
-      for (let q = 1; q <= peca.quantidade; q++) {
-        // Desenha moldura da etiqueta
-        doc.rect(x, y, larguraEtiqueta, alturaEtiqueta);
-
-        // Conteúdo impresso
-        doc.setFont("helvetica", "bold");
-        doc.text(`CLIENTE: ${cliente.substring(0, 22)}`, x + 3, y + 6);
+    <main class="p-4 max-w-7xl mx-auto space-y-4 flex-grow w-full">
+      
+      <!-- ABA 1: ORÇAMENTO & ENTRADA DE DADOS -->
+      <section id="abaDados" class="space-y-4">
         
-        doc.setFont("helvetica", "normal");
-        doc.text(`Item: ${peca.descricao.substring(0, 20)} (${q}/${peca.quantidade})`, x + 3, y + 12);
-        doc.text(`Medida: ${peca.largura} x ${peca.altura} cm`, x + 3, y + 18);
-        doc.text(`Data: ${new Date().toLocaleDateString('pt-BR')}`, x + 3, y + 24);
+        <!-- CARD DE CONFIGURAÇÕES DE ENTRADA -->
+        <div class="bg-white border border-slate-200 p-4 rounded-xl shadow-sm space-y-3">
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+            
+            <!-- CLIENTE -->
+            <div>
+              <label class="block text-[10px] font-bold text-cyan-700 uppercase tracking-wider mb-1">
+                <i class="fa-solid fa-user mr-1"></i> Cliente / Projeto
+              </label>
+              <select id="selectClienteOrcamento" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-xs font-bold text-slate-800 outline-none focus:border-cyan-600 focus:bg-white transition"></select>
+            </div>
 
-        // Ajusta coordenadas da grade (3 colunas por linha)
-        x += larguraEtiqueta + margem;
-        if (x + larguraEtiqueta > 200) {
-          x = 10;
-          y += alturaEtiqueta + margem;
+            <!-- MATERIAL PREDEFINIDO -->
+            <div>
+              <label class="block text-[10px] font-bold text-cyan-700 uppercase tracking-wider mb-1">
+                <i class="fa-solid fa-scroll mr-1"></i> Preset de Material
+              </label>
+              <select id="selectBobinaGlobal" onchange="selecionarPresetMaterial()" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-xs font-bold text-slate-800 outline-none focus:border-cyan-600 focus:bg-white transition"></select>
+            </div>
+
+            <!-- LARGURA DA BOBINA (CM) -->
+            <div>
+              <label class="block text-[10px] font-bold text-amber-600 uppercase tracking-wider mb-1">
+                <i class="fa-solid fa-arrows-left-right mr-1"></i> Largura Bobina (cm)
+              </label>
+              <input type="number" id="larguraBobinaInput" value="140" step="1" min="1" oninput="calcularTudo()" class="w-full bg-amber-50/50 border border-amber-300 rounded-lg px-3 py-1.5 text-xs font-black text-amber-800 outline-none focus:border-amber-600 focus:bg-white transition">
+            </div>
+
+            <!-- COMPRIMENTO DO ROLO/BOBINA (M) -->
+            <div>
+              <label class="block text-[10px] font-bold text-amber-600 uppercase tracking-wider mb-1">
+                <i class="fa-solid fa-ruler-combined mr-1"></i> Comp. Rolo/Estoque (m)
+              </label>
+              <input type="number" id="comprimentoBobinaInput" value="50" step="1" min="1" oninput="calcularTudo()" class="w-full bg-amber-50/50 border border-amber-300 rounded-lg px-3 py-1.5 text-xs font-black text-amber-800 outline-none focus:border-amber-600 focus:bg-white transition">
+            </div>
+
+          </div>
+
+          <!-- REGRAS DE CORTE DA BOBINA -->
+          <div class="bg-slate-50 p-3 rounded-lg border border-slate-200 grid grid-cols-1 md:grid-cols-2 gap-3 items-center">
+            <div class="flex items-center gap-3">
+              <div class="w-full">
+                <label class="block text-[9px] font-bold text-slate-500 uppercase mb-0.5">Espaçamento / Margem entre Peças (cm)</label>
+                <input type="number" id="espacamentoPecas" value="0.5" step="0.1" min="0" oninput="calcularTudo()" class="w-full bg-white border border-slate-300 rounded px-2.5 py-1 text-xs font-bold text-cyan-700 outline-none focus:border-cyan-600">
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-[9px] font-bold text-slate-500 uppercase mb-0.5">Permitir Rotação das Peças?</label>
+              <select id="permitirRotacao" onchange="calcularTudo()" class="w-full bg-white border border-slate-300 rounded px-2.5 py-1 text-xs font-bold text-slate-800 outline-none focus:border-cyan-600">
+                <option value="sim">Sim (Melhor Aproveitamento / Rotação Auto)</option>
+                <option value="nao">Não (Manter Fio do Tecido / Orientação Fixa)</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- TABELA DE PEÇAS -->
+        <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 space-y-3">
+          <div class="flex justify-between items-center border-b border-slate-100 pb-2">
+            <h2 class="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-2">
+              <i class="fa-solid fa-shapes text-cyan-600"></i> Peças para Plano de Corte
+            </h2>
+            <button type="button" onclick="addParteVazia()" class="bg-slate-100 hover:bg-slate-200 text-cyan-700 border border-slate-200 hover:border-slate-300 px-3 py-1.5 rounded-lg font-bold transition flex items-center gap-1.5 shadow-sm active:scale-95">
+              <i class="fa-solid fa-plus text-[9px]"></i> Adicionar Peça
+            </button>
+          </div>
+
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+              <thead>
+                <tr class="bg-slate-50 text-slate-500 text-[10px] uppercase tracking-wider border-b border-slate-200">
+                  <th class="p-2.5">Identificação / Peça</th>
+                  <th class="p-2.5">Largura (cm)</th>
+                  <th class="p-2.5">Comprimento (cm)</th>
+                  <th class="p-2.5">Quantidade</th>
+                  <th class="p-2.5 text-center">Ação</th>
+                </tr>
+              </thead>
+              <tbody id="partes" class="divide-y divide-slate-100"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm space-y-3">
+            <h3 class="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-2">
+              <i class="fa-solid fa-industry text-amber-500"></i> Custos Operacionais
+            </h3>
+            <div class="space-y-2">
+              <div>
+                <label class="block text-[9px] font-bold text-slate-500 uppercase">Custo Serviços / Costura (R$)</label>
+                <input type="number" id="custoServicos" value="0.00" step="1.00" oninput="calcularTudo()" class="w-full bg-slate-50 border border-slate-300 rounded px-2.5 py-1.5 text-xs font-bold text-amber-600 outline-none focus:bg-white focus:border-amber-500">
+              </div>
+              <div>
+                <label class="block text-[9px] font-bold text-slate-500 uppercase">Margem Lucro / Markup (%)</label>
+                <input type="number" id="margemLucro" value="80" step="5" oninput="calcularTudo()" class="w-full bg-slate-50 border border-slate-300 rounded px-2.5 py-1.5 text-xs font-bold text-emerald-600 outline-none focus:bg-white focus:border-emerald-500">
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm space-y-2 col-span-1 md:col-span-2 flex flex-col justify-between">
+            <h3 class="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-2 border-b border-slate-100 pb-2">
+              <i class="fa-solid fa-calculator text-emerald-600"></i> Métricas Industriais & Preço
+            </h3>
+
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-2 py-1">
+              <div class="bg-slate-50 p-2 rounded-lg border border-slate-200">
+                <span class="text-[9px] text-slate-500 uppercase font-bold block">Uso Linear</span>
+                <span id="resumoMetroLinear" class="text-xs font-bold text-cyan-700">0.00 m</span>
+              </div>
+              <div class="bg-slate-50 p-2 rounded-lg border border-slate-200">
+                <span class="text-[9px] text-slate-500 uppercase font-bold block">Custo Matéria-Prima</span>
+                <span id="resumoCustoMaterial" class="text-xs font-bold text-slate-700">R$ 0,00</span>
+              </div>
+              <div class="bg-slate-50 p-2 rounded-lg border border-slate-200">
+                <span class="text-[9px] text-slate-500 uppercase font-bold block">Custo Fabril Total</span>
+                <span id="resumoCustoTotal" class="text-xs font-bold text-amber-600">R$ 0,00</span>
+              </div>
+              <div class="bg-emerald-50 p-2 rounded-lg border border-emerald-200">
+                <span class="text-[9px] text-emerald-700 uppercase font-bold block">Preço Venda Sugerido</span>
+                <span id="resumoPrecoVenda" class="text-sm font-black text-emerald-700">R$ 0,00</span>
+              </div>
+            </div>
+
+            <div class="flex flex-wrap items-center justify-end gap-2 border-t border-slate-100 pt-3">
+              <button type="button" onclick="salvarOrcamentoNuvem()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 px-3.5 py-2 rounded-lg font-bold transition flex items-center gap-1.5 shadow-sm active:scale-95">
+                <i class="fa-solid fa-cloud-arrow-up text-cyan-600"></i> Salvar na Nuvem
+              </button>
+              <button type="button" onclick="imprimirFichaCorte()" class="bg-amber-500 hover:bg-amber-600 text-white px-3.5 py-2 rounded-lg font-bold transition flex items-center gap-1.5 shadow-md shadow-amber-500/20 active:scale-95">
+                <i class="fa-solid fa-print"></i> Ficha Produção
+              </button>
+              <button type="button" onclick="copiarParaWhatsApp()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-3.5 py-2 rounded-lg font-bold transition flex items-center gap-1.5 shadow-md shadow-emerald-600/20 active:scale-95">
+                <i class="fa-brands fa-whatsapp"></i> WhatsApp
+              </button>
+              <button type="button" onclick="irParaDesenho()" class="bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700 text-white px-4 py-2 rounded-lg font-bold transition flex items-center gap-2 shadow-md shadow-cyan-600/20 active:scale-95">
+                <i class="fa-solid fa-draw-polygon"></i> Desenho CAD
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ABA 2: DESENHO CAD/RIP -->
+      <section id="abaDesenho" class="hidden space-y-4">
+        <div class="grid grid-cols-2 md:grid-cols-5 gap-3">
+          <div class="bg-white p-3 rounded-xl border border-slate-200 shadow-sm">
+            <span class="text-[9px] text-slate-500 uppercase font-bold block">Comprimento Usado</span>
+            <div id="statComprimentoTotal" class="text-base font-black text-cyan-700 mt-0.5">0.00 m</div>
+          </div>
+          <div class="bg-white p-3 rounded-xl border border-slate-200 shadow-sm">
+            <span class="text-[9px] text-slate-500 uppercase font-bold block">Eficiência / Encaixe</span>
+            <div id="statAproveitamento" class="text-base font-black text-emerald-600 mt-0.5">0%</div>
+          </div>
+          <div class="bg-white p-3 rounded-xl border border-slate-200 shadow-sm">
+            <span class="text-[9px] text-slate-500 uppercase font-bold block">Retalho / Desperdício</span>
+            <div id="statDesperdicio" class="text-base font-black text-rose-500 mt-0.5">0 m²</div>
+          </div>
+          <div class="bg-white p-3 rounded-xl border border-slate-200 shadow-sm">
+            <span class="text-[9px] text-slate-500 uppercase font-bold block">Quantidade de Peças</span>
+            <div id="statTotalPecas" class="text-base font-black text-slate-800 mt-0.5">0 un</div>
+          </div>
+          <div class="bg-white p-3 rounded-xl border border-slate-200 shadow-sm">
+            <span class="text-[9px] text-slate-500 uppercase font-bold block">Largura Útil Roll/Sheet</span>
+            <div id="statLarguraBobina" class="text-base font-black text-amber-600 mt-0.5">0 cm</div>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-4 space-y-3">
+          <div class="flex flex-wrap items-center justify-between gap-3 bg-slate-50 p-2.5 rounded-lg border border-slate-200">
+            <div class="flex items-center space-x-3">
+              <span class="text-[10px] font-bold text-slate-600 uppercase"><i class="fa-solid fa-sliders text-cyan-600 mr-1"></i> Controles CAD:</span>
+              <label class="flex items-center gap-1.5 cursor-pointer text-[10px] text-slate-700 font-bold">
+                <input type="checkbox" id="chkGrade" checked onchange="atualizarEstilosDesenho()" class="accent-cyan-600"> Grade Guia
+              </label>
+              <label class="flex items-center gap-1.5 cursor-pointer text-[10px] text-slate-700 font-bold">
+                <input type="checkbox" id="chkMedidas" checked onchange="atualizarEstilosDesenho()" class="accent-cyan-600"> Cotas & Rótulos
+              </label>
+            </div>
+
+            <div class="flex items-center space-x-2 bg-white px-3 py-1 rounded-lg border border-slate-200 shadow-sm">
+              <span class="text-[10px] text-slate-500 font-bold uppercase">Zoom Visual:</span>
+              <button onclick="alterarZoom(-0.5)" class="text-slate-600 hover:text-slate-900 px-2 py-0.5 font-bold hover:bg-slate-100 rounded">-</button>
+              <span id="labelZoom" class="text-xs font-black text-cyan-700 w-12 text-center">2.5x</span>
+              <button onclick="alterarZoom(0.5)" class="text-slate-600 hover:text-slate-900 px-2 py-0.5 font-bold hover:bg-slate-100 rounded">+</button>
+            </div>
+          </div>
+
+          <!-- ÁREA DO DESENHO E RÉGUAS -->
+          <div class="relative w-full overflow-auto bg-slate-100 rounded-lg border border-slate-300 shadow-inner" style="max-height: 600px;">
+            <div id="containerComReguas" class="relative inline-block" style="padding: 28px 0 0 28px;">
+              <div class="absolute top-0 left-0 w-[28px] h-[28px] bg-slate-200 border-r border-b border-slate-300 z-30 flex items-center justify-center text-[9px] text-slate-600 font-bold">cm</div>
+              <div id="reguaHorizontal" class="absolute top-0 left-[28px] h-[28px] bg-slate-100 border-b border-slate-300 overflow-hidden select-none z-20"></div>
+              <div id="reguaVertical" class="absolute top-[28px] left-0 w-[28px] bg-slate-100 border-r border-slate-300 overflow-hidden select-none z-20"></div>
+              <div id="painelDesenhoResultado" class="relative bg-white transition-all shadow-md"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ABA 3: CLIENTES -->
+      <section id="abaClientes" class="hidden space-y-4">
+        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm space-y-3">
+          <div class="flex justify-between items-center">
+            <h2 class="text-xs font-bold text-slate-800 uppercase">Cadastro de Clientes / Marcas (Cloud)</h2>
+            <button onclick="abrirModalCliente()" class="bg-cyan-600 hover:bg-cyan-700 text-white px-3 py-1.5 rounded-lg font-bold shadow-sm transition active:scale-95">+ Novo Cliente</button>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left">
+              <thead>
+                <tr class="bg-slate-50 text-slate-500 text-[10px] border-b border-slate-200 uppercase">
+                  <th class="p-2.5">Nome / Empresa</th>
+                  <th class="p-2.5">Telefone / WhatsApp</th>
+                  <th class="p-2.5">Cidade / Unidade</th>
+                  <th class="p-2.5 text-center">Ações</th>
+                </tr>
+              </thead>
+              <tbody id="tabelaClientes" class="divide-y divide-slate-100"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ABA 4: MATÉRIAS-PRIMAS -->
+      <section id="abaSuprimentos" class="hidden space-y-4">
+        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm space-y-3">
+          <div class="flex justify-between items-center">
+            <h2 class="text-xs font-bold text-slate-800 uppercase">Estoque de Tecidos, Plásticos e Bobinas (Cloud)</h2>
+            <button onclick="abrirModalSuprimento()" class="bg-cyan-600 hover:bg-cyan-700 text-white px-3 py-1.5 rounded-lg font-bold shadow-sm transition active:scale-95">+ Novo Material</button>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left">
+              <thead>
+                <tr class="bg-slate-50 text-slate-500 text-[10px] border-b border-slate-200 uppercase">
+                  <th class="p-2.5">Descrição do Material</th>
+                  <th class="p-2.5">Largura Útil (cm)</th>
+                  <th class="p-2.5">Custo/m Linear (R$)</th>
+                  <th class="p-2.5 text-center">Ações</th>
+                </tr>
+              </thead>
+              <tbody id="tabelaSuprimentos" class="divide-y divide-slate-100"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ABA 5: HISTÓRICO -->
+      <section id="abaHistorico" class="hidden space-y-4">
+        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm space-y-3">
+          <h2 class="text-xs font-bold text-slate-800 uppercase">Histórico de Ordens Salvas na Nuvem</h2>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left">
+              <thead>
+                <tr class="bg-slate-50 text-slate-500 text-[10px] border-b border-slate-200 uppercase">
+                  <th class="p-2.5">Data</th>
+                  <th class="p-2.5">Cliente</th>
+                  <th class="p-2.5">Material Utilizado</th>
+                  <th class="p-2.5">Valor Venda</th>
+                  <th class="p-2.5 text-center">Ações</th>
+                </tr>
+              </thead>
+              <tbody id="tabelaHistorico" class="divide-y divide-slate-100"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <div id="areaImpressao" class="hidden"></div>
+
+  <!-- MODAL DINÂMICO -->
+  <div id="modalDinamico" class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-xl shadow-2xl max-w-md w-full p-5 space-y-4 border border-slate-200">
+      <div class="flex justify-between items-center border-b border-slate-100 pb-2">
+        <h3 id="modalTitulo" class="text-xs font-bold text-slate-800 uppercase">Formulário</h3>
+        <button onclick="fecharModal()" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div id="modalCorpo" class="space-y-3"></div>
+      <div class="flex justify-end gap-2 border-t border-slate-100 pt-3">
+        <button onclick="fecharModal()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-1.5 rounded-lg font-bold transition">Cancelar</button>
+        <button id="btnSalvarModal" class="bg-cyan-600 hover:bg-cyan-700 text-white px-4 py-1.5 rounded-lg font-bold transition shadow-sm">Salvar</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    /* 1. CONFIGURAÇÃO DO PROJETO FIREBASE */
+    const firebaseConfig = {
+      apiKey: "AIzaSyBK2M_6YeHCV_mNOrh2v8FO8g6BcOFBlFw",
+      authDomain: "calculo-pro.firebaseapp.com",
+      databaseURL: "https://calculo-pro-default-rtdb.firebaseio.com",
+      projectId: "calculo-pro",
+      storageBucket: "calculo-pro.firebasestorage.app",
+      messagingSenderId: "986889549980",
+      appId: "1:986889549980:web:3f2e25a049cfbc6dced559"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+
+    let currentUser = null;
+    let sessionUnsubscribe = null;
+    let currentSessionId = localStorage.getItem('calculaja_session_id') || null;
+
+    let appData = {
+      suprimentos: [],
+      clientes: [],
+      orcamentos: [],
+      escalaZoom: 2.5,
+      calculoResultado: null
+    };
+
+    /* 2. AUTENTICAÇÃO E SESSÃO */
+    auth.onAuthStateChanged(async (user) => {
+      if (user) {
+        currentUser = user;
+        document.getElementById('userEmailNav').textContent = user.email;
+        document.getElementById('authScreen').classList.add('hidden');
+        document.getElementById('appContainer').classList.remove('hidden');
+
+        if (!currentSessionId) {
+          currentSessionId = 'sess_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6);
+          localStorage.setItem('calculaja_session_id', currentSessionId);
+          await db.collection('users').doc(user.uid).set({ activeSessionId: currentSessionId }, { merge: true });
         }
 
-        // Adiciona nova página A4 se ultrapassar o limite vertical
-        if (y + alturaEtiqueta > 280) {
-          doc.addPage();
-          x = 10;
-          y = 10;
-        }
+        if (sessionUnsubscribe) sessionUnsubscribe();
+        sessionUnsubscribe = db.collection('users').doc(user.uid).onSnapshot(doc => {
+          if (doc && doc.exists) {
+            const data = doc.data();
+            if (data.activeSessionId && data.activeSessionId !== currentSessionId) {
+              alert("⚠️ AVISO DE SEGURANÇA: Sua conta foi iniciada em outro dispositivo. Você foi desconectado deste aparelho.");
+              fazerLogout();
+            }
+          }
+        });
+
+        sincronizarDadosFirestore();
+      } else {
+        currentUser = null;
+        if (sessionUnsubscribe) sessionUnsubscribe();
+        document.getElementById('authScreen').classList.remove('hidden');
+        document.getElementById('appContainer').classList.add('hidden');
       }
     });
 
-    doc.save(`Etiquetas_${cliente.replace(/\s+/g, '_')}.pdf`);
-  }
-</script>
+    async function executarAuth(e) {
+      e.preventDefault();
+      const email = document.getElementById('authEmail').value;
+      const senha = document.getElementById('authSenha').value;
+      const msgErro = document.getElementById('msgAuthErro');
+      const msgSucesso = document.getElementById('msgAuthSucesso');
+      
+      msgErro.classList.add('hidden');
+      msgSucesso.classList.add('hidden');
 
+      try {
+        const userCred = await auth.signInWithEmailAndPassword(email, senha);
+        currentSessionId = 'sess_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6);
+        localStorage.setItem('calculaja_session_id', currentSessionId);
+        
+        await db.collection('users').doc(userCred.user.uid).set({
+          activeSessionId: currentSessionId,
+          lastLogin: new Date()
+        }, { merge: true });
+
+      } catch (err) {
+        let msg = "Erro no acesso. Verifique os dados.";
+        if (err.code === 'auth/user-not-found') msg = "Usuário não cadastrado.";
+        else if (err.code === 'auth/wrong-password') msg = "Senha incorreta.";
+        else if (err.code === 'auth/invalid-email') msg = "Formato de e-mail inválido.";
+        
+        msgErro.textContent = msg;
+        msgErro.classList.remove('hidden');
+      }
+    }
+
+    async function enviarEmailRecuperacao() {
+      const email = document.getElementById('authEmail').value;
+      const msgErro = document.getElementById('msgAuthErro');
+      const msgSucesso = document.getElementById('msgAuthSucesso');
+
+      msgErro.classList.add('hidden');
+      msgSucesso.classList.add('hidden');
+
+      if (!email) {
+        msgErro.textContent = "Digite seu e-mail no campo acima para recuperar a senha.";
+        msgErro.classList.remove('hidden');
+        return;
+      }
+
+      try {
+        await auth.sendPasswordResetEmail(email);
+        msgSucesso.textContent = "E-mail de redefinição enviado! Verifique sua caixa de entrada.";
+        msgSucesso.classList.remove('hidden');
+      } catch (err) {
+        msgErro.textContent = "Falha ao enviar e-mail de recuperação: " + err.message;
+        msgErro.classList.remove('hidden');
+      }
+    }
+
+    async function fazerLogout() {
+      localStorage.removeItem('calculaja_session_id');
+      currentSessionId = null;
+      await auth.signOut();
+    }
+
+    function abrirModalTrocarSenha() {
+      const corpo = `
+        <div class="space-y-3">
+          <div>
+            <label class="block text-[9px] font-bold text-slate-600 uppercase mb-1">Nova Senha</label>
+            <input type="password" id="novaSenhaInput" placeholder="Mínimo 6 caracteres" class="w-full border border-slate-300 rounded px-2.5 py-1.5 font-bold">
+          </div>
+        </div>
+      `;
+      abrirModal("Alterar Senha de Acesso", corpo, async () => {
+        const novaSenha = document.getElementById('novaSenhaInput').value;
+        if (!novaSenha || novaSenha.length < 6) {
+          alert("A senha deve ter no mínimo 6 caracteres.");
+          return;
+        }
+        try {
+          await auth.currentUser.updatePassword(novaSenha);
+          alert("Senha alterada com sucesso!");
+          fecharModal();
+        } catch (err) {
+          alert("Erro ao alterar senha: " + err.message);
+        }
+      });
+    }
+
+    /* 3. NAVEGAÇÃO E TABS */
+    function mudarAba(aba) {
+      ['dados', 'desenho', 'clientes', 'suprimentos', 'historico'].forEach(a => {
+        const el = document.getElementById('aba' + a.charAt(0).toUpperCase() + a.slice(1));
+        const btn = document.getElementById('btnAba' + a.charAt(0).toUpperCase() + a.slice(1));
+        if (el) el.classList.add('hidden');
+        if (btn) {
+          btn.className = "px-3.5 py-1.5 rounded-lg font-bold bg-slate-100 hover:bg-slate-200 text-slate-600 border border-slate-200 transition flex items-center gap-2 active:scale-95";
+        }
+      });
+
+      const elAtiva = document.getElementById('aba' + aba.charAt(0).toUpperCase() + aba.slice(1));
+      const btnAtivo = document.getElementById('btnAba' + aba.charAt(0).toUpperCase() + aba.slice(1));
+      if (elAtiva) elAtiva.classList.remove('hidden');
+      if (btnAtivo) {
+        btnAtivo.className = "px-3.5 py-1.5 rounded-lg font-bold bg-cyan-600 text-white transition flex items-center gap-2 shadow-sm active:scale-95";
+      }
+
+      if (aba === 'desenho') {
+        renderizarDesenhoCAD();
+      }
+    }
+
+    function irParaDesenho() {
+      mudarAba('desenho');
+    }
+
+    /* 4. FIRESTORE SYNC & DROPDOWNS */
+    function sincronizarDadosFirestore() {
+      if (!currentUser) return;
+
+      // Clientes
+      db.collection('users').doc(currentUser.uid).collection('clientes').onSnapshot(snap => {
+        appData.clientes = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        renderizarClientes();
+        atualizarSelectClientes();
+      });
+
+      // Suprimentos
+      db.collection('users').doc(currentUser.uid).collection('suprimentos').onSnapshot(snap => {
+        appData.suprimentos = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        renderizarSuprimentos();
+        atualizarSelectSuprimentos();
+      });
+
+      // Histórico
+      db.collection('users').doc(currentUser.uid).collection('orcamentos').orderBy('data', 'desc').onSnapshot(snap => {
+        appData.orcamentos = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        renderizarHistorico();
+      });
+
+      // Peças padrão na primeira inicialização
+      if (document.querySelectorAll('#partes tr').length === 0) {
+        addParteVazia('Lona Frontal Banner', 100, 50, 4);
+        addParteVazia('Faixa Promocional', 120, 30, 2);
+      }
+    }
+
+    function atualizarSelectClientes() {
+      const select = document.getElementById('selectClienteOrcamento');
+      select.innerHTML = '<option value="">-- Cliente Avulso / Não Especificado --</option>';
+      appData.clientes.forEach(c => {
+        const opt = document.createElement('option');
+        opt.value = c.id;
+        opt.textContent = `${c.nome} ${c.cidade ? ' (' + c.cidade + ')' : ''}`;
+        select.appendChild(opt);
+      });
+    }
+
+    function atualizarSelectSuprimentos() {
+      const select = document.getElementById('selectBobinaGlobal');
+      select.innerHTML = '<option value="">-- Seleção Manual de Bobina --</option>';
+      appData.suprimentos.forEach(s => {
+        const opt = document.createElement('option');
+        opt.value = s.id;
+        opt.textContent = `${s.descricao} (${s.largura}cm - R$${parseFloat(s.custoMetro || 0).toFixed(2)}/m)`;
+        select.appendChild(opt);
+      });
+    }
+
+    function selecionarPresetMaterial() {
+      const id = document.getElementById('selectBobinaGlobal').value;
+      if (!id) return;
+      const mat = appData.suprimentos.find(s => s.id === id);
+      if (mat) {
+        document.getElementById('larguraBobinaInput').value = mat.largura || 140;
+        calcularTudo();
+      }
+    }
+
+    /* 5. TABELA DINÂMICA DE PEÇAS DE CORTE */
+    function addParteVazia(nome = '', larg = 50, comp = 50, qtd = 1) {
+      const tbody = document.getElementById('partes');
+      const tr = document.createElement('tr');
+      tr.className = "hover:bg-slate-50 transition border-b border-slate-100";
+      tr.innerHTML = `
+        <td class="p-2">
+          <input type="text" value="${nome}" placeholder="Nome/Ref da Peça" oninput="calcularTudo()" class="nome-peca w-full bg-white border border-slate-300 rounded px-2 py-1 text-xs font-bold text-slate-800 outline-none focus:border-cyan-600">
+        </td>
+        <td class="p-2">
+          <input type="number" value="${larg}" min="1" step="0.5" oninput="calcularTudo()" class="larg-peca w-24 bg-white border border-slate-300 rounded px-2 py-1 text-xs font-bold text-slate-800 outline-none focus:border-cyan-600">
+        </td>
+        <td class="p-2">
+          <input type="number" value="${comp}" min="1" step="0.5" oninput="calcularTudo()" class="comp-peca w-24 bg-white border border-slate-300 rounded px-2 py-1 text-xs font-bold text-slate-800 outline-none focus:border-cyan-600">
+        </td>
+        <td class="p-2">
+          <input type="number" value="${qtd}" min="1" step="1" oninput="calcularTudo()" class="qtd-peca w-20 bg-white border border-slate-300 rounded px-2 py-1 text-xs font-bold text-cyan-700 outline-none focus:border-cyan-600">
+        </td>
+        <td class="p-2 text-center">
+          <button type="button" onclick="removerParte(this)" class="text-rose-500 hover:text-rose-700 font-bold p-1"><i class="fa-solid fa-trash-can"></i></button>
+        </td>
+      `;
+      tbody.appendChild(tr);
+      calcularTudo();
+    }
+
+    function removerParte(btn) {
+      const tr = btn.closest('tr');
+      tr.remove();
+      calcularTudo();
+    }
+
+    /* 6. ALGORITMO INDUSTRIAL DE CORTE E ENCAIXE (NESTING 2D EM ROLO) */
+    function calcularTudo() {
+      const larguraBobina = parseFloat(document.getElementById('larguraBobinaInput').value) || 140;
+      const margem = parseFloat(document.getElementById('espacamentoPecas').value) || 0.5;
+      const permitirRotacao = document.getElementById('permitirRotacao').value === 'sim';
+
+      const rows = document.querySelectorAll('#partes tr');
+      let listaPecas = [];
+
+      rows.forEach((row, index) => {
+        const nome = row.querySelector('.nome-peca').value || `Peça ${index + 1}`;
+        const w = parseFloat(row.querySelector('.larg-peca').value) || 0;
+        const h = parseFloat(row.querySelector('.comp-peca').value) || 0;
+        const qtd = parseInt(row.querySelector('.qtd-peca').value) || 0;
+
+        if (w > 0 && h > 0 && qtd > 0) {
+          for (let i = 0; i < qtd; i++) {
+            listaPecas.push({
+              id: `${index}_${i}`,
+              rotulo: nome,
+              w: w,
+              h: h,
+              area: w * h
+            });
+          }
+        }
+      });
+
+      // Ordenar por maior área para melhor acomodação de encaixe (Shelf Packing Heuristic)
+      listaPecas.sort((a, b) => Math.max(b.w, b.h) - Math.max(a.w, a.h));
+
+      let prateleiras = [];
+      let pecasPosicionadas = [];
+
+      listaPecas.forEach(peca => {
+        let encaixado = false;
+        let pW = peca.w;
+        let pH = peca.h;
+        let rotacionada = false;
+
+        // Tentar verificar rotação se couber melhor
+        if (permitirRotacao && (pW > larguraBobina || (pH <= larguraBobina && pH > pW))) {
+          let temp = pW;
+          pW = pH;
+          pH = temp;
+          rotacionada = true;
+        }
+
+        // Tentar encaixar em prateleiras existentes
+        for (let p of prateleiras) {
+          if (p.xAtual + pW + margem <= larguraBobina) {
+            pecasPosicionadas.push({
+              ...peca,
+              x: p.xAtual,
+              y: p.y,
+              w: pW,
+              h: pH,
+              rotacionada: rotacionada
+            });
+            p.xAtual += pW + margem;
+            if (pH > p.alturaMax) p.alturaMax = pH;
+            encaixado = true;
+            break;
+          }
+        }
+
+        // Se não coube em nenhuma, criar nova linha / prateleira no rolo
+        if (!encaixado) {
+          let yNovo = prateleiras.reduce((acc, curr) => acc + curr.alturaMax + margem, 0);
+          prateleiras.push({
+            y: yNovo,
+            alturaMax: pH,
+            xAtual: pW + margem
+          });
+
+          pecasPosicionadas.push({
+            ...peca,
+            x: 0,
+            y: yNovo,
+            w: pW,
+            h: pH,
+            rotacionada: rotacionada
+          });
+        }
+      });
+
+      let comprimentoTotalCm = prateleiras.reduce((acc, curr) => acc + curr.alturaMax + margem, 0);
+      let metroLinear = comprimentoTotalCm / 100;
+
+      // Cálculos financeiros
+      let idMat = document.getElementById('selectBobinaGlobal').value;
+      let matSel = appData.suprimentos.find(s => s.id === idMat);
+      let custoMetroMat = matSel ? parseFloat(matSel.custoMetro || 0) : 15.00;
+
+      let custoMaterial = metroLinear * custoMetroMat;
+      let custoServicos = parseFloat(document.getElementById('custoServicos').value) || 0;
+      let margemLucro = parseFloat(document.getElementById('margemLucro').value) || 0;
+
+      let custoTotalFabril = custoMaterial + custoServicos;
+      let precoVenda = custoTotalFabril * (1 + (margemLucro / 100));
+
+      let areaTotalUsadaM2 = (larguraBobina / 100) * metroLinear;
+      let areaPecasM2 = listaPecas.reduce((acc, p) => acc + (p.w * p.h), 0) / 10000;
+      let aproveitamento = areaTotalUsadaM2 > 0 ? (areaPecasM2 / areaTotalUsadaM2) * 100 : 0;
+      let desperdicioM2 = Math.max(0, areaTotalUsadaM2 - areaPecasM2);
+
+      appData.calculoResultado = {
+        larguraBobina,
+        comprimentoTotalCm,
+        metroLinear,
+        pecasPosicionadas,
+        totalPecas: listaPecas.length,
+        aproveitamento,
+        desperdicioM2,
+        custoMaterial,
+        custoServicos,
+        custoTotalFabril,
+        precoVenda
+      };
+
+      // Atualizar UI Resumo
+      document.getElementById('resumoMetroLinear').textContent = `${metroLinear.toFixed(2)} m`;
+      document.getElementById('resumoCustoMaterial').textContent = `R$ ${custoMaterial.toFixed(2)}`;
+      document.getElementById('resumoCustoTotal').textContent = `R$ ${custoTotalFabril.toFixed(2)}`;
+      document.getElementById('resumoPrecoVenda').textContent = `R$ ${precoVenda.toFixed(2)}`;
+
+      document.getElementById('statComprimentoTotal').textContent = `${metroLinear.toFixed(2)} m`;
+      document.getElementById('statAproveitamento').textContent = `${aproveitamento.toFixed(1)}%`;
+      document.getElementById('statDesperdicio').textContent = `${desperdicioM2.toFixed(2)} m²`;
+      document.getElementById('statTotalPecas').textContent = `${listaPecas.length} un`;
+      document.getElementById('statLarguraBobina').textContent = `${larguraBobina} cm`;
+
+      // Se a aba visual CAD estiver aberta, atualiza o desenho
+      if (!document.getElementById('abaDesenho').classList.contains('hidden')) {
+        renderizarDesenhoCAD();
+      }
+    }
+
+    /* 7. CAD CANVAS, RÉGUAS E VISUALIZAÇÃO */
+    function alterarZoom(delta) {
+      appData.escalaZoom = Math.max(0.5, Math.min(10.0, appData.escalaZoom + delta));
+      document.getElementById('labelZoom').textContent = `${appData.escalaZoom.toFixed(1)}x`;
+      renderizarDesenhoCAD();
+    }
+
+    function atualizarEstilosDesenho() {
+      renderizarDesenhoCAD();
+    }
+
+    function renderizarDesenhoCAD() {
+      if (!appData.calculoResultado) return;
+
+      const { larguraBobina, comprimentoTotalCm, pecasPosicionadas } = appData.calculoResultado;
+      const scale = appData.escalaZoom; // pixels por cm
+
+      const larguraPx = larguraBobina * scale;
+      const alturaPx = (comprimentoTotalCm || 100) * scale;
+
+      const painel = document.getElementById('painelDesenhoResultado');
+      painel.style.width = `${larguraPx}px`;
+      painel.style.height = `${alturaPx}px`;
+      painel.className = `relative transition-all shadow-md ${document.getElementById('chkGrade').checked ? 'bg-grid-pattern' : 'bg-white'}`;
+      painel.innerHTML = '';
+
+      const mostrarMedidas = document.getElementById('chkMedidas').checked;
+
+      pecasPosicionadas.forEach(p => {
+        const box = document.createElement('div');
+        box.className = 'peca-box';
+        box.style.left = `${p.x * scale}px`;
+        box.style.top = `${p.y * scale}px`;
+        box.style.width = `${p.w * scale}px`;
+        box.style.height = `${p.h * scale}px`;
+
+        if (mostrarMedidas) {
+          box.innerHTML = `
+            <span class="truncate px-1">${p.rotulo}</span>
+            <span class="text-[8px] opacity-80">${p.w} x ${p.h} cm</span>
+          `;
+        } else {
+          box.innerHTML = `<span class="truncate px-1">${p.rotulo}</span>`;
+        }
+
+        painel.appendChild(box);
+      });
+
+      // Gerar Réguas Visual
+      renderizarReguas(larguraBobina, comprimentoTotalCm, scale);
+    }
+
+    function renderizarReguas(larguraCm, alturaCm, scale) {
+      const reguaH = document.getElementById('reguaHorizontal');
+      const reguaV = document.getElementById('reguaVertical');
+      
+      reguaH.style.width = `${larguraCm * scale}px`;
+      reguaV.style.height = `${alturaCm * scale}px`;
+
+      reguaH.innerHTML = '';
+      reguaV.innerHTML = '';
+
+      // Ticks Régua Horizontal (a cada 10 cm)
+      for (let x = 0; x <= larguraCm; x += 10) {
+        let posX = x * scale;
+        let tick = document.createElement('div');
+        tick.className = 'regua-tick';
+        tick.style.left = `${posX}px`;
+        tick.style.bottom = '0px';
+        tick.style.width = '1px';
+        tick.style.height = '10px';
+
+        let num = document.createElement('div');
+        num.className = 'regua-num';
+        num.style.left = `${posX + 2}px`;
+        num.style.top = '2px';
+        num.textContent = x;
+
+        reguaH.appendChild(tick);
+        reguaH.appendChild(num);
+      }
+
+      // Ticks Régua Vertical (a cada 10 cm)
+      for (let y = 0; y <= alturaCm; y += 10) {
+        let posY = y * scale;
+        let tick = document.createElement('div');
+        tick.className = 'regua-tick';
+        tick.style.top = `${posY}px`;
+        tick.style.right = '0px';
+        tick.style.height = '1px';
+        tick.style.width = '10px';
+
+        let num = document.createElement('div');
+        num.className = 'regua-num';
+        num.style.top = `${posY + 2}px`;
+        num.style.left = '2px';
+        num.textContent = y;
+
+        reguaV.appendChild(tick);
+        reguaV.appendChild(num);
+      }
+    }
+
+    /* 8. IMPRESSÃO, WHATSAPP E SALVAMENTO CLOUD */
+    async function salvarOrcamentoNuvem() {
+      if (!currentUser || !appData.calculoResultado) return;
+
+      const selectCliente = document.getElementById('selectClienteOrcamento');
+      const clienteNome = selectCliente.options[selectCliente.selectedIndex]?.text || 'Cliente Avulso';
+
+      const payload = {
+        data: firebase.firestore.FieldValue.serverTimestamp(),
+        cliente: clienteNome,
+        comprimentoTotalM: appData.calculoResultado.metroLinear,
+        valorVenda: appData.calculoResultado.precoVenda,
+        larguraBobina: appData.calculoResultado.larguraBobina,
+        totalPecas: appData.calculoResultado.totalPecas
+      };
+
+      try {
+        await db.collection('users').doc(currentUser.uid).collection('orcamentos').add(payload);
+        alert("Orçamento salvo com sucesso na nuvem!");
+      } catch (e) {
+        alert("Erro ao salvar no Firestore: " + e.message);
+      }
+    }
+
+    function copiarParaWhatsApp() {
+      if (!appData.calculoResultado) return;
+      const res = appData.calculoResultado;
+      
+      let msg = `*ORÇAMENTO DE CORTE / PRODUÇÃO*\n`;
+      msg += `-----------------------------------\n`;
+      msg += `• Uso de Material: ${res.metroLinear.toFixed(2)} m\n`;
+      msg += `• Total de Peças: ${res.totalPecas} un\n`;
+      msg += `• Valor Total: R$ ${res.precoVenda.toFixed(2)}\n`;
+      msg += `-----------------------------------\n`;
+      msg += `Calculado via CalculaJá Pro Cloud.`;
+
+      navigator.clipboard.writeText(msg);
+      alert("Resumo formatado copiado para a área de transferência! Cole no WhatsApp.");
+    }
+
+    function imprimirFichaCorte() {
+      if (!appData.calculoResultado) return;
+      const res = appData.calculoResultado;
+      const divPrint = document.getElementById('areaImpressao');
+
+      divPrint.innerHTML = `
+        <div style="font-family: sans-serif; padding: 20px;">
+          <h2 style="text-transform: uppercase; border-bottom: 2px solid #000; padding-bottom: 5px;">FICHA DE PRODUÇÃO E CORTE INDUSTRIAL</h2>
+          <p><strong>Data:</strong> ${new Date().toLocaleDateString('pt-BR')} ${new Date().toLocaleTimeString('pt-BR')}</p>
+          <hr>
+          <h3>Resumo Operacional:</h3>
+          <ul>
+            <li><strong>Largura da Bobina:</strong> ${res.larguraBobina} cm</li>
+            <li><strong>Comprimento Necessário:</strong> ${res.metroLinear.toFixed(2)} metros</li>
+            <li><strong>Total de Peças:</strong> ${res.totalPecas} unidades</li>
+            <li><strong>Aproveitamento:</strong> ${res.aproveitamento.toFixed(1)}%</li>
+          </ul>
+          <h3>Detalhamento das Peças Encaixadas:</h3>
+          <table border="1" cellpadding="6" cellspacing="0" style="width: 100%; border-collapse: collapse;">
+            <thead>
+              <tr style="background: #f0f0f0;">
+                <th>Rótulo/Peça</th>
+                <th>Dimensões (cm)</th>
+                <th>Posição X, Y (cm)</th>
+                <th>Rotacionada?</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${res.pecasPosicionadas.map(p => `
+                <tr>
+                  <td>${p.rotulo}</td>
+                  <td>${p.w} x ${p.h}</td>
+                  <td>X: ${p.x.toFixed(1)}, Y: ${p.y.toFixed(1)}</td>
+                  <td>${p.rotacionada ? 'Sim' : 'Não'}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>
+      `;
+
+      window.print();
+    }
+
+    /* 9. GESTÃO DE CLIENTES (CRUD) */
+    function renderizarClientes() {
+      const tbody = document.getElementById('tabelaClientes');
+      tbody.innerHTML = '';
+      appData.clientes.forEach(c => {
+        const tr = document.createElement('tr');
+        tr.className = "hover:bg-slate-50 transition border-b border-slate-100";
+        tr.innerHTML = `
+          <td class="p-2.5 font-bold text-slate-800">${c.nome}</td>
+          <td class="p-2.5">${c.telefone || '-'}</td>
+          <td class="p-2.5">${c.cidade || '-'}</td>
+          <td class="p-2.5 text-center">
+            <button onclick="deletarCliente('${c.id}')" class="text-rose-500 hover:text-rose-700 font-bold p-1"><i class="fa-solid fa-trash"></i></button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function abrirModalCliente() {
+      const corpo = `
+        <div class="space-y-3">
+          <div>
+            <label class="block text-[9px] font-bold text-slate-600 uppercase mb-1">Nome do Cliente / Empresa</label>
+            <input type="text" id="cliNome" required class="w-full border border-slate-300 rounded px-2.5 py-1.5 font-bold">
+          </div>
+          <div>
+            <label class="block text-[9px] font-bold text-slate-600 uppercase mb-1">Telefone / WhatsApp</label>
+            <input type="text" id="cliTel" placeholder="(00) 00000-0000" class="w-full border border-slate-300 rounded px-2.5 py-1.5 font-bold">
+          </div>
+          <div>
+            <label class="block text-[9px] font-bold text-slate-600 uppercase mb-1">Cidade / Estado</label>
+            <input type="text" id="cliCidade" placeholder="Ex: São Paulo - SP" class="w-full border border-slate-300 rounded px-2.5 py-1.5 font-bold">
+          </div>
+        </div>
+      `;
+
+      abrirModal("Novo Cliente", corpo, async () => {
+        const nome = document.getElementById('cliNome').value;
+        const telefone = document.getElementById('cliTel').value;
+        const cidade = document.getElementById('cliCidade').value;
+
+        if (!nome) return alert("Digite o nome do cliente.");
+
+        await db.collection('users').doc(currentUser.uid).collection('clientes').add({
+          nome, telefone, cidade, criadoEm: new Date()
+        });
+        fecharModal();
+      });
+    }
+
+    async function deletarCliente(id) {
+      if (confirm("Deseja realmente excluir este cliente?")) {
+        await db.collection('users').doc(currentUser.uid).collection('clientes').doc(id).delete();
+      }
+    }
+
+    /* 10. GESTÃO DE SUPRIMENTOS (CRUD) */
+    function renderizarSuprimentos() {
+      const tbody = document.getElementById('tabelaSuprimentos');
+      tbody.innerHTML = '';
+      appData.suprimentos.forEach(s => {
+        const tr = document.createElement('tr');
+        tr.className = "hover:bg-slate-50 transition border-b border-slate-100";
+        tr.innerHTML = `
+          <td class="p-2.5 font-bold text-slate-800">${s.descricao}</td>
+          <td class="p-2.5">${s.largura} cm</td>
+          <td class="p-2.5 font-bold text-amber-600">R$ ${parseFloat(s.custoMetro || 0).toFixed(2)}</td>
+          <td class="p-2.5 text-center">
+            <button onclick="deletarSuprimento('${s.id}')" class="text-rose-500 hover:text-rose-700 font-bold p-1"><i class="fa-solid fa-trash"></i></button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function abrirModalSuprimento() {
+      const corpo = `
+        <div class="space-y-3">
+          <div>
+            <label class="block text-[9px] font-bold text-slate-600 uppercase mb-1">Descrição da Matéria-Prima</label>
+            <input type="text" id="supDesc" placeholder="Ex: Lona Banner 440g" class="w-full border border-slate-300 rounded px-2.5 py-1.5 font-bold">
+          </div>
+          <div>
+            <label class="block text-[9px] font-bold text-slate-600 uppercase mb-1">Largura Útil (cm)</label>
+            <input type="number" id="supLarg" value="140" class="w-full border border-slate-300 rounded px-2.5 py-1.5 font-bold">
+          </div>
+          <div>
+            <label class="block text-[9px] font-bold text-slate-600 uppercase mb-1">Custo por Metro Linear (R$)</label>
+            <input type="number" id="supCusto" value="15.00" step="0.5" class="w-full border border-slate-300 rounded px-2.5 py-1.5 font-bold">
+          </div>
+        </div>
+      `;
+
+      abrirModal("Novo Suprimento", corpo, async () => {
+        const descricao = document.getElementById('supDesc').value;
+        const largura = parseFloat(document.getElementById('supLarg').value) || 0;
+        const custoMetro = parseFloat(document.getElementById('supCusto').value) || 0;
+
+        if (!descricao) return alert("Digite a descrição do material.");
+
+        await db.collection('users').doc(currentUser.uid).collection('suprimentos').add({
+          descricao, largura, custoMetro, criadoEm: new Date()
+        });
+        fecharModal();
+      });
+    }
+
+    async function deletarSuprimento(id) {
+      if (confirm("Deseja realmente excluir este suprimento?")) {
+        await db.collection('users').doc(currentUser.uid).collection('suprimentos').doc(id).delete();
+      }
+    }
+
+    /* 11. HISTÓRICO DE ORÇAMENTOS */
+    function renderizarHistorico() {
+      const tbody = document.getElementById('tabelaHistorico');
+      tbody.innerHTML = '';
+      appData.orcamentos.forEach(o => {
+        const dt = o.data ? new Date(o.data.seconds * 1000).toLocaleDateString('pt-BR') : '-';
+        const tr = document.createElement('tr');
+        tr.className = "hover:bg-slate-50 transition border-b border-slate-100";
+        tr.innerHTML = `
+          <td class="p-2.5 text-slate-500">${dt}</td>
+          <td class="p-2.5 font-bold text-slate-800">${o.cliente || 'Avulso'}</td>
+          <td class="p-2.5">${o.comprimentoTotalM ? o.comprimentoTotalM.toFixed(2) + ' m' : '-'}</td>
+          <td class="p-2.5 font-bold text-emerald-600">R$ ${parseFloat(o.valorVenda || 0).toFixed(2)}</td>
+          <td class="p-2.5 text-center">
+            <button onclick="deletarHistorico('${o.id}')" class="text-rose-500 hover:text-rose-700 font-bold p-1"><i class="fa-solid fa-trash"></i></button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    async function deletarHistorico(id) {
+      if (confirm("Deseja excluir este registro do histórico?")) {
+        await db.collection('users').doc(currentUser.uid).collection('orcamentos').doc(id).delete();
+      }
+    }
+
+    /* 12. HELPER DE MODAL DINÂMICO */
+    function abrirModal(titulo, conteudoHtml, acaoSalvar) {
+      document.getElementById('modalTitulo').textContent = titulo;
+      document.getElementById('modalCorpo').innerHTML = conteudoHtml;
+      const btnSalvar = document.getElementById('btnSalvarModal');
+
+      // Remover listeners antigos
+      const newBtn = btnSalvar.cloneNode(true);
+      btnSalvar.parentNode.replaceChild(newBtn, btnSalvar);
+
+      newBtn.addEventListener('click', acaoSalvar);
+      document.getElementById('modalDinamico').classList.remove('hidden');
+    }
+
+    function fecharModal() {
+      document.getElementById('modalDinamico').classList.add('hidden');
+    }
+  </script>
 </body>
 </html>
