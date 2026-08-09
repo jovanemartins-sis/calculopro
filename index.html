@@ -1,126 +1,28 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-  <meta charset="UTF-8">
-  <title>Botões Profissionais</title>
-  <!-- Fonte Inter para tipografia limpa -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-  
-  <!-- Lucide Icons (Ícones SVGs modernos e leves) -->
-  <script src="https://unpkg.com/lucide@latest"></script>
+<!-- Grupo de Botões de Reorganização -->
+<div class="button-group">
 
-  <style>
-    body {
-      font-family: 'Inter', sans-serif;
-      background-color: #f8fafc;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
-      margin: 0;
-    }
+  <!-- Botão 1: Máximo Espaço -->
+  <button class="btn btn-mode-max active" onclick="setMode('max')">
+    <i data-lucide="maximize-2"></i>
+    <div>
+      <strong>1. Preencher Máximo Espaço</strong>
+      <span class="btn-desc">Rotaciona e encaixa em todos os cantos livre (Padrão)</span>
+    </div>
+  </button>
 
-    .button-group {
-      display: flex;
-      gap: 12px;
-      flex-wrap: wrap;
-    }
+  <!-- Botão 2: Facilitar Corte -->
+  <button class="btn btn-mode-cut" onclick="setMode('cut')">
+    <i data-lucide="scissors"></i>
+    <div>
+      <strong>2. Facilitar o Corte</strong>
+      <span class="btn-desc">Alinha em guilhotina com linhas retas contínuas</span>
+    </div>
+  </button>
 
-    /* Estilo base do botão profissional */
-    .btn {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px; /* Espaçamento ideal entre ícone e texto */
-      padding: 10px 18px;
-      font-size: 14px;
-      font-weight: 500;
-      border-radius: 8px; /* Cantos levemente arredondados */
-      border: 1px solid transparent;
-      cursor: pointer;
-      transition: all 0.2s ease-in-out;
-      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-    }
+  <!-- Botão Auxiliar: Reorganizar / Gerar -->
+  <button class="btn btn-secondary" onclick="regenerateParts()">
+    <i data-lucide="shuffle"></i>
+    Reorganizar Chapa
+  </button>
 
-    /* Tamanho padronizado dos ícones */
-    .btn i {
-      width: 18px;
-      height: 18px;
-    }
-
-    /* Variação: Primário (Ação Principal) */
-    .btn-primary {
-      background-color: #2563eb;
-      color: #ffffff;
-    }
-    .btn-primary:hover {
-      background-color: #1d4ed8;
-    }
-
-    /* Variação: Sucesso / Confirmar */
-    .btn-success {
-      background-color: #16a34a;
-      color: #ffffff;
-    }
-    .btn-success:hover {
-      background-color: #15803d;
-    }
-
-    /* Variação: Neutro / Secundário */
-    .btn-secondary {
-      background-color: #ffffff;
-      color: #334155;
-      border-color: #cbd5e1;
-    }
-    .btn-secondary:hover {
-      background-color: #f1f5f9;
-      border-color: #94a3b8;
-    }
-
-    /* Variação: Perigo / Deletar */
-    .btn-danger {
-      background-color: #ef4444;
-      color: #ffffff;
-    }
-    .btn-danger:hover {
-      background-color: #dc2626;
-    }
-  </style>
-</head>
-<body>
-
-  <div class="button-group">
-    <!-- Botão de Adicionar / Criar -->
-    <button class="btn btn-primary">
-      <i data-lucide="plus"></i>
-      Novo Registro
-    </button>
-
-    <!-- Botão de Salvar / Confirmar -->
-    <button class="btn btn-success">
-      <i data-lucide="check"></i>
-      Salvar Alterações
-    </button>
-
-    <!-- Botão de Atualizar / Recarregar -->
-    <button class="btn btn-secondary">
-      <i data-lucide="refresh-cw"></i>
-      Atualizar
-    </button>
-
-    <!-- Botão de Excluir -->
-    <button class="btn btn-danger">
-      <i data-lucide="trash-2"></i>
-      Excluir
-    </button>
-  </div>
-
-  <!-- Script para carregar os ícones da Lucide -->
-  <script>
-    lucide.createIcons();
-  </script>
-
-</body>
-</html>
+</div>
