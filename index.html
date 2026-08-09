@@ -1,28 +1,390 @@
-<!-- Grupo de Botões de Reorganização -->
-<div class="button-group">
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel de Controle - E-commerce</title>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --text-color: #f8fafc;
+            --text-secondary: #94a3b8;
+            --accent-color: #3b82f6;
+            --accent-hover: #2563eb;
+            --danger-color: #ef4444;
+            --success-color: #10b981;
+            --border-color: #334155;
+        }
 
-  <!-- Botão 1: Máximo Espaço -->
-  <button class="btn btn-mode-max active" onclick="setMode('max')">
-    <i data-lucide="maximize-2"></i>
-    <div>
-      <strong>1. Preencher Máximo Espaço</strong>
-      <span class="btn-desc">Rotaciona e encaixa em todos os cantos livre (Padrão)</span>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        h1 {
+            font-size: 1.5rem;
+            color: var(--text-color);
+        }
+
+        .btn {
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            padding: 10px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background 0.2s;
+        }
+
+        .btn:hover {
+            background-color: var(--accent-hover);
+        }
+
+        .btn-danger {
+            background-color: var(--danger-color);
+        }
+
+        .btn-danger:hover {
+            background-color: #dc2626;
+        }
+
+        /* Metrics Cards */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+        }
+
+        .card h3 {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+            text-transform: uppercase;
+        }
+
+        .card .value {
+            font-size: 1.75rem;
+            font-weight: bold;
+        }
+
+        /* Controls & Form Section */
+        .controls-panel {
+            background-color: var(--card-bg);
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            margin-bottom: 24px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 12px;
+            margin-top: 12px;
+        }
+
+        input, select {
+            background-color: #0f172a;
+            border: 1px solid var(--border-color);
+            color: var(--text-color);
+            padding: 10px;
+            border-radius: 6px;
+            outline: none;
+        }
+
+        input:focus, select:focus {
+            border-color: var(--accent-color);
+        }
+
+        /* Data Table */
+        .table-container {
+            background-color: var(--card-bg);
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+        }
+
+        th, td {
+            padding: 14px 16px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        th {
+            background-color: #0f172a;
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            text-transform: uppercase;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        .badge {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: bold;
+        }
+
+        .badge-success { background-color: rgba(16, 185, 129, 0.2); color: var(--success-color); }
+        .badge-warning { background-color: rgba(245, 158, 11, 0.2); color: #f59e0b; }
+
+        .actions-cell {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-sm {
+            padding: 6px 10px;
+            font-size: 0.8rem;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <h1>Painel de Gestão e Estoque</h1>
+            <div>
+                <button class="btn" onclick="exportData()">Exportar Backup</button>
+                <button class="btn btn-danger" onclick="resetSystem()">Restaurar Padrão</button>
+            </div>
+        </header>
+
+        <!-- KPI Cards -->
+        <section class="metrics-grid">
+            <div class="card">
+                <h3>Total de Produtos</h3>
+                <div class="value" id="kpi-total-items">0</div>
+            </div>
+            <div class="card">
+                <h3>Valor em Estoque</h3>
+                <div class="value" id="kpi-total-value">R$ 0,00</div>
+            </div>
+            <div class="card">
+                <h3>Alertas de Estoque Baixo</h3>
+                <div class="value" style="color: #f59e0b;" id="kpi-low-stock">0</div>
+            </div>
+        </section>
+
+        <!-- Product Input Form -->
+        <section class="controls-panel">
+            <h2>Cadastrar Novo Item</h2>
+            <form id="product-form" class="form-grid" onsubmit="handleAddProduct(event)">
+                <input type="text" id="p-name" placeholder="Nome do Produto" required>
+                <input type="text" id="p-sku" placeholder="SKU / Código" required>
+                <input type="number" id="p-qty" placeholder="Quantidade" min="0" required>
+                <input type="number" id="p-price" placeholder="Preço (R$)" step="0.01" min="0" required>
+                <button type="submit" class="btn">Adicionar Item</button>
+            </form>
+        </section>
+
+        <!-- Inventory Table -->
+        <section class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>SKU</th>
+                        <th>Produto</th>
+                        <th>Qtd. Estoque</th>
+                        <th>Preço Unitário</th>
+                        <th>Status</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody id="inventory-tbody">
+                    <!-- Dynamic rendering -->
+                </tbody>
+            </table>
+        </section>
     </div>
-  </button>
 
-  <!-- Botão 2: Facilitar Corte -->
-  <button class="btn btn-mode-cut" onclick="setMode('cut')">
-    <i data-lucide="scissors"></i>
-    <div>
-      <strong>2. Facilitar o Corte</strong>
-      <span class="btn-desc">Alinha em guilhotina com linhas retas contínuas</span>
-    </div>
-  </button>
+    <script>
+        // Default seed data to prevent complete blank states
+        const defaultProducts = [
+            { id: '1', sku: 'PRD-001', name: 'Produto Exemplo A', qty: 15, price: 49.90 },
+            { id: '2', sku: 'PRD-002', name: 'Produto Exemplo B', qty: 2, price: 129.00 }
+        ];
 
-  <!-- Botão Auxiliar: Reorganizar / Gerar -->
-  <button class="btn btn-secondary" onclick="regenerateParts()">
-    <i data-lucide="shuffle"></i>
-    Reorganizar Chapa
-  </button>
+        let products = [];
 
-</div>
+        // Safe Initialization Procedure
+        function initApp() {
+            try {
+                const storedData = localStorage.getItem('dashboard_products');
+                if (storedData) {
+                    products = JSON.parse(storedData);
+                } else {
+                    products = [...defaultProducts];
+                    saveData();
+                }
+            } catch (error) {
+                console.error("Erro ao carregar dados do localStorage:", error);
+                products = [...defaultProducts];
+            }
+            renderUI();
+        }
+
+        function saveData() {
+            try {
+                localStorage.setItem('dashboard_products', JSON.stringify(products));
+            } catch (error) {
+                console.error("Erro ao salvar dados:", error);
+            }
+        }
+
+        function renderUI() {
+            renderTable();
+            renderMetrics();
+        }
+
+        function renderTable() {
+            const tbody = document.getElementById('inventory-tbody');
+            tbody.innerHTML = '';
+
+            if (products.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--text-secondary);">Nenhum produto cadastrado.</td></tr>`;
+                return;
+            }
+
+            products.forEach((prod, index) => {
+                const isLowStock = prod.qty <= 5;
+                const statusBadge = isLowStock 
+                    ? `<span class="badge badge-warning">Estoque Baixo</span>`
+                    : `<span class="badge badge-success">OK</span>`;
+
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${escapeHtml(prod.sku)}</td>
+                    <td><strong>${escapeHtml(prod.name)}</strong></td>
+                    <td>${prod.qty}</td>
+                    <td>R$ ${parseFloat(prod.price).toFixed(2)}</td>
+                    <td>${statusBadge}</td>
+                    <td class="actions-cell">
+                        <button class="btn btn-sm" onclick="adjustStock(${index}, 1)">+1</button>
+                        <button class="btn btn-sm" onclick="adjustStock(${index}, -1)">-1</button>
+                        <button class="btn btn-sm btn-danger" onclick="deleteProduct(${index})">Excluir</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function renderMetrics() {
+            const totalItems = products.reduce((acc, p) => acc + Number(p.qty), 0);
+            const totalValue = products.reduce((acc, p) => acc + (Number(p.qty) * Number(p.price)), 0);
+            const lowStockCount = products.filter(p => p.qty <= 5).length;
+
+            document.getElementById('kpi-total-items').textContent = totalItems;
+            document.getElementById('kpi-total-value').textContent = `R$ ${totalValue.toFixed(2)}`;
+            document.getElementById('kpi-low-stock').textContent = lowStockCount;
+        }
+
+        function handleAddProduct(e) {
+            e.preventDefault();
+            const name = document.getElementById('p-name').value.trim();
+            const sku = document.getElementById('p-sku').value.trim();
+            const qty = parseInt(document.getElementById('p-qty').value, 10);
+            const price = parseFloat(document.getElementById('p-price').value);
+
+            if (!name || !sku || isNaN(qty) || isNaN(price)) return;
+
+            products.push({
+                id: Date.now().toString(),
+                sku,
+                name,
+                qty,
+                price
+            });
+
+            saveData();
+            renderUI();
+
+            document.getElementById('product-form').reset();
+        }
+
+        function adjustStock(index, delta) {
+            if (products[index]) {
+                products[index].qty = Math.max(0, products[index].qty + delta);
+                saveData();
+                renderUI();
+            }
+        }
+
+        function deleteProduct(index) {
+            if (confirm("Deseja realmente remover este item?")) {
+                products.splice(index, 1);
+                saveData();
+                renderUI();
+            }
+        }
+
+        function resetSystem() {
+            if (confirm("Isso redefinirá todos os dados para a configuração inicial. Continuar?")) {
+                products = [...defaultProducts];
+                saveData();
+                renderUI();
+            }
+        }
+
+        function exportData() {
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(products, null, 2));
+            const downloadAnchor = document.createElement('a');
+            downloadAnchor.setAttribute("href", dataStr);
+            downloadAnchor.setAttribute("download", `backup_estoque_${new Date().toISOString().slice(0,10)}.json`);
+            document.body.appendChild(downloadAnchor);
+            downloadAnchor.click();
+            downloadAnchor.remove();
+        }
+
+        function escapeHtml(str) {
+            return str.replace(/[&<>"']/g, function(m) {
+                return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[m];
+            });
+        }
+
+        // Start App
+        document.addEventListener('DOMContentLoaded', initApp);
+    </script>
+</body>
+</html>
